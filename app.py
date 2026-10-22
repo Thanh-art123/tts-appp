@@ -1,10 +1,10 @@
 import os
-import subprocess
+import asyncio
+import edge_tts
 from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 
-# Thư mục chứa audio xuất ra
 AUDIO_DIR = os.path.join(app.static_folder, 'audio')
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
@@ -40,7 +40,7 @@ def text_to_speech():
         if not text:
             return jsonify({'error': 'Không có văn bản'}), 400
 
-        # Tiền xử lý chèn nhịp đọc cổ phong
+        # Tiền xử lý ngắt nhịp cổ phong
         words = text.split()
         processed_text = ""
         for i, word in enumerate(words):
@@ -51,20 +51,26 @@ def text_to_speech():
         output_filename = "speech_output.mp3"
         output_path = os.path.join(AUDIO_DIR, output_filename)
 
-        # Sử dụng Subprocess gọi CLI edge-tts trực tiếp (Tránh tuyệt đối lỗi Asyncio Event Loop trên Render)
-        cmd = [
-            "edge-tts",
-            "--text", processed_text,
-            "--voice", voice,
-            "--rate", rate,
-            "--pitch", pitch,
-            "--write-media", output_path
-        ]
+        async def generate_speech():
+            communicate = edge_tts.Communicate(processed_text, voice, rate=rate, pitch=pitch)
+            await communicate.save(output_path)
 
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-
-        if result.returncode != 0:
-            return jsonify({'error': f"Lỗi tạo âm thanh: {result.stderr}"}), 500
+        # Xử lý Event Loop an toàn cho mọi phiên bản Python trên Render
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # Nếu loop đang chạy, tạo task hoặc dùng run_until_complete qua loop mới
+                new_loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(new_loop)
+                new_loop.run_until_complete(generate_speech())
+                new_loop.close()
+            else:
+                loop.run_until_complete(generate_speech())
+        except RuntimeError:
+            new_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(new_loop)
+            new_loop.run_until_complete(generate_speech())
+            new_loop.close()
 
         return jsonify({
             'success': True, 
