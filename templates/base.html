@@ -1,1 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tông Môn Tu Luyện{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0; padding: 0;
+            background-color: #050505;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fef3c7; overflow-x: hidden;
+        }
+        .xianxia-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: url('https://image.pollinations.ai/prompt/xianxia%20golden%20temples%20monk%20cultivation%20mystic?width=1920&height=1080&nologo=true') center/cover no-repeat;
+            z-index: -1; filter: brightness(0.85) contrast(1.1);
+        }
+        .panel-3d {
+            background: rgba(12, 9, 7, 0.88);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(245, 158, 11, 0.45);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(245, 158, 11, 0.15);
+        }
+        .building-tab-btn {
+            background: linear-gradient(135deg, rgba(78, 30, 4, 0.9), rgba(133, 60, 12, 0.9));
+            border: 1px solid #f59e0b; color: #fef3c7;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+        .building-tab-btn.active, .building-tab-btn:hover {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            color: #ffffff; box-shadow: 0 0 25px rgba(245, 158, 11, 0.7);
+            transform: translateY(-4px) scale(1.02);
+        }
+    </style>
+</head>
+<body class="flex flex-col justify-between min-h-screen">
 
+    <div class="xianxia-bg"></div>
+
+    <!-- HEADER & NHẠC NỀN CỔ PHONG -->
+    <header class="relative z-20 bg-black/85 text-amber-200 border-b border-amber-600/40 backdrop-blur-md sticky top-0 shadow-2xl">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-dharmachakra text-amber-400 text-3xl animate-spin" style="animation-duration: 20s;"></i>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black tracking-widest text-amber-400">TÔNG MÔN TU LUYỆN</h1>
+                    <p class="text-[10px] text-amber-200/70">Cổ Tranh Sáo Trúc • Tiên Cảnh Diệu Âm</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-3 bg-amber-950/90 px-4 py-2 rounded-full border border-amber-500/60 shadow-xl">
+                <i class="fa-solid fa-compact-disc text-amber-400 animate-spin" id="disc-icon" style="animation-duration: 4s; animation-play-state: paused;"></i>
+                <div class="text-left hidden sm:block">
+                    <p class="text-[10px] text-amber-400 uppercase font-bold">Tiên Nhạc Cổ Phong:</p>
+                    <p id="song-title" class="text-xs font-bold text-amber-100 w-36 truncate">Thanh Phong Cổ Tranh</p>
+                </div>
+                <button onclick="toggleMusic()" id="music-btn" class="text-xs bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-3 py-1.5 rounded-full transition shadow">
+                    ▶ Phát Nhạc
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- THANH ĐIỀU HƯỚNG ĐIỆN CÁC -->
+    <div class="relative z-20 max-w-7xl mx-auto px-4 mt-6 w-full">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <a href="/" id="nav-home" class="building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center">
+                <i class="fa-solid fa-scroll text-amber-400"></i>
+                <span>Nghe Giảng Kinh</span>
+            </a>
+            <a href="/tang-kinh-cac" id="nav-tang" class="building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center">
+                <i class="fa-solid fa-book-journal-whills text-amber-400"></i>
+                <span>Tàng Kinh Các</span>
+            </a>
+            <a href="/che-tap-cac" id="nav-che" class="building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center">
+                <i class="fa-solid fa-hammer text-amber-400"></i>
+                <span>Chế Tạp Các (Tải Lên)</span>
+            </a>
+            <a href="/dong-phu" id="nav-dong" class="building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center">
+                <i class="fa-solid fa-torii-gate text-amber-400"></i>
+                <span>Động Phủ</span>
+            </a>
+            <a href="/bi-canh" id="nav-bi" class="building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center col-span-2 md:col-span-1">
+                <i class="fa-solid fa-gem text-amber-400"></i>
+                <span>Bí Cảnh Tu Luyện</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="relative z-20 max-w-7xl mx-auto px-4 my-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            {% block content %}{% endblock %}
+        </div>
+
+        <!-- THIÊN THƯ BẢNG (CỘT PHẢI CỐ ĐỊNH) -->
+        <div class="lg:col-span-1">
+            <div class="panel-3d rounded-2xl p-5 sticky top-20">
+                <div class="flex items-center space-x-2 border-b border-amber-600/50 pb-3 mb-4">
+                    <i class="fa-solid fa-trophy text-amber-400 text-xl"></i>
+                    <h2 class="font-black text-amber-300 text-base tracking-wider">THIÊN THƯ BẢNG</h2>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-2.5 bg-amber-950/90 border border-amber-500/70 rounded-xl">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-6 h-6 rounded-full bg-amber-500 text-black flex items-center justify-center font-black text-xs">1</span>
+                            <div>
+                                <p class="text-xs font-bold text-amber-200">Đế Tôn Tông Chủ</p>
+                                <p class="text-[10px] text-amber-400">Tác giả xuất sắc</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-black text-amber-400 bg-black/70 px-2 py-0.5 rounded-full border border-amber-500/50">99,999</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="relative z-20 bg-black/95 text-amber-200/70 text-center py-4 text-xs border-t border-amber-900/60">
+        <p>© 2026 Tông Môn Truyện - Tông Môn Đọc Truyện & Tu Luyện TTS.</p>
+    </footer>
+
+    <script>
+        const playlist = [
+            { title: "Thanh Phong Cổ Tranh", src: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=chinese-traditional-guzheng-relaxing-music-11003.mp3" },
+            { title: "Sáo Trúc Tiên Cảnh", src: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=soft-rain-ambient-111154.mp3" },
+            { title: "Cổ Cầm Tịch Mịch", src: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8b1a8c3d7.mp3?filename=zen-garden-meditation-10940.mp3" }
+        ];
+
+        let currentTrack = 0;
+        const bgAudio = new Audio(playlist[currentTrack].src);
+
+        bgAudio.onended = function() {
+            currentTrack = (currentTrack + 1) % playlist.length;
+            bgAudio.src = playlist[currentTrack].src;
+            document.getElementById('song-title').innerText = playlist[currentTrack].title;
+            bgAudio.play();
+        };
+
+        function toggleMusic() {
+            const btn = document.getElementById('music-btn');
+            const disc = document.getElementById('disc-icon');
+            if (bgAudio.paused) {
+                bgAudio.play();
+                btn.innerText = "⏸ Dừng Nhạc";
+                btn.classList.replace('bg-amber-500', 'bg-red-600');
+                disc.style.animationPlayState = 'running';
+            } else {
+                bgAudio.pause();
+                btn.innerText = "▶ Phát Nhạc";
+                btn.classList.replace('bg-red-600', 'bg-amber-500');
+                disc.style.animationPlayState = 'paused';
+            }
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
