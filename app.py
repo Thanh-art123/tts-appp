@@ -40,10 +40,12 @@ def text_to_speech():
         if not text:
             return jsonify({'error': 'Không có văn bản'}), 400
 
-        # Làm sạch giá trị pitch từ -50Hz đến 100Hz
-        pitch_cleaned = "".join([c for c in str(raw_pitch) if c.isdigit() or c in ['+', '-']])
-        pitch_val = int(pitch_cleaned) if pitch_cleaned else 0
-        pitch_val = max(-50, min(100, pitch_val)) # Giới hạn đúng chuẩn -50 đến 100
+        # Trích xuất số nguyên từ chuỗi pitch nhận được từ giao diện
+        pitch_str = "".join([c for c in str(raw_pitch) if c.isdigit() or c == '-'])
+        pitch_val = int(pitch_str) if pitch_str else 0
+        
+        # Giới hạn an toàn từ -50 đến 100
+        pitch_val = max(-50, min(100, pitch_val))
         pitch = f"{'+' if pitch_val > 0 else ''}{pitch_val}Hz"
 
         # Tiền xử lý ngắt nhịp cổ phong
