@@ -108,7 +108,7 @@
         </div>
     </div>
 
-    <!-- MAIN CONTENT (ĐƯỢC NẠP NGẦM KHÔNG TẢI LẠI TRANG) -->
+    <!-- MAIN CONTENT -->
     <main class="relative z-20 max-w-7xl mx-auto px-4 my-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6" id="main-content">
         <div class="lg:col-span-2 space-y-6">
             {% block content %}{% endblock %}
@@ -164,7 +164,6 @@
         <p>© 2026 Tông Môn Truyện - Tông Môn Đọc Truyện & Tu Luyện TTS.</p>
     </footer>
 
-    <!-- SCRIPT ĐIỀU HƯỚNG NẠC NGẦM AJAX & NHẠC XUYÊN SUỐT -->
     <script>
         const playlist = [
             { title: "Burlesque", src: "/static/music/Burlesque - National Sweetheart.mp3" },
@@ -178,48 +177,6 @@
 
         bgAudio.volume = 0.3;
         bgAudio.loop = true;
-
-        // Bắt sự kiện click các nút điều hướng để load ngầm (AJAX) không tắt nhạc
-        document.addEventListener('click', function(e) {
-            const link = e.target.closest('.nav-link');
-            if (link) {
-                e.preventDefault();
-                const url = link.getAttribute('href');
-                loadPageContent(url);
-            }
-        });
-
-        async function loadPageContent(url) {
-            try {
-                const response = await fetch(url);
-                const htmlText = await response.text();
-                
-                // Trích xuất phần nội dung <main> từ trang mới
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(htmlText, 'text/html');
-                const newMain = doc.querySelector('#main-content');
-                
-                if (newMain) {
-                    document.querySelector('#main-content').innerHTML = newMain.innerHTML;
-                    window.history.pushState({}, '', url);
-                    updateActiveNav(url);
-                } else {
-                    window.location.href = url; // Fallback nếu có lỗi
-                }
-            } catch (err) {
-                window.location.href = url;
-            }
-        }
-
-        function updateActiveNav(url) {
-            document.querySelectorAll('.nav-link').forEach(btn => {
-                if (btn.getAttribute('href') === url) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-        }
 
         bgAudio.onended = function() {
             currentTrack = (currentTrack + 1) % playlist.length;
