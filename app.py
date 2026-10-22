@@ -35,18 +35,9 @@ def text_to_speech():
         text = data.get('text', '')
         voice = data.get('voice', 'vi-VN-AnNeural')
         rate = data.get('rate', '+0%')
-        raw_pitch = data.get('pitch', '+0Hz')
 
         if not text:
             return jsonify({'error': 'Không có văn bản'}), 400
-
-        # Xử lý an toàn cao độ Hz từ -50 đến 100
-        pitch_str = "".join([c for c in str(raw_pitch) if c.isdigit() or c == '-'])
-        pitch_val = int(pitch_str) if pitch_str else 0
-        pitch_val = max(-50, min(100, pitch_val))
-        
-        # Nếu pitch bằng 0 thì để None để tránh hoàn toàn lỗi 'Invalid pitch 0Hz' của edge-tts
-        pitch = f"{'+' if pitch_val > 0 else ''}{pitch_val}Hz" if pitch_val != 0 else None
 
         # Tiền xử lý ngắt nhịp cổ phong
         words = text.split()
@@ -60,10 +51,8 @@ def text_to_speech():
         output_path = os.path.join(AUDIO_DIR, output_filename)
 
         async def generate_speech():
-            kwargs = {'rate': rate}
-            if pitch:
-                kwargs['pitch'] = pitch
-            communicate = edge_tts.Communicate(processed_text, voice, **kwargs)
+            # Chỉ truyền voice và rate chuẩn mực để tuyệt đối không bị Microsoft chặn 403
+            communicate = edge_tts.Communicate(processed_text, voice, rate=rate)
             await communicate.save(output_path)
 
         # Chạy bất đồng bộ an toàn trên Render
