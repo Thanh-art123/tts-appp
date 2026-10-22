@@ -1,1 +1,14 @@
-
+{% extends "base.html" %}
+{% block title %}Bí Cảnh Thử Thách{% endblock %}
+{% block content %}
+<div class="panel-3d rounded-2xl p-6">
+    <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 mb-4 flex items-center space-x-2">
+        <i class="fa-solid fa-gem text-amber-500"></i>
+        <span>Bí Cảnh Thử Thách</span>
+    </h2>
+    <div class="text-center py-10 text-amber-200/50 text-sm">
+        <p>Bí cảnh đang trong thời gian phong ấn...</p>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}<script>document.getElementById('nav-bi').classList.add('active');</script>{% endblock %}
