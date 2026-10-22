@@ -8,73 +8,84 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(to bottom, #f0fdf4, #e0f2fe, #fef3c7);
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 50%, #fef3c7 100%);
             background-attachment: fixed;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            perspective: 1000px;
+            perspective: 1200px;
         }
         .bamboo-bg {
-            background-image: radial-gradient(circle at 10% 20%, rgba(34, 197, 94, 0.08) 0%, transparent 20%),
-                              radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 20%);
+            background-image: radial-gradient(circle at 10% 20%, rgba(34, 197, 94, 0.1) 0%, transparent 25%),
+                              radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 25%);
+        }
+        /* Hiệu ứng Nổi Khối 3D Cho Giao Diện */
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+        }
+        .card-3d:hover {
+            transform: translateY(-6px) rotateX(2deg) rotateY(-2deg);
+            box-shadow: 0 20px 35px -5px rgba(4, 120, 87, 0.2), 0 12px 15px -5px rgba(0, 0, 0, 0.1);
         }
         .tab-btn.active {
-            background-color: #15803d;
+            background: linear-gradient(135deg, #059669, #047857);
             color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 15px -3px rgba(4, 120, 87, 0.4);
+            transform: translateZ(20px);
         }
         .sub-tab-btn.active-sub {
             background-color: #047857;
             color: white;
         }
-        /* Hiệu ứng 3D Lắc lư / Khởi động linh khí */
-        @keyframes float3D {
-            0% { transform: scale(1) rotateX(0deg) rotateY(0deg); }
-            50% { transform: scale(1.02) rotateX(2deg) rotateY(-2deg); filter: brightness(1.1); }
-            100% { transform: scale(1) rotateX(0deg) rotateY(0deg); }
+        /* Hiệu ứng khi đang vận công / tạo giọng */
+        @keyframes channeling {
+            0% { transform: scale(1) rotateX(0deg); }
+            50% { transform: scale(1.01) rotateX(3deg) rotateY(-3deg); filter: brightness(1.05); }
+            100% { transform: scale(1) rotateX(0deg); }
         }
-        .cultivating-3d {
-            animation: float3D 1s ease-in-out infinite;
-            transform-style: preserve-3d;
+        .channeling-effect {
+            animation: channeling 1.2s ease-in-out infinite;
         }
     </style>
 </head>
 <body class="bamboo-bg min-h-screen text-slate-800 flex flex-col justify-between">
 
-    <!-- HEADER & NHẠC NỀN -->
-    <header class="bg-emerald-900/90 text-amber-100 backdrop-blur-md sticky top-0 z-50 border-b-2 border-amber-500/50 shadow-md">
+    <!-- HEADER & NHẠC NỀN CỔ PHONG KHÔNG LỜI -->
+    <header class="bg-emerald-950/95 text-amber-100 backdrop-blur-md sticky top-0 z-50 border-b-2 border-amber-500/60 shadow-xl">
         <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <i class="fa-solid fa-tree text-emerald-400 text-2xl"></i>
-                <h1 class="text-xl md:text-2xl font-bold tracking-wide text-amber-300">TÔNG MÔN TU LUYỆN</h1>
+                <i class="fa-solid fa-seedling text-emerald-400 text-2xl animate-pulse"></i>
+                <h1 class="text-xl md:text-2xl font-bold tracking-wider text-amber-300 drop-shadow">TÔNG MÔN TU LUYỆN</h1>
             </div>
             
-            <div class="flex items-center space-x-2 bg-emerald-800/80 px-3 py-1.5 rounded-full border border-emerald-600">
-                <i class="fa-solid fa-wind text-amber-400 animate-pulse"></i>
-                <span class="text-xs font-medium hidden sm:inline text-emerald-100">Tiếng Tiên Cảnh:</span>
-                <audio id="bg-music" loop src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=soft-rain-ambient-111154.mp3"></audio>
-                <button onclick="toggleMusic()" id="music-btn" class="text-xs bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-2.5 py-1 rounded-full transition">
+            <div class="flex items-center space-x-2 bg-emerald-900/90 px-3.5 py-1.5 rounded-full border border-emerald-700 shadow-inner">
+                <i class="fa-solid fa-music text-amber-400"></i>
+                <span class="text-xs font-medium hidden sm:inline text-emerald-100">Cổ Tranh Thiền Định:</span>
+                <!-- Nhạc nền không lời du dương nhẹ nhàng -->
+                <audio id="bg-music" loop src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=chinese-traditional-guzheng-relaxing-music-11003.mp3"></audio>
+                <button onclick="toggleMusic()" id="music-btn" class="text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-1 rounded-full transition shadow">
                     ▶ Phát Nhạc
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- NAVIGATION TABS -->
+    <!-- NAVIGATION TABS (3D CARDS) -->
     <div class="max-w-6xl mx-auto px-4 mt-6 w-full">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 bg-white/80 p-2 rounded-2xl shadow-sm border border-emerald-200 backdrop-blur">
-            <button onclick="switchTab('nghe-giang')" id="tab-nghe-giang" class="tab-btn active text-sm font-bold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-emerald-800 hover:bg-emerald-100">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-white/70 p-2.5 rounded-2xl shadow-lg border border-emerald-200/80 backdrop-blur">
+            <button onclick="switchTab('nghe-giang')" id="tab-nghe-giang" class="tab-btn active text-sm font-bold py-3 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-emerald-900 hover:bg-emerald-100/60 card-3d">
                 <i class="fa-solid fa-torii-gate"></i>
                 <span>Tông Môn - Nghe Giảng</span>
             </button>
-            <button onclick="switchTab('tang-kinh-cac')" id="tab-tang-kinh-cac" class="tab-btn text-sm font-bold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-emerald-800 hover:bg-emerald-100">
+            <button onclick="switchTab('tang-kinh-cac')" id="tab-tang-kinh-cac" class="tab-btn text-sm font-bold py-3 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-emerald-900 hover:bg-emerald-100/60 card-3d">
                 <i class="fa-solid fa-book-bookmark"></i>
                 <span>Tàng Kinh Các</span>
             </button>
-            <button onclick="switchTab('tao-cong-phap')" id="tab-tao-cong-phap" class="tab-btn text-sm font-bold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-emerald-800 hover:bg-emerald-100">
+            <button onclick="switchTab('tao-cong-phap')" id="tab-tao-cong-phap" class="tab-btn text-sm font-bold py-3 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-emerald-900 hover:bg-emerald-100/60 card-3d">
                 <i class="fa-solid fa-file-arrow-up"></i>
                 <span>Tạo Công Pháp</span>
             </button>
-            <button onclick="switchTab('dong-phu')" id="tab-dong-phu" class="tab-btn text-sm font-bold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-emerald-800 hover:bg-emerald-100">
+            <button onclick="switchTab('dong-phu')" id="tab-dong-phu" class="tab-btn text-sm font-bold py-3 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-emerald-900 hover:bg-emerald-100/60 card-3d">
                 <i class="fa-solid fa-mountain-sun"></i>
                 <span>Động Phủ (Lịch Sử)</span>
             </button>
@@ -86,9 +97,9 @@
         
         <div class="lg:col-span-2 space-y-6">
 
-            <!-- 1. TÔNG MÔN - NGHE GIẢNG (TTS & AJAX TRỰC TIẾP) -->
-            <div id="sec-nghe-giang" class="tab-content bg-white/90 rounded-2xl p-6 shadow-xl border border-emerald-100 relative overflow-hidden transition-all duration-500">
-                <h2 class="text-lg font-bold text-emerald-900 border-b pb-2 mb-4 flex items-center space-x-2">
+            <!-- 1. TÔNG MÔN - NGHE GIẢNG (TTS TRỰC TIẾP, CHỌN GIỌNG, PITCH -200~200, DOWNLOAD) -->
+            <div id="sec-nghe-giang" class="tab-content card-3d bg-white/95 rounded-2xl p-6 border border-emerald-100 relative overflow-hidden transition-all">
+                <h2 class="text-lg font-bold text-emerald-950 border-b border-emerald-100 pb-3 mb-4 flex items-center space-x-2">
                     <i class="fa-solid fa-microphone-lines text-emerald-600"></i>
                     <span>Chuyển Văn Bản Thành Giọng Đọc & Nghe Giảng Audio</span>
                 </h2>
@@ -96,84 +107,104 @@
                 <form id="tts-form" onsubmit="handleTTS(event)" class="space-y-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-1">Nội dung truyện / Văn bản tu luyện:</label>
-                        <textarea id="tts-text" rows="5" placeholder="Nhập khẩu quyết hoặc nội dung truyện cần đọc vào đây..." class="w-full p-3 rounded-xl border border-emerald-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-emerald-50/30 text-slate-800" required></textarea>
+                        <textarea id="tts-text" rows="5" placeholder="Nhập khẩu quyết hoặc nội dung truyện cần đọc vào đây..." class="w-full p-3 rounded-xl border border-emerald-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-emerald-50/30 text-slate-800 shadow-inner" required></textarea>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-emerald-50/60 p-4 rounded-xl border border-emerald-200">
+                    <!-- CHỌN GIỌNG ĐỌC & THÔNG SỐ -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-emerald-50/70 p-4 rounded-xl border border-emerald-200">
                         <div>
-                            <div class="flex justify-between text-sm font-medium text-emerald-900 mb-1">
-                                <span>Tốc độ đọc (Rate):</span>
-                                <span id="rate-val" class="font-bold">0%</span>
-                            </div>
-                            <input type="range" min="-50" max="50" value="0" id="tts-rate" oninput="document.getElementById('rate-val').innerText = this.value + '%'" class="w-full accent-emerald-700">
+                            <label class="block text-xs font-bold text-emerald-900 mb-1">Chọn Giọng Tôn Giả:</label>
+                            <select id="tts-voice" class="w-full p-2.5 rounded-lg border border-emerald-300 bg-white text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="vi-VN-HoaiMyNeural">Hoài Mỹ (Nữ - Thanh thoát, dịu dàng)</option>
+                                <option value="vi-VN-NamMinhNeural">Nam Minh (Nam - Trầm ấm, uy nghiêm)</option>
+                            </select>
                         </div>
                         <div>
-                            <div class="flex justify-between text-sm font-medium text-emerald-900 mb-1">
-                                <span>Cao độ giọng (Pitch Hz):</span>
-                                <span id="pitch-val" class="font-bold">0Hz</span>
+                            <div class="flex justify-between text-xs font-bold text-emerald-900 mb-1">
+                                <span>Tốc độ đọc:</span>
+                                <span id="rate-val" class="font-extrabold text-emerald-700">0%</span>
                             </div>
-                            <input type="range" min="-50" max="50" value="0" id="tts-pitch" oninput="document.getElementById('pitch-val').innerText = this.value + 'Hz'" class="w-full accent-emerald-700">
+                            <input type="range" min="-50" max="50" value="0" id="tts-rate" oninput="document.getElementById('rate-val').innerText = this.value + '%'" class="w-full accent-emerald-700 mt-2">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-emerald-900 mb-1">
+                                <span>Cao độ (Hz: -200 đến 200):</span>
+                                <span id="pitch-val" class="font-extrabold text-emerald-700">0Hz</span>
+                            </div>
+                            <input type="range" min="-200" max="200" value="0" id="tts-pitch" oninput="document.getElementById('pitch-val').innerText = this.value + 'Hz'" class="w-full accent-emerald-700 mt-2">
                         </div>
                     </div>
 
-                    <button type="submit" id="submit-btn" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+                    <button type="submit" id="submit-btn" class="w-full bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-800 hover:to-teal-800 text-white font-bold py-3.5 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm tracking-wide">
                         <i class="fa-solid fa-wand-magic-sparkles"></i>
-                        <span>Khởi Tạo Giọng Đọc (Vận Công 3D)</span>
+                        <span>Khởi Tạo Giọng Đọc Tu Tiên</span>
                     </button>
                 </form>
 
-                <!-- KHU VỰC HIỂN THỊ KẾT QUẢ AUDIO TRỰC TIẾP -->
-                <div id="audio-result-container" class="mt-6 hidden p-4 bg-emerald-100/70 border border-emerald-300 rounded-xl">
-                    <p class="text-xs font-bold text-emerald-900 mb-2"><i class="fa-solid fa-volume-high"></i> Âm Thanh Đã Ngưng Tụ Thành Công:</p>
-                    <audio id="audio-player" controls class="w-full"></audio>
+                <!-- KHU VỰC PHÁT AUDIO TRỰC TIẾP & NÚT TẢI VỀ -->
+                <div id="audio-result-container" class="mt-6 hidden p-4 bg-emerald-100/80 border border-emerald-300 rounded-xl shadow-sm">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="text-xs font-extrabold text-emerald-900 flex items-center space-x-1">
+                            <i class="fa-solid fa-volume-high text-emerald-700"></i>
+                            <span>Âm Thanh Đã Ngưng Tụ Hoàn Thành:</span>
+                        </p>
+                        <!-- Nút Tải Về Máy -->
+                        <a id="download-btn" href="#" download="tu-tien-audio.mp3" class="text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-1.5 rounded-lg shadow transition flex items-center space-x-1">
+                            <i class="fa-solid fa-download"></i>
+                            <span>Tải Về Máy</span>
+                        </a>
+                    </div>
+                    <audio id="audio-player" controls class="w-full rounded-lg"></audio>
                 </div>
             </div>
 
-            <!-- 2. TÀNG KINH CÁC -->
-            <div id="sec-tang-kinh-cac" class="tab-content hidden bg-white/90 rounded-2xl p-6 shadow-xl border border-emerald-100">
-                <h2 class="text-lg font-bold text-emerald-900 border-b pb-2 mb-4 flex items-center space-x-2">
+            <!-- 2. TÀNG KINH CÁC (10 THUỘC TÍNH + TRỐNG) -->
+            <div id="sec-tang-kinh-cac" class="tab-content card-3d hidden bg-white/95 rounded-2xl p-6 border border-emerald-100">
+                <h2 class="text-lg font-bold text-emerald-950 border-b border-emerald-100 pb-3 mb-4 flex items-center space-x-2">
                     <i class="fa-solid fa-book-open text-amber-600"></i>
                     <span>Tàng Kinh Các - Kho Truyện Tu Luyện</span>
                 </h2>
 
                 <div class="flex space-x-2 border-b border-emerald-200 pb-3 mb-4">
-                    <button onclick="switchCategory('truyen-dich')" id="btn-truyen-dich" class="sub-tab-btn active-sub text-xs font-bold px-4 py-2 rounded-lg bg-slate-100 text-emerald-800 hover:bg-emerald-200 transition">
+                    <button onclick="switchCategory('truyen-dich')" id="btn-truyen-dich" class="sub-tab-btn active-sub text-xs font-bold px-4 py-2 rounded-lg bg-slate-100 text-emerald-900 hover:bg-emerald-200 transition">
                         📜 Truyện Dịch
                     </button>
-                    <button onclick="switchCategory('truyen-cover')" id="btn-truyen-cover" class="sub-tab-btn text-xs font-bold px-4 py-2 rounded-lg bg-slate-100 text-emerald-800 hover:bg-emerald-200 transition">
+                    <button onclick="switchCategory('truyen-cover')" id="btn-truyen-cover" class="sub-tab-btn text-xs font-bold px-4 py-2 rounded-lg bg-slate-100 text-emerald-900 hover:bg-emerald-200 transition">
                         ✨ Truyện Cover
                     </button>
                 </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-6">
-                    <button class="text-xs py-1.5 px-2 bg-amber-100/70 border border-amber-300 rounded-md font-bold text-amber-900">🟡 Kim</button>
-                    <button class="text-xs py-1.5 px-2 bg-emerald-100/70 border border-emerald-300 rounded-md font-bold text-emerald-900">🟢 Mộc</button>
-                    <button class="text-xs py-1.5 px-2 bg-blue-100/70 border border-blue-300 rounded-md font-bold text-blue-900">🔵 Thủy</button>
-                    <button class="text-xs py-1.5 px-2 bg-red-100/70 border border-red-300 rounded-md font-bold text-red-900">🔴 Hỏa</button>
-                    <button class="text-xs py-1.5 px-2 bg-yellow-100/70 border border-yellow-300 rounded-md font-bold text-yellow-900">🟤 Thổ</button>
-                    <button class="text-xs py-1.5 px-2 bg-purple-100/70 border border-purple-300 rounded-md font-bold text-purple-900">⚡ Lôi</button>
-                    <button class="text-xs py-1.5 px-2 bg-teal-100/70 border border-teal-300 rounded-md font-bold text-teal-900">🌪️ Phong</button>
-                    <button class="text-xs py-1.5 px-2 bg-cyan-100/70 border border-cyan-300 rounded-md font-bold text-cyan-900">❄️ Băng</button>
-                    <button class="text-xs py-1.5 px-2 bg-indigo-100/70 border border-indigo-300 rounded-md font-bold text-indigo-900">🌌 Không Gian</button>
-                    <button class="text-xs py-1.5 px-2 bg-rose-100/70 border border-rose-300 rounded-md font-bold text-rose-900">⏳ Thời Gian</button>
+                <!-- 10 THUỘC TÍNH -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-6">
+                    <button class="text-xs py-2 px-2 bg-amber-50 border border-amber-300 rounded-lg font-bold text-amber-900 hover:bg-amber-100 transition shadow-sm">🟡 Kim</button>
+                    <button class="text-xs py-2 px-2 bg-emerald-50 border border-emerald-300 rounded-lg font-bold text-emerald-900 hover:bg-emerald-100 transition shadow-sm">🟢 Mộc</button>
+                    <button class="text-xs py-2 px-2 bg-blue-50 border border-blue-300 rounded-lg font-bold text-blue-900 hover:bg-blue-100 transition shadow-sm">🔵 Thủy</button>
+                    <button class="text-xs py-2 px-2 bg-red-50 border border-red-300 rounded-lg font-bold text-red-900 hover:bg-red-100 transition shadow-sm">🔴 Hỏa</button>
+                    <button class="text-xs py-2 px-2 bg-yellow-50 border border-yellow-300 rounded-lg font-bold text-yellow-900 hover:bg-yellow-100 transition shadow-sm">🟤 Thổ</button>
+                    <button class="text-xs py-2 px-2 bg-purple-50 border border-purple-300 rounded-lg font-bold text-purple-900 hover:bg-purple-100 transition shadow-sm">⚡ Lôi</button>
+                    <button class="text-xs py-2 px-2 bg-teal-50 border border-teal-300 rounded-lg font-bold text-teal-900 hover:bg-teal-100 transition shadow-sm">🌪️ Phong</button>
+                    <button class="text-xs py-2 px-2 bg-cyan-50 border border-cyan-300 rounded-lg font-bold text-cyan-900 hover:bg-cyan-100 transition shadow-sm">❄️ Băng</button>
+                    <button class="text-xs py-2 px-2 bg-indigo-50 border border-indigo-300 rounded-lg font-bold text-indigo-900 hover:bg-indigo-100 transition shadow-sm">🌌 Không Gian</button>
+                    <button class="text-xs py-2 px-2 bg-rose-50 border border-rose-300 rounded-lg font-bold text-rose-900 hover:bg-rose-100 transition shadow-sm">⏳ Thời Gian</button>
                 </div>
 
-                <div class="text-center py-12 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-                    <i class="fa-solid fa-scroll text-4xl text-slate-300 mb-2"></i>
-                    <p class="text-slate-500 font-medium text-sm">Hiện tại chưa có truyện nào trong mục này.</p>
+                <div class="text-center py-12 border-2 border-dashed border-emerald-200 rounded-2xl bg-emerald-50/30">
+                    <i class="fa-solid fa-scroll text-4xl text-emerald-400 mb-2"></i>
+                    <p class="text-slate-600 font-medium text-sm">Mục này hiện đang trống, chờ đạo hữu tải bí kíp lên.</p>
                 </div>
             </div>
 
             <!-- 3. TẠO CÔNG PHÁP -->
-            <div id="sec-tao-cong-phap" class="tab-content hidden bg-white/90 rounded-2xl p-6 shadow-xl border border-emerald-100">
-                <h2 class="text-lg font-bold text-emerald-900 border-b pb-2 mb-4 flex items-center space-x-2">
+            <div id="sec-tao-cong-phap" class="tab-content card-3d hidden bg-white/95 rounded-2xl p-6 border border-emerald-100">
+                <h2 class="text-lg font-bold text-emerald-950 border-b border-emerald-100 pb-3 mb-4 flex items-center space-x-2">
                     <i class="fa-solid fa-cloud-arrow-up text-blue-600"></i>
                     <span>Tạo Công Pháp - Tải File Truyện Lên</span>
                 </h2>
 
-                <div class="border-2 border-dashed border-emerald-300 rounded-2xl p-8 text-center bg-emerald-50/20 hover:bg-emerald-50/50 transition">
+                <div class="border-2 border-dashed border-emerald-300 rounded-2xl p-8 text-center bg-emerald-50/30 hover:bg-emerald-50/60 transition shadow-inner">
                     <i class="fa-solid fa-file-circle-plus text-5xl text-emerald-600 mb-3"></i>
                     <p class="text-slate-700 font-medium">Kéo thả hoặc chọn file truyện từ máy tính của bạn</p>
+                    <p class="text-xs text-slate-500 mt-1">Hỗ trợ định dạng: .txt, .pdf, .docx</p>
                     <input type="file" id="file-upload" class="hidden" onchange="alert('Đã chọn file: ' + this.files[0].name)">
                     <label for="file-upload" class="inline-block mt-4 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm py-2.5 px-6 rounded-xl cursor-pointer shadow transition">
                         Chọn File Truyện
@@ -182,12 +213,12 @@
             </div>
 
             <!-- 4. ĐỘNG PHỦ -->
-            <div id="sec-dong-phu" class="tab-content hidden bg-white/90 rounded-2xl p-6 shadow-xl border border-emerald-100">
-                <h2 class="text-lg font-bold text-emerald-900 border-b pb-2 mb-4 flex items-center space-x-2">
+            <div id="sec-dong-phu" class="tab-content card-3d hidden bg-white/95 rounded-2xl p-6 border border-emerald-100">
+                <h2 class="text-lg font-bold text-emerald-950 border-b border-emerald-100 pb-3 mb-4 flex items-center space-x-2">
                     <i class="fa-solid fa-clock-rotate-left text-purple-600"></i>
                     <span>Động Phủ - Lịch Sử Tu Luyện</span>
                 </h2>
-                <div class="text-center py-8 text-slate-400 text-sm">
+                <div class="text-center py-10 text-slate-400 text-sm">
                     <i class="fa-solid fa-box-open text-3xl mb-2"></i>
                     <p>Chưa có lịch sử nghe truyện.</p>
                 </div>
@@ -195,23 +226,47 @@
 
         </div>
 
-        <!-- THIÊN THƯ BẢNG -->
+        <!-- THIÊN THƯ BẢNG (3D CARD) -->
         <div class="lg:col-span-1">
-            <div class="bg-gradient-to-b from-amber-50 to-white rounded-2xl p-5 shadow-xl border-2 border-amber-300/80 sticky top-20">
+            <div class="card-3d bg-gradient-to-b from-amber-50 via-white to-amber-50/50 rounded-2xl p-5 border-2 border-amber-300/80 sticky top-20">
                 <div class="flex items-center space-x-2 border-b-2 border-amber-400/50 pb-3 mb-4">
                     <i class="fa-solid fa-trophy text-amber-500 text-xl"></i>
-                    <h2 class="font-extrabold text-amber-900 text-base tracking-wide">THIÊN THƯ BẢNG</h2>
+                    <h2 class="font-extrabold text-amber-950 text-base tracking-wide">THIÊN THƯ BẢNG</h2>
                 </div>
+                <p class="text-xs text-amber-800/80 mb-4">Bảng thi đua cống hiến & cơ duyên cao nhất Tông Môn.</p>
+
                 <div class="space-y-3">
-                    <div class="flex items-center justify-between p-2.5 bg-amber-100/80 border border-amber-300 rounded-xl">
+                    <div class="flex items-center justify-between p-2.5 bg-amber-100/90 border border-amber-300 rounded-xl shadow-sm">
                         <div class="flex items-center space-x-2">
-                            <span class="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-xs">1</span>
+                            <span class="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-xs shadow">1</span>
                             <div>
                                 <p class="text-xs font-bold text-amber-950">Đế Tôn Tông Chủ</p>
                                 <p class="text-[10px] text-amber-700">Tác giả xuất sắc</p>
                             </div>
                         </div>
-                        <span class="text-xs font-extrabold text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded-full">99,999 Điểm</span>
+                        <span class="text-xs font-extrabold text-amber-900 bg-amber-200 px-2 py-0.5 rounded-full">99,999 Điểm</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl shadow-sm">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-6 h-6 rounded-full bg-slate-400 text-white flex items-center justify-center font-bold text-xs">2</span>
+                            <div>
+                                <p class="text-xs font-bold text-slate-800">Thái Thượng Trưởng Lão</p>
+                                <p class="text-[10px] text-slate-500">Cơ duyên thâm hậu</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-extrabold text-slate-700 bg-slate-200 px-2 py-0.5 rounded-full">88,500 Điểm</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-2.5 bg-amber-50/50 border border-amber-200 rounded-xl shadow-sm">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-6 h-6 rounded-full bg-amber-700 text-white flex items-center justify-center font-bold text-xs">3</span>
+                            <div>
+                                <p class="text-xs font-bold text-amber-900">Đạo Hữu Vô Danh</p>
+                                <p class="text-[10px] text-amber-600">Thính giả tích cực</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-extrabold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">66,200 Điểm</span>
                     </div>
                 </div>
             </div>
@@ -224,7 +279,7 @@
         <p>© 2026 Tông Môn Truyện - Tông Môn Đọc Truyện & Tu Luyện TTS.</p>
     </footer>
 
-    <!-- JAVASCRIPT XỬ LÝ 3D & AJAX TTS -->
+    <!-- JAVASCRIPT XỬ LÝ -->
     <script>
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -252,25 +307,27 @@
             }
         }
 
-        // Xử lý tạo TTS trực tiếp (Ajax) kèm hiệu ứng 3D
+        // Xử lý tạo TTS trực tiếp (Ajax)
         async function handleTTS(event) {
             event.preventDefault();
             const text = document.getElementById('tts-text').value;
+            const voice = document.getElementById('tts-voice').value;
             const rate = document.getElementById('tts-rate').value;
             const pitch = document.getElementById('tts-pitch').value;
             const cardBox = document.getElementById('sec-nghe-giang');
             const submitBtn = document.getElementById('submit-btn');
             const audioContainer = document.getElementById('audio-result-container');
             const audioPlayer = document.getElementById('audio-player');
+            const downloadBtn = document.getElementById('download-btn');
 
-            // Kích hoạt hiệu ứng 3D rung lắc ảo diệu
-            cardBox.classList.add('cultivating-3d');
-            submitBtn.innerText = "⚡ Đang Vận Công Ngưng Tụ Âm Thanh...";
+            cardBox.classList.add('channeling-effect');
+            submitBtn.innerText = "⚡ Đang Vận Công Ngưng Tụ Linh Khí...";
             submitBtn.disabled = true;
             audioContainer.classList.add('hidden');
 
             const formData = new URLSearchParams();
             formData.append('text', text);
+            formData.append('voice', voice);
             formData.append('rate', rate);
             formData.append('pitch', pitch);
 
@@ -287,14 +344,14 @@
                 const audioUrl = URL.createObjectURL(blob);
                 
                 audioPlayer.src = audioUrl;
+                downloadBtn.href = audioUrl;
                 audioContainer.classList.remove('hidden');
                 audioPlayer.play();
             } catch (error) {
                 alert("Lỗi: " + error.message);
             } finally {
-                // Tắt hiệu ứng 3D
-                cardBox.classList.remove('cultivating-3d');
-                submitBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> <span>Khởi Tạo Giọng Đọc (Vận Công 3D)</span>';
+                cardBox.classList.remove('channeling-effect');
+                submitBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> <span>Khởi Tạo Giọng Đọc Tu Tiên</span>';
                 submitBtn.disabled = false;
             }
         }
