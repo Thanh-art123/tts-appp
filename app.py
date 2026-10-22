@@ -41,7 +41,7 @@ def text_to_speech():
         if not text:
             return jsonify({'error': 'Không có văn bản'}), 400
 
-        # Tiền xử lý chèn nhịp đọc cổ phong
+        # Xử lý ngắt nhịp cổ phong
         words = text.split()
         processed_text = ""
         for i, word in enumerate(words):
@@ -56,7 +56,11 @@ def text_to_speech():
             communicate = edge_tts.Communicate(processed_text, voice, rate=rate, pitch=pitch)
             await communicate.save(output_path)
 
-        asyncio.run(generate_speech())
+        # Chạy async cho edge-tts
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(generate_speech())
+        loop.close()
 
         return jsonify({
             'success': True, 
@@ -66,4 +70,4 @@ def text_to_speech():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
