@@ -1,9 +1,19 @@
 import os
 import asyncio
-from flask import Flask, request, render_template_string, send_file
+from flask import (
+    Flask,
+    request,
+    render_template,
+    render_template_string,
+    send_file,
+)
 import edge_tts
 
 app = Flask(__name__)
+
+@app.route('/')
+def home():
+  return render_template('index.html')
 
 OUTPUT_FOLDER = 'outputs'
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
