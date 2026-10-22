@@ -2,138 +2,130 @@
 {% block title %}Nghe Giảng Kinh - Tông Môn Tu Luyện{% endblock %}
 
 {% block content %}
-<div class="panel-3d rounded-2xl p-6 relative">
-    <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 mb-4 flex items-center space-x-2">
-        <i class="fa-solid fa-feather-pointed"></i>
-        <span>Chuyển Văn Bản Thành Giọng Đọc Thần Âm</span>
+<div class="panel-3d rounded-2xl p-6 relative space-y-6">
+    <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
+        <i class="fa-solid fa-scroll text-amber-500"></i>
+        <span>Giảng Kinh Điện - Chọn Đa Dạng Giọng Đọc Tu Tiên</span>
     </h2>
 
-    <form id="tts-form" onsubmit="handleTTS(event)" class="space-y-4">
+    <div class="space-y-4">
         <div>
-            <label class="block text-xs font-semibold text-amber-200/90 mb-1">Khẩu quyết văn bản cần ngưng tụ:</label>
-            <textarea id="tts-text" rows="4" placeholder="Nhập nội dung truyện cần đọc..." class="w-full p-3 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none bg-black/75 text-amber-100 placeholder-amber-700/70 shadow-inner" required></textarea>
+            <label class="block text-xs font-semibold text-amber-200/90 mb-1">Nhập kinh văn / chương truyện cần ngâm tụng:</label>
+            <textarea id="tts-text" rows="5" placeholder="Nhập văn bản tại đây..." class="w-full p-3 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none bg-black/75 text-amber-100 placeholder-amber-700/70 shadow-inner" required></textarea>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-amber-950/60 p-3.5 rounded-xl border border-amber-700/50">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Chọn Chất Giọng Đa Dạng -->
             <div>
-                <label class="block text-xs font-bold text-amber-300 mb-1">Giọng Tôn Giả (Đổi trực tiếp):</label>
-                <select id="tts-voice" onchange="autoReGenerate()" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
-                    <option value="vi-VN-HoaiMyNeural">Hoài Mỹ (Nữ - Thanh thoát)</option>
-                    <option value="vi-VN-NamMinhNeural">Nam Minh (Nam - Uy nghiêm)</option>
+                <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Chất Giọng Đọc:</label>
+                <select id="voice-preset" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none" onchange="updateVoiceSettings()">
+                    <option value="hoaimy_soft">🌸 Nữ - Dịu Dàng Truyền Cảm (Mặc Định)</option>
+                    <option value="hoaimy_deep">🌹 Nữ - Trầm Mị / Thanh Nhã</option>
+                    <option value="namminh_deep">🧘‍♂️ Nam - Trầm Ấm / Lão Tôn Chân Nhân</option>
+                    <option value="namminh_hero">⚔ Nam - Uy Nghi / Khí Phách</option>
+                    <option value="baby_cute">👶 Giọng Em Bé / Đồng Tử</option>
+                    <option value="adam_style">🎙 Giọng Nam Tây Phương (Adam Style - Tiếng Anh)</option>
                 </select>
             </div>
+
+            <!-- Tùy Chỉnh Tốc Độ -->
             <div>
-                <div class="flex justify-between text-xs font-bold text-amber-300 mb-1">
-                    <span>Tốc độ đọc (Trực tiếp):</span>
-                    <span id="rate-val" class="text-amber-400">1.0x</span>
-                </div>
-                <input type="range" min="0.5" max="2.0" step="0.1" value="1.0" id="tts-rate" oninput="updateAudioRate(this.value)" class="w-full accent-amber-500 mt-2">
-            </div>
-            <div>
-                <div class="flex justify-between text-xs font-bold text-amber-300 mb-1">
-                    <span>Cao độ Hz (Đổi trực tiếp):</span>
-                    <span id="pitch-val" class="text-amber-400">0Hz</span>
-                </div>
-                <input type="range" min="-200" max="200" value="0" id="tts-pitch" onchange="autoReGenerate()" oninput="document.getElementById('pitch-val').innerText = this.value + 'Hz'" class="w-full accent-amber-500 mt-2">
+                <label class="block text-xs font-bold text-amber-300 mb-1">Tốc Độ Đọc:</label>
+                <select id="rate-select" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
+                    <option value="-15%">Chậm Rãi (-15%)</option>
+                    <option value="+0%" selected>Bình Thường (0%)</option>
+                    <option value="+15%">Nhanh (+15%)</option>
+                </select>
             </div>
         </div>
 
-        <button type="submit" id="submit-btn" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold py-3.5 rounded-xl shadow-2xl transition flex items-center justify-center space-x-2 text-sm">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-            <span>Vận Công Ngưng Tụ Âm Thanh</span>
+        <button onclick="speakText()" id="speak-btn" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold py-3.5 rounded-xl shadow-2xl transition flex items-center justify-center space-x-2 text-sm">
+            <i class="fa-solid fa-volume-high"></i>
+            <span>Khai Khẩu Ngâm Tụng (Phát Âm Thanh)</span>
         </button>
-    </form>
+    </div>
 
-    <div id="audio-result-container" class="mt-6 hidden p-4 bg-amber-950/95 border border-amber-500/70 rounded-xl shadow-2xl">
-        <div class="flex justify-between items-center mb-2">
-            <p class="text-xs font-bold text-amber-300 flex items-center space-x-2">
-                <i class="fa-solid fa-circle-check text-emerald-400"></i>
-                <span>Linh Âm Đã Tụ (Tự động đổi Giọng / Pitch Hz giữ nguyên vị trí đang nghe):</span>
-            </p>
-            <a id="download-btn" href="#" download="tu-tien-audio.mp3" class="text-xs bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-3 py-1.5 rounded-lg shadow transition flex items-center space-x-1">
-                <i class="fa-solid fa-download"></i>
-                <span>Tải Về Động Phủ</span>
-            </a>
-        </div>
-        <audio id="audio-player" controls class="w-full rounded-lg accent-amber-500"></audio>
+    <!-- Trình Phát Âm Thanh -->
+    <div id="tts-audio-container" class="hidden text-center space-y-3 pt-4 border-t border-amber-800/60">
+        <p class="text-xs font-bold text-amber-300 flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-circle-play text-emerald-400"></i>
+            <span>Âm Thanh Đã Được Khai Khẩu Mượt Ma!</span>
+        </p>
+        <audio id="tts-audio-player" controls class="w-full max-w-md mx-auto accent-amber-500 rounded-lg"></audio>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    document.getElementById('nav-home').classList.add('active');
+    let selectedVoice = "vi-VN-HoaiMyNeural";
+    let selectedPitch = "+0Hz";
 
-    function updateAudioRate(val) {
-        document.getElementById('rate-val').innerText = parseFloat(val).toFixed(1) + 'x';
-        const audioPlayer = document.getElementById('audio-player');
-        if (audioPlayer) {
-            audioPlayer.playbackRate = parseFloat(val);
+    function updateVoiceSettings() {
+        const preset = document.getElementById('voice-preset').value;
+        
+        if (preset === 'hoaimy_soft') {
+            selectedVoice = "vi-VN-HoaiMyNeural";
+            selectedPitch = "+0Hz";
+        } else if (preset === 'hoaimy_deep') {
+            selectedVoice = "vi-VN-HoaiMyNeural";
+            selectedPitch = "-6Hz"; // Hạ cao độ tạo giọng nữ trầm mị
+        } else if (preset === 'namminh_deep') {
+            selectedVoice = "vi-VN-NamMinhNeural";
+            selectedPitch = "-8Hz"; // Hạ cao độ sâu tạo giọng nam trầm lão tôn
+        } else if (preset === 'namminh_hero') {
+            selectedVoice = "vi-VN-NamMinhNeural";
+            selectedPitch = "+2Hz";
+        } else if (preset === 'baby_cute') {
+            selectedVoice = "vi-VN-HoaiMyNeural";
+            selectedPitch = "+12Hz"; // Tăng cao độ cao tạo giọng em bé/đồng tử
+        } else if (preset === 'adam_style') {
+            selectedVoice = "en-US-ChristopherNeural"; // Giọng nam trầm chuẩn Adam
+            selectedPitch = "-2Hz";
         }
     }
 
-    // Tự động tái ngưng tụ khi đổi Giọng hoặc kéo Pitch Hz mà không làm ngắt vị trí đang nghe
-    function autoReGenerate() {
-        const audioPlayer = document.getElementById('audio-player');
-        if (audioPlayer && !audioPlayer.paused && audioPlayer.src) {
-            const currentTime = audioPlayer.currentTime; // Lưu lại giây đang phát
-            handleTTS(null, currentTime);
-        }
-    }
+    async function speakText() {
+        const text = document.getElementById('tts-text').value.trim();
+        const rate = document.getElementById('rate-select').value;
+        const btn = document.getElementById('speak-btn');
+        const container = document.getElementById('tts-audio-container');
+        const player = document.getElementById('tts-audio-player');
 
-    async function handleTTS(event, preserveTime = 0) {
-        if (event) event.preventDefault();
-        
-        const text = document.getElementById('tts-text').value;
-        const voice = document.getElementById('tts-voice').value;
-        const rateVal = document.getElementById('tts-rate').value;
-        const ratePercent = Math.round((parseFloat(rateVal) - 1.0) * 100);
-        const pitch = document.getElementById('tts-pitch').value;
-        
-        const submitBtn = document.getElementById('submit-btn');
-        const audioContainer = document.getElementById('audio-result-container');
-        const audioPlayer = document.getElementById('audio-player');
-        const downloadBtn = document.getElementById('download-btn');
-
-        if (!preserveTime) {
-            submitBtn.innerText = "⚡ Đang Vận Công Ngưng Tụ Âm Thanh...";
-            submitBtn.disabled = true;
+        if (!text) {
+            alert("Xin hãy nhập văn bản cần ngâm tụng!");
+            return;
         }
 
-        const formData = new URLSearchParams();
-        formData.append('text', text);
-        formData.append('voice', voice);
-        formData.append('rate', ratePercent);
-        formData.append('pitch', pitch);
+        btn.innerText = "⏳ Đang khai khẩu ngâm tụng, xin chờ chốc lát...";
+        btn.disabled = true;
 
         try {
             const response = await fetch('/tts', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData.toString()
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    text: text, 
+                    voice: selectedVoice, 
+                    rate: rate, 
+                    pitch: selectedPitch 
+                })
             });
 
-            if (!response.ok) throw new Error("Lỗi ngưng tụ âm thanh từ server");
+            const resData = await response.json();
 
-            const blob = await response.blob();
-            const audioUrl = URL.createObjectURL(blob);
-            
-            audioPlayer.src = audioUrl;
-            downloadBtn.href = audioUrl;
-            audioContainer.classList.remove('hidden');
-            
-            audioPlayer.playbackRate = parseFloat(rateVal);
-            
-            // Nếu chuyển đổi khi đang phát, nhảy đến vị trí giây đang nghe dở
-            if (preserveTime > 0) {
-                audioPlayer.currentTime = preserveTime;
+            if (resData.success) {
+                player.src = resData.audio_url;
+                container.classList.remove('hidden');
+                player.play();
+            } else {
+                alert("Lỗi khai khẩu: " + resData.error);
             }
-            audioPlayer.play();
-        } catch (error) {
-            alert("Thất bại: " + error.message);
+        } catch (err) {
+            alert("Lỗi kết nối Tông Môn!");
         } finally {
-            submitBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> <span>Vận Công Ngưng Tụ Âm Thanh</span>';
-            submitBtn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> <span>Khai Khẩu Ngâm Tụng (Phát Âm Thanh)</span>';
+            btn.disabled = false;
         }
     }
 </script>
