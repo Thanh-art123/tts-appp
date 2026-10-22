@@ -40,12 +40,10 @@ def text_to_speech():
         if not text:
             return jsonify({'error': 'Không có văn bản'}), 400
 
-        # Trích xuất số nguyên từ chuỗi pitch nhận được từ giao diện
+        # Làm sạch giá trị pitch và giới hạn an toàn tuyệt đối (-10Hz đến +10Hz) để tránh lỗi 403 từ Bing
         pitch_str = "".join([c for c in str(raw_pitch) if c.isdigit() or c == '-'])
         pitch_val = int(pitch_str) if pitch_str else 0
-        
-        # Giới hạn an toàn từ -50 đến 100
-        pitch_val = max(-50, min(100, pitch_val))
+        pitch_val = max(-10, min(10, pitch_val)) # Giới hạn chống ban IP/WebSocket từ Microsoft
         pitch = f"{'+' if pitch_val > 0 else ''}{pitch_val}Hz"
 
         # Tiền xử lý ngắt nhịp cổ phong
