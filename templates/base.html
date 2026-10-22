@@ -42,7 +42,7 @@
 
     <div class="xianxia-bg"></div>
 
-    <!-- HEADER & NHẠC NỀN VÕ LÂM / KIẾM HIỆP NHẸ NHÀNG -->
+    <!-- HEADER & TRÌNH PHÁT NHẠC NỀN CÓ NÚT TẢI NHẠC RIÊNG -->
     <header class="relative z-20 bg-black/85 text-amber-200 border-b border-amber-600/40 backdrop-blur-md sticky top-0 shadow-2xl">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
@@ -53,23 +53,32 @@
                 </div>
             </div>
             
-            <!-- Trình Phát Nhạc Kiếm Hiệp / Võ Lâm Chi Mộng -->
-            <div class="flex items-center space-x-3 bg-amber-950/90 px-4 py-2 rounded-full border border-amber-500/60 shadow-xl">
+            <!-- Trình Bắt Nhạc & Tải Nhạc Lên Tùy Chỉnh -->
+            <div class="flex items-center space-x-2 sm:space-x-3 bg-amber-950/90 px-3 py-1.5 rounded-full border border-amber-500/60 shadow-xl">
                 <i class="fa-solid fa-compact-disc text-amber-400 animate-spin" id="disc-icon" style="animation-duration: 4s; animation-play-state: paused;"></i>
-                <div class="text-left hidden sm:block">
-                    <p class="text-[10px] text-amber-400 uppercase font-bold">Nhạc Nhẹ Võ Lâm:</p>
-                    <p id="song-title" class="text-xs font-bold text-amber-100 w-36 truncate">Tương Tư Khúc (Đàn Tranh)</p>
+                
+                <div class="text-left hidden md:block">
+                    <p class="text-[10px] text-amber-400 uppercase font-bold">Nhạc Nền Tu Luyện:</p>
+                    <p id="song-title" class="text-xs font-bold text-amber-100 w-28 truncate">Nhạc Mặc Định</p>
                 </div>
                 
-                <!-- Thanh trượt chỉnh âm lượng nhạc nền -->
-                <div class="flex items-center space-x-1.5 pl-2 border-l border-amber-700/50">
+                <!-- Thanh trượt chỉnh âm lượng -->
+                <div class="flex items-center space-x-1 pl-1 border-l border-amber-700/50">
                     <i class="fa-solid fa-volume-low text-amber-400 text-xs"></i>
-                    <input type="range" id="bg-volume" min="0" max="1" step="0.05" value="0.3" oninput="changeMusicVolume(this.value)" class="w-16 h-1.5 accent-amber-500 rounded-lg cursor-pointer" title="Âm lượng nhạc nền">
+                    <input type="range" id="bg-volume" min="0" max="1" step="0.05" value="0.3" oninput="changeMusicVolume(this.value)" class="w-12 sm:w-16 h-1.5 accent-amber-500 rounded-lg cursor-pointer" title="Âm lượng nhạc nền">
                 </div>
 
-                <button onclick="toggleMusic()" id="music-btn" class="text-xs bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-3 py-1.5 rounded-full transition shadow">
-                    ▶ Phát Nhạc
+                <!-- Nút phát nhạc -->
+                <button onclick="toggleMusic()" id="music-btn" class="text-xs bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-2.5 py-1 rounded-full transition shadow">
+                    ▶ Phát
                 </button>
+
+                <!-- Nút Tải Nhạc Riêng Từ Máy Tính/Điện Thoại -->
+                <input type="file" id="custom-bg-input" accept="audio/*" class="hidden" onchange="loadCustomMusic(event)">
+                <label for="custom-bg-input" class="text-xs bg-amber-900/80 hover:bg-amber-800 text-amber-200 border border-amber-500/60 font-bold px-2.5 py-1 rounded-full cursor-pointer transition shadow flex items-center space-x-1" title="Tải file nhạc mp3 chuẩn của bạn lên">
+                    <i class="fa-solid fa-upload"></i>
+                    <span class="hidden sm:inline">Tải Nhạc</span>
+                </label>
             </div>
         </div>
     </header>
@@ -134,54 +143,63 @@
         <p>© 2026 Tông Môn Truyện - Tông Môn Đọc Truyện & Tu Luyện TTS.</p>
     </footer>
 
-    <!-- SCRIPT PLAYLIST NHẠC VÕ LÂM CHI MỘNG / KIẾM HIỆP NHẸ NHÀNG -->
+    <!-- SCRIPT PHÁT NHẠC VÀ CHO PHÉP TẢI NHẠC NỀN TÙY CHỈNH -->
     <script>
-        // Playlist nhạc Đàn Tranh / Sáo Trúc / Cổ Cầm chuẩn Võ Lâm - Kiếm Hiệp êm dịu, không dồn dập
         const playlist = [
             { 
-                title: "Tương Tư Khúc (Đàn Tranh)", 
+                title: "Thanh Phong Thiền Định", 
                 src: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=chinese-traditional-guzheng-relaxing-music-11003.mp3" 
-            },
-            { 
-                title: "Lạc Diệp Yên Bình (Sáo Trúc)", 
-                src: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8b1a8c3d7.mp3?filename=zen-garden-meditation-10940.mp3" 
-            },
-            { 
-                title: "Thanh Phong Tịch Mịch (Cổ Cầm)", 
-                src: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=soft-rain-ambient-111154.mp3" 
             }
         ];
 
         let currentTrack = 0;
-        const bgAudio = new Audio(playlist[currentTrack].src);
-        bgAudio.volume = 0.3; // Mặc định để nhẹ nhàng 30%
+        let bgAudio = new Audio(playlist[currentTrack].src);
+        bgAudio.volume = 0.3;
+        bgAudio.loop = true; // Tự động lặp lại bản nhạc nền
 
-        // Thay đổi âm lượng trực tiếp từ thanh trượt
         function changeMusicVolume(val) {
             if (bgAudio) {
                 bgAudio.volume = parseFloat(val);
             }
         }
 
-        // Tự động phát bài tiếp theo khi kết thúc
-        bgAudio.onended = function() {
-            currentTrack = (currentTrack + 1) % playlist.length;
-            bgAudio.src = playlist[currentTrack].src;
-            document.getElementById('song-title').innerText = playlist[currentTrack].title;
-            bgAudio.play();
-        };
+        // Xử lý khi thính giả bấm Tải Nhạc Nền riêng (.mp3) từ máy
+        function loadCustomMusic(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const customUrl = URL.createObjectURL(file);
+                
+                // Dừng nhạc cũ nếu đang phát
+                bgAudio.pause();
+                
+                // Tạo audio mới từ file của người dùng
+                bgAudio = new Audio(customUrl);
+                bgAudio.volume = parseFloat(document.getElementById('bg-volume').value);
+                bgAudio.loop = true;
+                
+                document.getElementById('song-title').innerText = file.name;
+                
+                // Tự động phát bản nhạc người dùng vừa tải lên
+                bgAudio.play();
+                const btn = document.getElementById('music-btn');
+                const disc = document.getElementById('disc-icon');
+                btn.innerText = "⏸ Dừng";
+                btn.classList.replace('bg-amber-500', 'bg-red-600');
+                if (disc) disc.style.animationPlayState = 'running';
+            }
+        }
 
         function toggleMusic() {
             const btn = document.getElementById('music-btn');
             const disc = document.getElementById('disc-icon');
             if (bgAudio.paused) {
                 bgAudio.play();
-                btn.innerText = "⏸ Dừng Nhạc";
+                btn.innerText = "⏸ Dừng";
                 btn.classList.replace('bg-amber-500', 'bg-red-600');
                 if (disc) disc.style.animationPlayState = 'running';
             } else {
                 bgAudio.pause();
-                btn.innerText = "▶ Phát Nhạc";
+                btn.innerText = "▶ Phát";
                 btn.classList.replace('bg-red-600', 'bg-amber-500');
                 if (disc) disc.style.animationPlayState = 'paused';
             }
