@@ -1,12 +1,34 @@
 import os
+import re
 import asyncio
+from flask import Flask, render_template, request, send_file
 import edge_tts
-from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 
-AUDIO_DIR = os.path.join(app.static_folder, 'audio')
-os.makedirs(AUDIO_DIR, exist_ok=True)
+def add_xianxia_pauses(text):
+    """
+    Tự động ngắt nhịp tu tiên thông minh: cứ 12 - 15 từ sẽ chèn khoảng nghỉ
+    giúp thính giả nghe cuốn hút và đúng nhịp độ.
+    """
+    lines = text.split('\n')
+    processed_lines = []
+
+    for line in lines:
+        words = line.split()
+        if not words:
+            processed_lines.append('')
+            continue
+        
+        # Nhóm 13 từ thành 1 cụm ngắt nhịp
+        chunk_size = 13
+        chunks = [' '.join(words[i:i+chunk_size]) for i in range(0, len(words), chunk_size)]
+        
+        # Nối các cụm từ lại bằng khoảng dừng tự nhiên
+        line_processed = " ... ".join(chunks)
+        processed_lines.append(line_processed)
+
+    return " ... ... \n".join(processed_lines)
 
 @app.route('/')
 def home():
@@ -29,55 +51,32 @@ def bi_canh():
     return render_template('bi_canh.html')
 
 @app.route('/tts', methods=['POST'])
-def text_to_speech():
+def generate_tts():
     try:
-        data = request.json or {}
-        text = data.get('text', '')
-        voice = data.get('voice', 'vi-VN-AnNeural')
-        rate = data.get('rate', '+0%')
+        raw_text = request.form.get('text')
+        voice = request.form.get('voice') or "vi-VN-HoaiMyNeural"
+        rate = request.form.get('rate', '0')
+        pitch = request.form.get('pitch', '0')
 
-        if not text:
-            return jsonify({'error': 'Không có văn bản'}), 400
+        if not raw_text:
+            return "Vui lòng nhập nội dung văn bản!", 400
 
-        # Tiền xử lý ngắt nhịp cổ phong
-        words = text.split()
-        processed_text = ""
-        for i, word in enumerate(words):
-            processed_text += word + " "
-            if (i + 1) % 13 == 0:
-                processed_text += " ... "
+        # Áp dụng khuôn mẫu ngắt nhịp tu tiên cuốn hút
+        formatted_text = add_xianxia_pauses(raw_text)
 
-        output_filename = "speech_output.mp3"
-        output_path = os.path.join(AUDIO_DIR, output_filename)
+        rate_str = f"{int(rate):+d}%"
+        pitch_str = f"{int(pitch):+d}Hz"
+        output_file = "output.mp3"
 
-        async def generate_speech():
-            # Chỉ truyền voice và rate chuẩn mực để tuyệt đối không bị Microsoft chặn 403
-            communicate = edge_tts.Communicate(processed_text, voice, rate=rate)
-            await communicate.save(output_path)
+        async def main():
+            communicate = edge_tts.Communicate(formatted_text, voice, rate=rate_str, pitch=pitch_str)
+            await communicate.save(output_file)
 
-        # Chạy bất đồng bộ an toàn trên Render
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                new_loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(new_loop)
-                new_loop.run_until_complete(generate_speech())
-                new_loop.close()
-            else:
-                loop.run_until_complete(generate_speech())
-        except RuntimeError:
-            new_loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(new_loop)
-            new_loop.run_until_complete(generate_speech())
-            new_loop.close()
+        asyncio.run(main())
+        return send_file(output_file, mimetype="audio/mpeg")
 
-        return jsonify({
-            'success': True, 
-            'audio_url': f'/static/audio/{output_filename}?t={os.path.getmtime(output_path)}'
-        })
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return f"Lỗi khởi tạo giọng đọc: {str(e)}", 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=5000)
