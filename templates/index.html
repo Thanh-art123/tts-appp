@@ -23,24 +23,24 @@
             </select>
         </div>
 
-        <!-- BẢNG ĐIỀU CHỈNH THỦ CÔNG (-50Hz đến 100Hz & 0.9x đến 3.5x) -->
+        <!-- BẢNG ĐIỀU CHỈNH THỦ CÔNG -->
         <div class="p-4 bg-amber-950/40 border border-amber-600/40 rounded-xl space-y-4">
             <h3 class="text-xs font-extrabold text-amber-400 uppercase tracking-wider flex items-center space-x-2">
                 <i class="fa-solid fa-sliders text-amber-500"></i>
-                <span>Bảng Tinh Chỉnh Nâng Cao (-50Hz đến 100Hz | 0.9x - 3.5x)</span>
+                <span>Bảng Tinh Chỉnh Nâng Cao</span>
             </h3>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- Tùy chỉnh Cao độ Hz (-50 đến 100) -->
+                <!-- Tùy chỉnh Cao độ Hz -->
                 <div>
                     <div class="flex justify-between text-xs text-amber-200 mb-1">
                         <span>Cao Độ (Pitch Hz):</span>
                         <span id="pitch-val" class="font-bold text-amber-400">+0Hz</span>
                     </div>
-                    <input type="range" id="pitch-range" min="-50" max="100" step="1" value="0" oninput="updatePitchDisplay(this.value)" class="w-full h-1.5 accent-amber-500 rounded-lg cursor-pointer">
+                    <input type="range" id="pitch-range" min="-10" max="10" step="1" value="0" oninput="updatePitchDisplay(this.value)" class="w-full h-1.5 accent-amber-500 rounded-lg cursor-pointer">
                     <div class="flex justify-between text-[10px] text-amber-400/60 mt-0.5">
-                        <span>-50Hz (Trầm)</span>
-                        <span>+100Hz (Cao vút)</span>
+                        <span>-10Hz (Trầm)</span>
+                        <span>+10Hz (Cao)</span>
                     </div>
                 </div>
 
@@ -94,7 +94,7 @@
         
         const pitch = (pitchVal > 0 ? "+" : "") + pitchVal + "Hz";
         
-        // Quy đổi tỷ lệ x sang % của edge-tts (ví dụ: 1.0x -> +0%, 2.0x -> +100%, 3.5x -> +250%)
+        // Quy đổi tốc độ sang % chuẩn của edge-tts
         const ratePercentValue = Math.round((rateVal - 1.0) * 100);
         const rate = (ratePercentValue >= 0 ? "+" : "") + ratePercentValue + "%";
         
