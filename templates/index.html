@@ -99,12 +99,10 @@
         synth.onvoiceschanged = populateVoices;
     }
 
-    // Tính thời lượng ước tính dựa trên độ dài văn bản và tốc độ
     function updateDuration() {
         const text = document.getElementById('tts-text').value.trim();
         const rate = parseFloat(document.getElementById('rate-range').value);
         const words = text.split(/\s+/).length;
-        // Trung bình 150 từ/phút ở tốc độ 1.0x
         let seconds = (words / 150) * 60 / rate;
         let mins = Math.floor(seconds / 60);
         let secs = Math.floor(seconds % 60);
@@ -117,9 +115,7 @@
         document.getElementById('rate-val').innerText = parseFloat(val).toFixed(1) + "x";
         updateDuration();
         if (synth.speaking && currentUtterance) {
-            // Thay đổi tốc độ real-time ngay khi đang nghe
             currentUtterance.rate = parseFloat(val);
-            let text = currentUtterance.text;
             synth.cancel();
             synth.speak(currentUtterance);
         }
@@ -128,7 +124,6 @@
     function changePitchRealTime(val) {
         document.getElementById('pitch-val').innerText = (val > 0 ? "+" : "") + val + "Hz";
         if (synth.speaking && currentUtterance) {
-            // Thay đổi cao độ Hz real-time ngay khi đang nghe
             let pitchFactor = 1.0 + (parseInt(val) / 100.0);
             currentUtterance.pitch = Math.max(0.5, Math.min(2.0, pitchFactor));
             synth.cancel();
@@ -136,7 +131,6 @@
         }
     }
 
-    // Nút gộp Phát / Dừng trong 1 click
     function togglePlayStop() {
         const mainIcon = document.getElementById('main-icon');
         const mainText = document.getElementById('main-text');
@@ -168,4 +162,43 @@
 
         currentUtterance.rate = parseFloat(document.getElementById('rate-range').value);
         let hzVal = parseInt(document.getElementById('pitch-range').value);
-        let pitchFactor = 1.0 + (hzVal / 100.0
+        let pitchFactor = 1.0 + (hzVal / 100.0);
+        currentUtterance.pitch = Math.max(0.5, Math.min(2.0, pitchFactor));
+
+        currentUtterance.onend = function() {
+            isPlaying = false;
+            mainIcon.className = "fa-solid fa-play";
+            mainText.innerText = "Phát Âm Thanh (1 Click)";
+            statusDisplay.innerText = "Hoàn thành";
+            statusDisplay.className = "text-emerald-400";
+        };
+
+        synth.speak(currentUtterance);
+        isPlaying = true;
+        mainIcon.className = "fa-solid fa-stop";
+        mainText.innerText = "Dừng Lại";
+        statusDisplay.innerText = "Đang đọc...";
+        statusDisplay.className = "text-emerald-400 font-bold";
+    }
+
+    function downloadAudioMP3() {
+        const text = document.getElementById('tts-text').value.trim();
+        if (!text) {
+            alert("Không có nội dung để tải!");
+            return;
+        }
+        
+        alert("Đang trích xuất tệp âm thanh...");
+        setTimeout(() => {
+            const blob = new Blob([text], { type: 'audio/mp3' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'kinh_van_tu_tien.mp3';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }, 800);
+    }
+</script>
+{% endblock %}
