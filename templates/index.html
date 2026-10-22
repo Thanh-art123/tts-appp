@@ -19,8 +19,8 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         <div>
             <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Giọng Đọc:</label>
-            <select id="voice-select" class="w-full bg-black/90 text-amber-200 border border-amber-500/80 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-amber-400 shadow-inner cursor-pointer">
-                <option value="">Đang tải hệ thống giọng đọc...</option>
+            <select id="voice-select" onclick="loadVoices()" class="w-full bg-black/90 text-amber-200 border border-amber-500/80 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-amber-400 shadow-inner cursor-pointer">
+                <option value="">👉 Chạm vào đây để tải giọng đọc</option>
             </select>
         </div>
 
@@ -57,6 +57,7 @@
 <script>
     let synth = window.speechSynthesis;
     let voices = [];
+    let isLoaded = false;
 
     function loadVoices() {
         if (!synth) return;
@@ -64,10 +65,11 @@
         const voiceSelect = document.getElementById('voice-select');
         if (!voiceSelect) return;
 
-        if (voices.length > 0) {
+        if (voices.length > 0 && !isLoaded) {
+            isLoaded = true;
             voiceSelect.innerHTML = '';
             
-            // Sắp xếp đưa giọng tiếng Việt lên đầu danh sách cho tiện
+            // Sắp xếp đưa giọng tiếng Việt lên đầu danh sách
             voices.sort((a, b) => {
                 const isVietA = a.lang.toLowerCase().includes('vi');
                 const isVietB = b.lang.toLowerCase().includes('vi');
@@ -83,18 +85,20 @@
         }
     }
 
-    // Tải ngay lập tức và lắng nghe sự kiện thay đổi giọng trên mobile
-    loadVoices();
+    // Tự động kích hoạt khi chạm vào màn hình hoặc tương tác trên di động Vivo
+    window.addEventListener('click', loadVoices, { once: true });
+    window.addEventListener('touchstart', loadVoices, { once: true });
+
     if (synth) {
         if (synth.onvoiceschanged !== undefined) {
             synth.onvoiceschanged = loadVoices;
         }
-        // Thêm cơ chế quét lại sau 500ms cho các dòng điện thoại Vivo/Android tải chậm
-        setTimeout(loadVoices, 500);
-        setTimeout(loadVoices, 1500);
+        setTimeout(loadVoices, 300);
+        setTimeout(loadVoices, 1000);
     }
 
     function playTTS() {
+        loadVoices(); // Đảm bảo nạp giọng trước khi đọc
         const text = document.getElementById('tts-text').value;
         const rate = parseFloat(document.getElementById('tts-rate').value);
         const voiceIndex = document.getElementById('voice-select').value;
@@ -109,7 +113,6 @@
             synth.cancel();
         }
 
-        // Đảm bảo lấy lại danh sách giọng nếu mobile chưa kịp load ở lần đầu bấm
         if (voices.length === 0) {
             voices = synth.getVoices();
         }
@@ -118,7 +121,7 @@
         if (voices[voiceIndex]) {
             utterance.voice = voices[voiceIndex];
         } else if (voices.length > 0) {
-            utterance.voice = voices[0]; // Mặc định lấy giọng đầu tiên nếu chưa chọn
+            utterance.voice = voices[0];
         }
         utterance.rate = rate;
 
