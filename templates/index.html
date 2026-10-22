@@ -23,7 +23,7 @@
                 </select>
             </div>
 
-            <!-- Tốc độ đọc (0.8x đến 3.5x) - Thay đổi real-time ngay lúc nghe -->
+            <!-- Tốc độ đọc (0.8x đến 3.5x) -->
             <div>
                 <div class="flex justify-between text-xs text-amber-200 mb-1">
                     <span class="font-bold text-amber-300">Tốc độ đọc:</span>
@@ -78,4 +78,114 @@
             voices.forEach((voice, index) => {
                 const option = document.createElement('option');
                 option.value = index;
-                option.textContent = `${
+                option.textContent = `${voice.name} (${voice.lang})`;
+                voiceSelect.appendChild(option);
+            });
+        }
+    }
+
+    if (synth.onvoiceschanged !== undefined) {
+        synth.onvoiceschanged = populateVoices;
+    }
+
+    setTimeout(populateVoices, 100);
+    setTimeout(populateVoices, 500);
+
+    function updateDuration() {
+        const textEl = document.getElementById('tts-text');
+        const rateEl = document.getElementById('rate-range');
+        const durationEl = document.getElementById('duration-display');
+        if (!textEl || !rateEl || !durationEl) return;
+
+        const text = textEl.value.trim();
+        const rate = parseFloat(rateEl.value);
+        const words = text ? text.split(/\s+/).length : 0;
+        let seconds = (words / 150) * 60 / rate;
+        let mins = Math.floor(seconds / 60);
+        let secs = Math.floor(seconds % 60);
+        durationEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    const ttsTextEl = document.getElementById('tts-text');
+    if (ttsTextEl) {
+        ttsTextEl.addEventListener('input', updateDuration);
+        updateDuration();
+    }
+
+    function changeRateRealTime(val) {
+        document.getElementById('rate-val').innerText = parseFloat(val).toFixed(1) + "x";
+        updateDuration();
+        if (synth.speaking && currentUtterance) {
+            currentUtterance.rate = parseFloat(val);
+            synth.cancel();
+            synth.speak(currentUtterance);
+        }
+    }
+
+    function togglePlayStop() {
+        const mainIcon = document.getElementById('main-icon');
+        const mainText = document.getElementById('main-text');
+        const statusDisplay = document.getElementById('status-display');
+
+        if (synth.speaking && !synth.paused) {
+            synth.cancel();
+            mainIcon.className = "fa-solid fa-play";
+            mainText.innerText = "Phát Âm Thanh (1 Click)";
+            statusDisplay.innerText = "Đã dừng";
+            statusDisplay.className = "text-amber-400";
+            return;
+        }
+
+        const text = document.getElementById('tts-text').value.trim();
+        if (!text) {
+            alert("Xin hãy nhập nội dung cần đọc!");
+            return;
+        }
+
+        synth.cancel();
+
+        currentUtterance = new SpeechSynthesisUtterance(text);
+        const voiceIndex = document.getElementById('voice-select').value;
+        let voices = synth.getVoices();
+        if (voices[voiceIndex]) {
+            currentUtterance.voice = voices[voiceIndex];
+        }
+
+        currentUtterance.rate = parseFloat(document.getElementById('rate-range').value);
+        currentUtterance.pitch = 1.0;
+
+        currentUtterance.onend = function() {
+            mainIcon.className = "fa-solid fa-play";
+            mainText.innerText = "Phát Âm Thanh (1 Click)";
+            statusDisplay.innerText = "Hoàn thành";
+            statusDisplay.className = "text-emerald-400";
+        };
+
+        synth.speak(currentUtterance);
+        mainIcon.className = "fa-solid fa-stop";
+        mainText.innerText = "Dừng Lại";
+        statusDisplay.innerText = "Đang đọc...";
+        statusDisplay.className = "text-emerald-400 font-bold";
+    }
+
+    function downloadAudioMP3() {
+        const text = document.getElementById('tts-text').value.trim();
+        if (!text) {
+            alert("Không có nội dung để tải!");
+            return;
+        }
+        
+        alert("Đang trích xuất tệp âm thanh...");
+        setTimeout(() => {
+            const blob = new Blob([text], { type: 'audio/mp3' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'kinh_van_tu_tien.mp3';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }, 800);
+    }
+</script>
+{% endblock %}
