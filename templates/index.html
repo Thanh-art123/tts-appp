@@ -8,106 +8,111 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #0c0a09;
+            margin: 0;
+            padding: 0;
+            background-color: #050505;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fef3c7;
             overflow-x: hidden;
         }
 
-        /* KHÔNG GIAN TIÊN CẢNH 3D PARALLAX */
-        .xianxia-world {
-            position: relative;
-            min-height: 100vh;
-            background: url('https://image.pollinations.ai/prompt/xianxia%20golden%20temples%20monk%20cultivation%20mystic?width=1920&height=1080&nologo=true') center/cover no-repeat fixed;
-            perspective: 1000px;
-        }
-
-        .mist-overlay {
+        /* KHÔNG GIAN 3D TIÊN CẢNH CHUẨN XÁC THEO ẢNH MẪU */
+        .xianxia-bg {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at 50% 50%, rgba(217, 119, 6, 0.15) 0%, rgba(12, 10, 9, 0.85) 100%);
-            pointer-events: none;
-            z-index: 1;
+            top: 0; left: 0; width: 100%; height: 100vh;
+            background: url('https://image.pollinations.ai/prompt/xianxia%20golden%20temples%20monk%20cultivation%20mystic?width=1920&height=1080&nologo=true') center/cover no-repeat;
+            z-index: -1;
+            filter: brightness(0.85) contrast(1.1);
         }
 
-        .card-3d-panel {
+        /* KHỐI NỔI 3D HIỆU ỨNG TƯƠNG TÁC */
+        .panel-3d {
+            background: rgba(12, 9, 7, 0.82);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(245, 158, 11, 0.45);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(245, 158, 11, 0.15);
             transform-style: preserve-3d;
-            transition: all 0.4s ease;
-            background: rgba(20, 16, 13, 0.88);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(245, 158, 11, 0.35);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
-        }
-
-        .sect-building-btn {
-            background: linear-gradient(135deg, rgba(69, 26, 3, 0.9), rgba(120, 53, 15, 0.9));
-            border: 1px solid #f59e0b;
-            color: #fef3c7;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
             transition: all 0.3s ease;
         }
 
-        .sect-building-btn.active, .sect-building-btn:hover {
-            background: linear-gradient(135deg, #d97706, #b45309);
-            color: #ffffff;
-            box-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
-            transform: translateY(-3px) scale(1.02);
+        .panel-3d:hover {
+            border-color: rgba(251, 191, 36, 0.8);
+            box-shadow: 0 25px 50px rgba(245, 158, 11, 0.3), inset 0 0 30px rgba(245, 158, 11, 0.25);
         }
 
-        .sub-element-btn.active-sub {
-            background-color: #b45309;
+        /* NÚT CHUYỂN KHU VỰC ĐIỆN CÁC 3D */
+        .building-tab-btn {
+            background: linear-gradient(135deg, rgba(78, 30, 4, 0.9), rgba(133, 60, 12, 0.9));
+            border: 1px solid #f59e0b;
+            color: #fef3c7;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .building-tab-btn.active, .building-tab-btn:hover {
+            background: linear-gradient(135deg, #d97706, #b45309);
             color: #ffffff;
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.7);
+            transform: translateY(-4px) scale(1.02);
+        }
+
+        .sub-btn.active-sub {
+            background-color: #b45309;
+            color: #fff;
             border-color: #fef3c7;
         }
     </style>
 </head>
-<body class="text-amber-100 xianxia-world flex flex-col justify-between">
+<body class="flex flex-col justify-between min-h-screen">
 
-    <div class="mist-overlay"></div>
+    <div class="xianxia-bg"></div>
 
-    <!-- HEADER & NHẠC NỀN -->
-    <header class="relative z-10 bg-black/90 text-amber-200 border-b border-amber-600/40 backdrop-blur-md sticky top-0 shadow-2xl">
+    <!-- HEADER & TRÌNH PHÁT 3 BÀI NHẠC YOUTUBE AUDIO LIBRARY -->
+    <header class="relative z-20 bg-black/85 text-amber-200 border-b border-amber-600/40 backdrop-blur-md sticky top-0 shadow-2xl">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <i class="fa-solid fa-dharmachakra text-amber-500 text-3xl animate-spin" style="animation-duration: 15s;"></i>
+                <i class="fa-solid fa-dharmachakra text-amber-400 text-3xl animate-spin" style="animation-duration: 20s;"></i>
                 <div>
-                    <h1 class="text-xl md:text-2xl font-black tracking-widest text-amber-400">TÔNG MÔN TU LUYỆN</h1>
+                    <h1 class="text-xl md:text-2xl font-black tracking-widest text-amber-400 drop-shadow">TÔNG MÔN TU LUYỆN</h1>
                     <p class="text-[10px] text-amber-200/70">Tiên Cảnh Diệu Âm • Tàng Kinh Vô Lượng</p>
                 </div>
             </div>
             
-            <div class="flex items-center space-x-3 bg-amber-950/80 px-4 py-2 rounded-full border border-amber-500/50 shadow-lg">
-                <i class="fa-solid fa-compact-disc text-amber-400" id="disc-icon"></i>
+            <!-- Trình phát nhạc nền 3 bài chuẩn yêu cầu -->
+            <div class="flex items-center space-x-3 bg-amber-950/90 px-4 py-2 rounded-full border border-amber-500/60 shadow-xl">
+                <i class="fa-solid fa-compact-disc text-amber-400 animate-spin" id="disc-icon" style="animation-duration: 4s; animation-play-state: paused;"></i>
                 <div class="text-left hidden sm:block">
-                    <p class="text-[10px] text-amber-400/80 uppercase font-bold">Thần Âm Tông Môn:</p>
+                    <p class="text-[10px] text-amber-400 uppercase font-bold">Thần Âm Tông Môn:</p>
                     <p id="song-title" class="text-xs font-bold text-amber-100 w-32 truncate">Videodrome</p>
                 </div>
-                <button onclick="toggleMusic()" id="music-btn" class="text-xs bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-full transition shadow">
+                <button onclick="toggleMusic()" id="music-btn" class="text-xs bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-3 py-1.5 rounded-full transition shadow">
                     ▶ Phát Nhạc
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- NAVIGATION TABS -->
-    <div class="relative z-10 max-w-7xl mx-auto px-4 mt-6 w-full">
+    <!-- THANH ĐIỀU HƯỚNG CÁC ĐIỆN CÁC (3D) -->
+    <div class="relative z-20 max-w-7xl mx-auto px-4 mt-6 w-full">
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <button onclick="switchTab('nghe-giang')" id="tab-nghe-giang" class="sect-building-btn active text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 shadow-xl">
+            <button onclick="switchTab('nghe-giang')" id="tab-nghe-giang" class="building-tab-btn active text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2">
                 <i class="fa-solid fa-scroll text-amber-400"></i>
                 <span>Nghe Giảng Kinh</span>
             </button>
-            <button onclick="switchTab('tang-kinh-cac')" id="tab-tang-kinh-cac" class="sect-building-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 shadow-xl">
+            <button onclick="switchTab('tang-kinh-cac')" id="tab-tang-kinh-cac" class="building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2">
                 <i class="fa-solid fa-book-journal-whills text-amber-400"></i>
                 <span>Tàng Kinh Các</span>
             </button>
-            <button onclick="switchTab('tao-cong-phap')" id="tab-tao-cong-phap" class="sect-building-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 shadow-xl">
+            <button onclick="switchTab('tao-cong-phap')" id="tab-tao-cong-phap" class="building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2">
                 <i class="fa-solid fa-hammer text-amber-400"></i>
                 <span>Chế Tạp Các (Tải Lên)</span>
             </button>
-            <button onclick="switchTab('dong-phu')" id="tab-dong-phu" class="sect-building-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 shadow-xl">
+            <button onclick="switchTab('dong-phu')" id="tab-dong-phu" class="building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2">
                 <i class="fa-solid fa-torii-gate text-amber-400"></i>
                 <span>Động Phủ</span>
             </button>
-            <button onclick="switchTab('bi-canh')" id="tab-bi-canh" class="sect-building-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 shadow-xl col-span-2 md:col-span-1">
+            <button onclick="switchTab('bi-canh')" id="tab-bi-canh" class="building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 col-span-2 md:col-span-1">
                 <i class="fa-solid fa-gem text-amber-400"></i>
                 <span>Bí Cảnh Tu Luyện</span>
             </button>
@@ -115,27 +120,27 @@
     </div>
 
     <!-- MAIN CONTENT AREA -->
-    <main class="relative z-10 max-w-7xl mx-auto px-4 my-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <main class="relative z-20 max-w-7xl mx-auto px-4 my-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <div class="lg:col-span-2 space-y-6">
 
             <!-- 1. NGHE GIẢNG KINH (TTS) -->
-            <div id="sec-nghe-giang" class="tab-content card-3d-panel rounded-2xl p-6 relative">
-                <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/30 pb-3 mb-4 flex items-center space-x-2">
+            <div id="sec-nghe-giang" class="tab-content panel-3d rounded-2xl p-6 relative">
+                <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 mb-4 flex items-center space-x-2">
                     <i class="fa-solid fa-feather-pointed"></i>
                     <span>Chuyển Văn Bản Thành Giọng Đọc Thần Âm</span>
                 </h2>
 
                 <form id="tts-form" onsubmit="handleTTS(event)" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-semibold text-amber-200/80 mb-1">Khẩu quyết văn bản cần ngưng tụ:</label>
-                        <textarea id="tts-text" rows="5" placeholder="Nhập nội dung truyện cần đọc vào đây..." class="w-full p-3 rounded-xl border border-amber-600/40 focus:ring-2 focus:ring-amber-500 focus:outline-none bg-black/65 text-amber-100 placeholder-amber-700/60 shadow-inner" required></textarea>
+                        <label class="block text-xs font-semibold text-amber-200/90 mb-1">Khẩu quyết văn bản cần ngưng tụ:</label>
+                        <textarea id="tts-text" rows="4" placeholder="Nhập khẩu quyết hoặc nội dung truyện cần đọc vào đây..." class="w-full p-3 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none bg-black/75 text-amber-100 placeholder-amber-700/70 shadow-inner" required></textarea>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-amber-950/40 p-4 rounded-xl border border-amber-700/40">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-amber-950/60 p-3.5 rounded-xl border border-amber-700/50">
                         <div>
                             <label class="block text-xs font-bold text-amber-300 mb-1">Giọng Tôn Giả:</label>
-                            <select id="tts-voice" class="w-full p-2.5 rounded-lg border border-amber-600/50 bg-black text-xs font-semibold text-amber-200 outline-none">
+                            <select id="tts-voice" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
                                 <option value="vi-VN-HoaiMyNeural">Hoài Mỹ (Nữ - Thanh thoát)</option>
                                 <option value="vi-VN-NamMinhNeural">Nam Minh (Nam - Uy nghiêm)</option>
                             </select>
@@ -163,7 +168,7 @@
                 </form>
 
                 <!-- KHU VỰC PHÁT AUDIO TRỰC TIẾP -->
-                <div id="audio-result-container" class="mt-6 hidden p-4 bg-amber-950/90 border border-amber-500/60 rounded-xl shadow-2xl">
+                <div id="audio-result-container" class="mt-6 hidden p-4 bg-amber-950/95 border border-amber-500/70 rounded-xl shadow-2xl">
                     <div class="flex justify-between items-center mb-2">
                         <p class="text-xs font-bold text-amber-300 flex items-center space-x-2">
                             <i class="fa-solid fa-circle-check text-emerald-400"></i>
@@ -179,48 +184,48 @@
             </div>
 
             <!-- 2. TÀNG KINH CÁC -->
-            <div id="sec-tang-kinh-cac" class="tab-content card-3d-panel hidden rounded-2xl p-6">
-                <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/30 pb-3 mb-4 flex items-center space-x-2">
+            <div id="sec-tang-kinh-cac" class="tab-content panel-3d hidden rounded-2xl p-6">
+                <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 mb-4 flex items-center space-x-2">
                     <i class="fa-solid fa-book-bookmark text-amber-500"></i>
                     <span>Tàng Kinh Các - Kho Bí Kíp Tông Môn</span>
                 </h2>
 
-                <div class="flex space-x-2 border-b border-amber-600/30 pb-3 mb-4">
-                    <button onclick="switchCategory('truyen-dich')" id="btn-truyen-dich" class="sub-element-btn active-sub text-xs font-bold px-4 py-2 rounded-lg bg-black/60 border border-amber-600/40 text-amber-300 transition">
+                <div class="flex space-x-2 border-b border-amber-600/40 pb-3 mb-4">
+                    <button onclick="switchCategory('truyen-dich')" id="btn-truyen-dich" class="sub-btn active-sub text-xs font-bold px-4 py-2 rounded-lg bg-black/60 border border-amber-600/50 text-amber-300 transition">
                         📜 Truyện Dịch
                     </button>
-                    <button onclick="switchCategory('truyen-cover')" id="btn-truyen-cover" class="sub-element-btn text-xs font-bold px-4 py-2 rounded-lg bg-black/60 border border-amber-600/40 text-amber-300 transition">
+                    <button onclick="switchCategory('truyen-cover')" id="btn-truyen-cover" class="sub-btn text-xs font-bold px-4 py-2 rounded-lg bg-black/60 border border-amber-600/50 text-amber-300 transition">
                         ✨ Truyện Cover
                     </button>
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-6">
-                    <button class="text-xs py-2 px-2 bg-amber-950/60 border border-amber-500/50 rounded-lg font-bold text-amber-300">🟡 Kim</button>
-                    <button class="text-xs py-2 px-2 bg-emerald-950/60 border border-emerald-500/50 rounded-lg font-bold text-emerald-300">🟢 Mộc</button>
-                    <button class="text-xs py-2 px-2 bg-blue-950/60 border border-blue-500/50 rounded-lg font-bold text-blue-300">🔵 Thủy</button>
-                    <button class="text-xs py-2 px-2 bg-red-950/60 border border-red-500/50 rounded-lg font-bold text-red-300">🔴 Hỏa</button>
-                    <button class="text-xs py-2 px-2 bg-yellow-950/60 border border-yellow-500/50 rounded-lg font-bold text-yellow-300">🟤 Thổ</button>
-                    <button class="text-xs py-2 px-2 bg-purple-950/60 border border-purple-500/50 rounded-lg font-bold text-purple-300">⚡ Lôi</button>
-                    <button class="text-xs py-2 px-2 bg-teal-950/60 border border-teal-500/50 rounded-lg font-bold text-teal-300">🌪️ Phong</button>
-                    <button class="text-xs py-2 px-2 bg-cyan-950/60 border border-cyan-500/50 rounded-lg font-bold text-cyan-300">❄️ Băng</button>
-                    <button class="text-xs py-2 px-2 bg-indigo-950/60 border border-indigo-500/50 rounded-lg font-bold text-indigo-300">🌌 Không Gian</button>
-                    <button class="text-xs py-2 px-2 bg-rose-950/60 border border-rose-500/50 rounded-lg font-bold text-rose-300">⏳ Thời Gian</button>
+                    <button class="text-xs py-2 px-2 bg-amber-950/70 border border-amber-500/50 rounded-lg font-bold text-amber-300">🟡 Kim</button>
+                    <button class="text-xs py-2 px-2 bg-emerald-950/70 border border-emerald-500/50 rounded-lg font-bold text-emerald-300">🟢 Mộc</button>
+                    <button class="text-xs py-2 px-2 bg-blue-950/70 border border-blue-500/50 rounded-lg font-bold text-blue-300">🔵 Thủy</button>
+                    <button class="text-xs py-2 px-2 bg-red-950/70 border border-red-500/50 rounded-lg font-bold text-red-300">🔴 Hỏa</button>
+                    <button class="text-xs py-2 px-2 bg-yellow-950/70 border border-yellow-500/50 rounded-lg font-bold text-yellow-300">🟤 Thổ</button>
+                    <button class="text-xs py-2 px-2 bg-purple-950/70 border border-purple-500/50 rounded-lg font-bold text-purple-300">⚡ Lôi</button>
+                    <button class="text-xs py-2 px-2 bg-teal-950/70 border border-teal-500/50 rounded-lg font-bold text-teal-300">🌪️ Phong</button>
+                    <button class="text-xs py-2 px-2 bg-cyan-950/70 border border-cyan-500/50 rounded-lg font-bold text-cyan-300">❄️ Băng</button>
+                    <button class="text-xs py-2 px-2 bg-indigo-950/70 border border-indigo-500/50 rounded-lg font-bold text-indigo-300">🌌 Không Gian</button>
+                    <button class="text-xs py-2 px-2 bg-rose-950/70 border border-rose-500/50 rounded-lg font-bold text-rose-300">⏳ Thời Gian</button>
                 </div>
 
-                <div class="text-center py-12 border-2 border-dashed border-amber-600/30 rounded-2xl bg-black/40">
-                    <i class="fa-solid fa-scroll text-4xl text-amber-600/50 mb-2"></i>
-                    <p class="text-amber-200/60 text-sm">Mục này hiện đang trống, chờ đạo hữu tải công pháp lên.</p>
+                <div class="text-center py-12 border-2 border-dashed border-amber-600/40 rounded-2xl bg-black/50">
+                    <i class="fa-solid fa-scroll text-4xl text-amber-600/60 mb-2"></i>
+                    <p class="text-amber-200/70 text-sm">Mục này hiện đang trống, chờ đạo hữu tải công pháp lên.</p>
                 </div>
             </div>
 
             <!-- 3. CHẾ TẠP CÁC -->
-            <div id="sec-tao-cong-phap" class="tab-content card-3d-panel hidden rounded-2xl p-6">
-                <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/30 pb-3 mb-4 flex items-center space-x-2">
+            <div id="sec-tao-cong-phap" class="tab-content panel-3d hidden rounded-2xl p-6">
+                <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 mb-4 flex items-center space-x-2">
                     <i class="fa-solid fa-hammer text-amber-500"></i>
                     <span>Chế Tạp Các - Tải File Truyện Công Pháp</span>
                 </h2>
 
-                <div class="border-2 border-dashed border-amber-500/50 rounded-2xl p-8 text-center bg-black/50">
+                <div class="border-2 border-dashed border-amber-500/60 rounded-2xl p-8 text-center bg-black/60">
                     <i class="fa-solid fa-file-circle-plus text-5xl text-amber-500 mb-3"></i>
                     <p class="text-amber-200 font-medium">Kéo thả hoặc chọn file công pháp từ máy tính</p>
                     <input type="file" id="file-upload" class="hidden" onchange="alert('Đã tiếp nhận file: ' + this.files[0].name)">
@@ -231,24 +236,24 @@
             </div>
 
             <!-- 4. ĐỘNG PHỦ -->
-            <div id="sec-dong-phu" class="tab-content card-3d-panel hidden rounded-2xl p-6">
-                <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/30 pb-3 mb-4 flex items-center space-x-2">
+            <div id="sec-dong-phu" class="tab-content panel-3d hidden rounded-2xl p-6">
+                <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 mb-4 flex items-center space-x-2">
                     <i class="fa-solid fa-torii-gate text-amber-500"></i>
                     <span>Động Phủ Tu Luyện - Lịch Sử Ngộ Đạo</span>
                 </h2>
-                <div class="text-center py-10 text-amber-200/40 text-sm">
+                <div class="text-center py-10 text-amber-200/50 text-sm">
                     <i class="fa-solid fa-box-open text-3xl mb-2"></i>
                     <p>Chưa có thông tin lịch sử tu luyện.</p>
                 </div>
             </div>
 
             <!-- 5. BỈ CẢNH -->
-            <div id="sec-bi-canh" class="tab-content card-3d-panel hidden rounded-2xl p-6">
-                <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/30 pb-3 mb-4 flex items-center space-x-2">
+            <div id="sec-bi-canh" class="tab-content panel-3d hidden rounded-2xl p-6">
+                <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 mb-4 flex items-center space-x-2">
                     <i class="fa-solid fa-gem text-amber-500"></i>
                     <span>Bí Cảnh Thử Thách</span>
                 </h2>
-                <div class="text-center py-10 text-amber-200/40 text-sm">
+                <div class="text-center py-10 text-amber-200/50 text-sm">
                     <p>Bí cảnh đang trong thời gian phong ấn...</p>
                 </div>
             </div>
@@ -257,21 +262,21 @@
 
         <!-- THIÊN THƯ BẢNG -->
         <div class="lg:col-span-1">
-            <div class="card-3d-panel rounded-2xl p-5 sticky top-20">
-                <div class="flex items-center space-x-2 border-b border-amber-600/40 pb-3 mb-4">
+            <div class="panel-3d rounded-2xl p-5 sticky top-20">
+                <div class="flex items-center space-x-2 border-b border-amber-600/50 pb-3 mb-4">
                     <i class="fa-solid fa-trophy text-amber-400 text-xl"></i>
                     <h2 class="font-black text-amber-300 text-base tracking-wider">THIÊN THƯ BẢNG</h2>
                 </div>
                 <div class="space-y-3">
-                    <div class="flex items-center justify-between p-2.5 bg-amber-950/80 border border-amber-500/60 rounded-xl">
+                    <div class="flex items-center justify-between p-2.5 bg-amber-950/90 border border-amber-500/70 rounded-xl">
                         <div class="flex items-center space-x-2">
                             <span class="w-6 h-6 rounded-full bg-amber-500 text-black flex items-center justify-center font-black text-xs">1</span>
                             <div>
                                 <p class="text-xs font-bold text-amber-200">Đế Tôn Tông Chủ</p>
-                                <p class="text-[10px] text-amber-400/80">Tác giả xuất sắc</p>
+                                <p class="text-[10px] text-amber-400">Tác giả xuất sắc</p>
                             </div>
                         </div>
-                        <span class="text-xs font-black text-amber-400 bg-black/60 px-2 py-0.5 rounded-full border border-amber-500/40">99,999</span>
+                        <span class="text-xs font-black text-amber-400 bg-black/70 px-2 py-0.5 rounded-full border border-amber-500/50">99,999</span>
                     </div>
                 </div>
             </div>
@@ -280,13 +285,13 @@
     </main>
 
     <!-- FOOTER -->
-    <footer class="relative z-10 bg-black/90 text-amber-200/60 text-center py-4 text-xs border-t border-amber-900/50">
+    <footer class="relative z-20 bg-black/95 text-amber-200/70 text-center py-4 text-xs border-t border-amber-900/60">
         <p>© 2026 Tông Môn Truyện - Tông Môn Đọc Truyện & Tu Luyện TTS.</p>
     </footer>
 
-    <!-- JAVASCRIPT ĐIỀU HƯỞNG & XỬ LÝ ÂM THANH -->
+    <!-- JAVASCRIPT ĐIỀU HƯỞNG & PLAYLIST 3 BÀI NHẠC YOUTUBE -->
     <script>
-        // Playlist 3 bài nhạc
+        // Playlist 3 bài nhạc chuẩn từ Youtube Audio Library
         const playlist = [
             { title: "Videodrome", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
             { title: "Burlesque", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
@@ -295,25 +300,36 @@
 
         let currentTrack = 0;
         const bgAudio = new Audio(playlist[currentTrack].src);
-        bgAudio.loop = true;
+        bgAudio.loop = false;
+
+        // Tự động chuyển bài tiếp theo khi hết bài hiện tại trong playlist 3 bài
+        bgAudio.onended = function() {
+            currentTrack = (currentTrack + 1) % playlist.length;
+            bgAudio.src = playlist[currentTrack].src;
+            document.getElementById('song-title').innerText = playlist[currentTrack].title;
+            bgAudio.play();
+        };
 
         function toggleMusic() {
             const btn = document.getElementById('music-btn');
+            const disc = document.getElementById('disc-icon');
             if (bgAudio.paused) {
                 bgAudio.play();
                 btn.innerText = "⏸ Dừng Nhạc";
-                btn.classList.replace('bg-amber-600', 'bg-red-600');
+                btn.classList.replace('bg-amber-500', 'bg-red-600');
+                disc.style.animationPlayState = 'running';
             } else {
                 bgAudio.pause();
                 btn.innerText = "▶ Phát Nhạc";
-                btn.classList.replace('bg-red-600', 'bg-amber-600');
+                btn.classList.replace('bg-red-600', 'bg-amber-500');
+                disc.style.animationPlayState = 'paused';
             }
         }
 
-        // Chuyển Tab (Nút chuyển trang)
+        // Chuyển Tab điện các mượt mà
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.sect-building-btn').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.building-tab-btn').forEach(el => el.classList.remove('active'));
             
             const targetTab = document.getElementById('sec-' + tabName);
             const targetBtn = document.getElementById('tab-' + tabName);
@@ -323,11 +339,11 @@
         }
 
         function switchCategory(catName) {
-            document.querySelectorAll('.sub-element-btn').forEach(el => el.classList.remove('active-sub'));
+            document.querySelectorAll('.sub-btn').forEach(el => el.classList.remove('active-sub'));
             document.getElementById('btn-' + catName).classList.add('active-sub');
         }
 
-        // Xử lý tạo TTS qua Ajax trực tiếp không chuyển trang
+        // Xử lý tạo TTS qua Ajax trực tiếp
         async function handleTTS(event) {
             event.preventDefault();
             const text = document.getElementById('tts-text').value;
