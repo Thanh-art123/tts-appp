@@ -35,10 +35,16 @@ def text_to_speech():
         text = data.get('text', '')
         voice = data.get('voice', 'vi-VN-HoaiMyNeural')
         rate = data.get('rate', '+0%')
-        pitch = data.get('pitch', '+0Hz')
+        raw_pitch = data.get('pitch', '+0Hz')
 
         if not text:
             return jsonify({'error': 'Không có văn bản'}), 400
+
+        # Làm sạch và chuẩn hóa định dạng pitch cho edge-tts (ví dụ: +10Hz, -20Hz)
+        pitch_cleaned = "".join([c for c in str(raw_pitch) if c.isdigit() or c in ['+', '-']])
+        pitch = f"{pitch_cleaned}Hz" if pitch_cleaned else "+0Hz"
+        if not pitch.startswith('+') and not pitch.startswith('-'):
+            pitch = f"+{pitch}"
 
         # Tiền xử lý ngắt nhịp cổ phong
         words = text.split()
@@ -55,11 +61,10 @@ def text_to_speech():
             communicate = edge_tts.Communicate(processed_text, voice, rate=rate, pitch=pitch)
             await communicate.save(output_path)
 
-        # Xử lý Event Loop an toàn cho mọi phiên bản Python trên Render
+        # Chạy bất đồng bộ an toàn trên Render
         try:
             loop = asyncio.get_event_loop()
             if loop.is_running():
-                # Nếu loop đang chạy, tạo task hoặc dùng run_until_complete qua loop mới
                 new_loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(new_loop)
                 new_loop.run_until_complete(generate_speech())
