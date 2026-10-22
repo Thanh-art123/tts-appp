@@ -15,42 +15,32 @@
         <textarea id="tts-text" rows="5" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl p-3 text-sm focus:outline-none focus:border-amber-400 shadow-inner resize-none" placeholder="Nhập hoặc dán đoạn kinh văn, truyện tiên hiệp vào đây...">Một khoảng lặng kéo dài. Cuối cùng, giọng nói kia chỉ để lại hai chữ: Tạm biệt.</textarea>
     </div>
 
-    <!-- Thẻ Audio ẩn dùng chung cho di động -->
-    <audio id="tts-audio-player" class="hidden" controls></audio>
-
-    <!-- Tùy chọn Giọng đọc & Tốc độ -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-        <div>
-            <label class="block text-xs font-bold text-amber-300 mb-1">Nguồn Đọc Tiếng Việt:</label>
-            <select id="voice-select" class="w-full bg-black/90 text-amber-200 border border-amber-500/80 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-amber-400 shadow-inner cursor-pointer">
-                <option value="online_vi">⭐ Giọng Tiếng Việt Chuẩn (Tối ưu cho Vivo)</option>
-            </select>
-        </div>
-
-        <div>
-            <div class="flex justify-between items-center mb-1">
-                <label class="text-xs font-bold text-amber-300">Tốc độ đọc:</label>
-                <span id="rate-value" class="text-xs font-bold text-amber-400">1.0x</span>
-            </div>
-            <input type="range" id="tts-rate" min="0.5" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('rate-value').innerText = this.value + 'x'" class="w-full h-2 accent-amber-500 bg-black/80 rounded-lg cursor-pointer mt-2">
-        </div>
+    <!-- Trình Phát Âm Thanh hỗ trợ cả PC và Điện thoại Vivo -->
+    <div class="mb-4 bg-black/60 p-3 rounded-xl border border-amber-600/60">
+        <label class="block text-xs font-bold text-amber-400 mb-2">Trình Phát Âm Thanh (PC & Mobile):</label>
+        <audio id="tts-audio-player" class="w-full h-10 accent-amber-500" controls></audio>
     </div>
 
-    <!-- Trạng thái & Thời lượng -->
+    <!-- Tùy chọn Tốc độ -->
+    <div class="mb-5">
+        <div class="flex justify-between items-center mb-1">
+            <label class="text-xs font-bold text-amber-300">Tốc độ đọc:</label>
+            <span id="rate-value" class="text-xs font-bold text-amber-400">1.0x</span>
+        </div>
+        <input type="range" id="tts-rate" min="0.5" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('rate-value').innerText = this.value + 'x'" class="w-full h-2 accent-amber-500 bg-black/80 rounded-lg cursor-pointer mt-2">
+    </div>
+
+    <!-- Trạng thái -->
     <div class="flex justify-between items-center text-xs text-amber-300/80 mb-5 bg-black/40 px-3 py-2 rounded-xl border border-amber-700/40">
         <span>⏱ Thời lượng ước tính: <strong id="est-time" class="text-amber-400">00:06</strong></span>
         <span>Trạng thái: <strong id="tts-status" class="text-emerald-400">Sẵn sàng</strong></span>
     </div>
 
-    <!-- Nút điều khiển phát âm thanh -->
+    <!-- Nút điều khiển kết xuất âm thanh -->
     <div class="flex flex-col sm:flex-row gap-3">
-        <button onclick="playTTS()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold py-3 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm cursor-pointer">
-            <i class="fa-solid fa-play"></i>
-            <span>Phát Âm Thanh (1 Click)</span>
-        </button>
-        <button onclick="downloadTTS()" class="flex-1 bg-amber-600 hover:bg-amber-500 text-black font-extrabold py-3 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm cursor-pointer">
-            <i class="fa-solid fa-download"></i>
-            <span>Tải Nhạc (MP3)</span>
+        <button onclick="prepareTTS()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold py-3 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm cursor-pointer">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Kết Xuất Giọng Đọc (1 Click)</span>
         </button>
     </div>
 </div>
@@ -58,7 +48,7 @@
 
 {% block scripts %}
 <script>
-    function playTTS() {
+    function prepareTTS() {
         const text = document.getElementById('tts-text').value;
         const rate = parseFloat(document.getElementById('tts-rate').value);
         const statusEl = document.getElementById('tts-status');
@@ -69,7 +59,7 @@
             return;
         }
 
-        statusEl.innerText = "Đang kết xuất âm thanh...";
+        statusEl.innerText = "Đang kết xuất...";
         statusEl.className = "text-amber-400 font-bold animate-pulse";
 
         const encodedText = encodeURIComponent(text.substring(0, 300));
@@ -78,13 +68,8 @@
         audioPlayer.src = audioUrl;
         audioPlayer.playbackRate = rate;
         
-        audioPlayer.onplay = function() {
-            statusEl.innerText = "Đang tụng đọc...";
-            statusEl.className = "text-amber-400 font-bold animate-pulse";
-        };
-
-        audioPlayer.onended = function() {
-            statusEl.innerText = "Hoàn thành";
+        audioPlayer.oncanplaythrough = function() {
+            statusEl.innerText = "Đã sẵn sàng phát!";
             statusEl.className = "text-emerald-400 font-bold";
         };
 
@@ -93,19 +78,17 @@
             statusEl.className = "text-red-400 font-bold";
         };
 
+        audioPlayer.load();
+
+        // Tự động phát trên Máy tính, nếu điện thoại Vivo chặn thì thanh Controls có sẵn để người dùng nhấn Play trực tiếp
         audioPlayer.play().then(() => {
             statusEl.innerText = "Đang tụng đọc...";
             statusEl.className = "text-amber-400 font-bold animate-pulse";
         }).catch(e => {
-            console.error(e);
-            statusEl.innerText = "Bị chặn phát âm thanh";
-            statusEl.className = "text-red-400 font-bold";
-            alert("Trình duyệt điện thoại Vivo đang khóa quyền phát. Đạo hữu hãy chạm nhẹ vào màn hình bất kỳ một lần rồi bấm Phát lại nhé!");
+            console.log("Autoplay restricted:", e);
+            statusEl.innerText = "Hãy bấm nút Play trên thanh phát!";
+            statusEl.className = "text-amber-300 font-bold";
         });
-    }
-
-    function downloadTTS() {
-        alert("Tính năng xuất file âm thanh độc lập đang được kết xuất trong động phủ. Đạo hữu vui lòng dùng nút Phát Âm Thanh trực tiếp nhé!");
     }
 </script>
 {% endblock %}
