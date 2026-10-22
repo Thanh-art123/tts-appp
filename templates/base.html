@@ -56,7 +56,7 @@
             <div class="flex items-center space-x-2 sm:space-x-3 bg-amber-950/90 px-3 py-1.5 rounded-full border border-amber-500/60 shadow-xl">
                 <i class="fa-solid fa-compact-disc text-amber-400 animate-spin" id="disc-icon" style="animation-duration: 4s; animation-play-state: paused;"></i>
                 
-                <!-- ẤN VÀO TÀI NGUYÊN ĐỂ MỞ KHO NHẠC TẢI LÊN -->
+                <!-- ẤN VÀO TÀI NGUYÊN ĐỂ MỞ KHO NHẠC TÔNG MÔN -->
                 <div class="text-left cursor-pointer group" onclick="openResourceModal()" title="Ấn vào đây để mở Kho Nhạc Tài Nguyên">
                     <p class="text-[10px] text-amber-400 font-extrabold uppercase tracking-wider group-hover:underline flex items-center space-x-1">
                         <span>TÀI NGUYÊN:</span>
@@ -167,7 +167,7 @@
         <p>© 2026 Tông Môn Truyện - Tông Môn Đọc Truyện & Tu Luyện TTS.</p>
     </footer>
 
-    <!-- SCRIPT XỬ LÝ KHO NHẠC TÀI NGUYÊN -->
+    <!-- SCRIPT XỬ LÝ KHO NHẠC TÀI NGUYÊN & TỰ LẶP LẠI -->
     <script>
         const playlist = [
             { title: "Burlesque", src: "/static/music/Burlesque - National Sweetheart.mp3" },
@@ -178,6 +178,7 @@
         let currentTrack = 0;
         let bgAudio = new Audio(playlist[currentTrack].src);
         bgAudio.volume = 0.3;
+        bgAudio.loop = true; // Tự động lặp lại bài nhạc
 
         bgAudio.onended = function() {
             currentTrack = (currentTrack + 1) % playlist.length;
@@ -195,6 +196,7 @@
             bgAudio.pause();
             bgAudio = new Audio(playlist[index].src);
             bgAudio.volume = parseFloat(document.getElementById('bg-volume').value);
+            bgAudio.loop = true; // Duy trì lặp lại cho bài tiếp theo
             document.getElementById('song-title').innerText = playlist[index].title;
             
             bgAudio.play().then(() => {
