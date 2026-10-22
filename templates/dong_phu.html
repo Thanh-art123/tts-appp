@@ -1,1 +1,15 @@
-
+{% extends "base.html" %}
+{% block title %}Động Phủ Tu Luyện{% endblock %}
+{% block content %}
+<div class="panel-3d rounded-2xl p-6">
+    <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 mb-4 flex items-center space-x-2">
+        <i class="fa-solid fa-torii-gate text-amber-500"></i>
+        <span>Động Phủ Tu Luyện - Lịch Sử Ngộ Đạo</span>
+    </h2>
+    <div class="text-center py-10 text-amber-200/50 text-sm">
+        <i class="fa-solid fa-box-open text-3xl mb-2"></i>
+        <p>Chưa có thông tin lịch sử tu luyện.</p>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}<script>document.getElementById('nav-dong').classList.add('active');</script>{% endblock %}
