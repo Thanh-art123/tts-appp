@@ -35,16 +35,9 @@ def text_to_speech():
         text = data.get('text', '')
         voice = data.get('voice', 'vi-VN-HoaiMyNeural')
         rate = data.get('rate', '+0%')
-        raw_pitch = data.get('pitch', '+0Hz')
 
         if not text:
             return jsonify({'error': 'Không có văn bản'}), 400
-
-        # Làm sạch giá trị pitch và giới hạn an toàn tuyệt đối (-10Hz đến +10Hz) để tránh lỗi 403 từ Bing
-        pitch_str = "".join([c for c in str(raw_pitch) if c.isdigit() or c == '-'])
-        pitch_val = int(pitch_str) if pitch_str else 0
-        pitch_val = max(-10, min(10, pitch_val)) # Giới hạn chống ban IP/WebSocket từ Microsoft
-        pitch = f"{'+' if pitch_val > 0 else ''}{pitch_val}Hz"
 
         # Tiền xử lý ngắt nhịp cổ phong
         words = text.split()
@@ -58,7 +51,7 @@ def text_to_speech():
         output_path = os.path.join(AUDIO_DIR, output_filename)
 
         async def generate_speech():
-            communicate = edge_tts.Communicate(processed_text, voice, rate=rate, pitch=pitch)
+            communicate = edge_tts.Communicate(processed_text, voice, rate=rate)
             await communicate.save(output_path)
 
         # Chạy bất đồng bộ an toàn trên Render
