@@ -5,38 +5,39 @@
 <div class="panel-3d rounded-2xl p-6 relative space-y-6">
     <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
         <i class="fa-solid fa-hammer text-amber-500 animate-bounce"></i>
-        <span>Chế Tạp Các - Luyện Chế Pháp Bảo & Linh Cảnh (AI Tạo Ảnh)</span>
+        <span>Chế Tạp Các - Luyện Chế Linh Cảnh Trừu Tượng (Flux.1 AI Engine)</span>
     </h2>
 
     <!-- Form Nhập Mô Tả Luyện Khí -->
     <div class="space-y-4">
         <div>
-            <label class="block text-xs font-semibold text-amber-200/90 mb-1">Khẩu quyết/Mô tả pháp bảo hoặc cảnh giới cần luyện chế (Tiếng Anh hoặc Tiếng Việt):</label>
-            <textarea id="prompt-input" rows="3" placeholder="Ví dụ: A majestic floating immortal sword surrounded by blue lightning, xianxia style, 4k..." class="w-full p-3 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none bg-black/75 text-amber-100 placeholder-amber-700/70 shadow-inner" required></textarea>
+            <label class="block text-xs font-semibold text-amber-200/90 mb-1">Khẩu quyết/Mô tả cảnh giới hoặc pháp bảo (Ví dụ: Trận pháp vô hình, kiếm ý trừu tượng...):</label>
+            <textarea id="prompt-input" rows="3" placeholder="Ví dụ: Abstract cosmic energy, glowing golden crystals, surreal ink painting, ultra sharp details, 8k resolution..." class="w-full p-3 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none bg-black/75 text-amber-100 placeholder-amber-700/70 shadow-inner" required></textarea>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-                <label class="block text-xs font-bold text-amber-300 mb-1">Loại Phẩm Vật Luyện Khí:</label>
+                <label class="block text-xs font-bold text-amber-300 mb-1">Phong Cách Nghệ Thuật:</label>
                 <select id="style-select" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
-                    <option value="xianxia mystic floating island landscape, cinematic lighting">Cảnh Giới / Động Phủ</option>
-                    <option value="legendary xianxia glowing magical treasure weapon, detailed artifact">Pháp Bảo / Thần Kiếm</option>
-                    <option value="powerful xianxia cultivation master meditating with glowing aura">Đạo Sĩ / Tôn Giả</option>
-                    <option value="mythical divine beast xianxia dragon phoenix creature">Thần Thú / Linh Thú</option>
+                    <option value="abstract surrealism, fine art, sharp vector lines, mystical aura, masterpiece">Trừu Tượng Vô Thượng (Abstract Surreal)</option>
+                    <option value="surreal dark fantasy, intricate gold filigree, high contrast, sharp details">Huyền Ảo Tối Tân (Dark Fantasy Art)</option>
+                    <option value="traditional chinese ink wash painting mixed with neon glowing energy, sharp focus">Thủy Mặc Trừu Tượng (Surreal Ink)</option>
+                    <option value="cinematic render, crystalline structure, glowing sacred geometry, hyper-detailed">Tinh Thể Trận Pháp (Sacred Geometry)</option>
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-bold text-amber-300 mb-1">Độ Phân Giải Linh Cảnh:</label>
-                <select id="size-select" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
-                    <option value="1024x1024">Chuẩn Cao Cấp (1024x1024)</option>
-                    <option value="768x768">Chuẩn Thường (768x768)</option>
+                <label class="block text-xs font-bold text-amber-300 mb-1">Mô Hình AI (AI Engine):</label>
+                <select id="model-select" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
+                    <option value="flux">Flux.1 (Siêu Nét & Chi Tiết Nghệ Thuật)</option>
+                    <option value="flux-realism">Flux Realism (Chân Thực & Sắc Cạnh)</option>
+                    <option value="turbo">SDXL Turbo (Tốc Độ Nhanh)</option>
                 </select>
             </div>
         </div>
 
         <button onclick="generateArtifact()" id="craft-btn" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold py-3.5 rounded-xl shadow-2xl transition flex items-center justify-center space-x-2 text-sm">
             <i class="fa-solid fa-fire-flame-curved"></i>
-            <span>Khai Lô Luyện Khí (Tạo Ảnh AI)</span>
+            <span>Khai Lô Luyện Khí (Tạo Ảnh Flux.1 AI)</span>
         </button>
     </div>
 
@@ -44,15 +45,15 @@
     <div id="result-container" class="hidden text-center space-y-4 pt-4 border-t border-amber-800/60">
         <p class="text-xs font-bold text-amber-300 flex items-center justify-center space-x-2">
             <i class="fa-solid fa-circle-check text-emerald-400"></i>
-            <span>Pháp Bảo / Linh Cảnh Đã Luyện Thành Công!</span>
+            <span>Linh Cảnh Trừu Tượng Đã Luyện Thành Công!</span>
         </p>
         <div class="relative inline-block overflow-hidden rounded-2xl border-2 border-amber-500 shadow-2xl bg-black">
             <img id="output-image" src="" alt="Linh Ảnh Pháp Bảo" class="max-w-full h-auto mx-auto max-h-[500px] object-contain">
         </div>
         <div>
-            <a id="download-img-btn" href="#" download="phap-bao-tu-tien.jpg" target="_blank" class="inline-flex items-center space-x-2 bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-5 py-2.5 rounded-xl shadow transition text-xs">
+            <a id="download-img-btn" href="#" download="linh-canh-tu-tien.jpg" target="_blank" class="inline-flex items-center space-x-2 bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-5 py-2.5 rounded-xl shadow transition text-xs">
                 <i class="fa-solid fa-download"></i>
-                <span>Thu Thuập Pháp Bảo Về Động Phủ</span>
+                <span>Thu Thuập Linh Ảnh Về Động Phủ</span>
             </a>
         </div>
     </div>
@@ -61,7 +62,6 @@
 
 {% block scripts %}
 <script>
-    // Đánh dấu menu active
     document.addEventListener("DOMContentLoaded", function() {
         const navChe = document.getElementById('nav-che');
         if(navChe) navChe.classList.add('active');
@@ -70,7 +70,7 @@
     async function generateArtifact() {
         const textPrompt = document.getElementById('prompt-input').value.trim();
         const styleSelect = document.getElementById('style-select').value;
-        const sizeSelect = document.getElementById('size-select').value;
+        const modelSelect = document.getElementById('model-select').value;
         const craftBtn = document.getElementById('craft-btn');
         const resultContainer = document.getElementById('result-container');
         const outputImg = document.getElementById('output-image');
@@ -81,31 +81,29 @@
             return;
         }
 
-        craftBtn.innerText = "🔥 Đang Khai Lô Luyện Khí, xin chờ chốc lát...";
+        craftBtn.innerText = "🔥 Đang triệu hồi linh lực Flux.1, xin chờ chốc lát...";
         craftBtn.disabled = true;
         resultContainer.classList.add('hidden');
 
-        // Ghép prompt chi tiết theo phong cách Tu Tiên
-        const fullPrompt = encodeURIComponent(`${textPrompt}, ${styleSelect}, highly detailed, cinematic lighting, xianxia concept art`);
-        const [width, height] = sizeSelect.split('x');
+        // Bổ sung các từ khóa kích thích độ nét và tính trừu tượng
+        const enhancedPrompt = encodeURIComponent(`${textPrompt}, ${styleSelect}, 8k resolution, extremely detailed, sharp focus, masterpiece, 4k`);
+        const seed = Math.floor(Math.random() * 10000000);
         
-        // Dùng API tạo ảnh tốc độ cao miễn phí
-        const seed = Math.floor(Math.random() * 1000000);
-        const imageUrl = `https://image.pollinations.ai/prompt/${fullPrompt}?width=${width}&height=${height}&seed=${seed}&nologo=true`;
+        // Gọi Engine Flux.1
+        const imageUrl = `https://image.pollinations.ai/prompt/${enhancedPrompt}?width=1024&height=1024&seed=${seed}&model=${modelSelect}&nologo=true`;
 
-        // Kiểm tra ảnh load xong
         const imgTest = new Image();
         imgTest.src = imageUrl;
         imgTest.onload = function() {
             outputImg.src = imageUrl;
             downloadImgBtn.href = imageUrl;
             resultContainer.classList.remove('hidden');
-            craftBtn.innerHTML = '<i class="fa-solid fa-fire-flame-curved"></i> <span>Khai Lô Luyện Khí (Tạo Ảnh AI)</span>';
+            craftBtn.innerHTML = '<i class="fa-solid fa-fire-flame-curved"></i> <span>Khai Lô Luyện Khí (Tạo Ảnh Flux.1 AI)</span>';
             craftBtn.disabled = false;
         };
         imgTest.onerror = function() {
             alert("Luyện khí thất bại do linh lực bất ổn, xin thử lại!");
-            craftBtn.innerHTML = '<i class="fa-solid fa-fire-flame-curved"></i> <span>Khai Lô Luyện Khí (Tạo Ảnh AI)</span>';
+            craftBtn.innerHTML = '<i class="fa-solid fa-fire-flame-curved"></i> <span>Khai Lô Luyện Khí (Tạo Ảnh Flux.1 AI)</span>';
             craftBtn.disabled = false;
         };
     }
