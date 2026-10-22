@@ -42,29 +42,29 @@
 
     <div class="xianxia-bg"></div>
 
-    <!-- HEADER & NHẠC NỀN CỔ PHONG CÓ NÚT ÂM LƯỢNG -->
+    <!-- HEADER & NHẠC NỀN VÕ LÂM / KIẾM HIỆP NHẸ NHÀNG -->
     <header class="relative z-20 bg-black/85 text-amber-200 border-b border-amber-600/40 backdrop-blur-md sticky top-0 shadow-2xl">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <i class="fa-solid fa-dharmachakra text-amber-400 text-3xl animate-spin" style="animation-duration: 20s;"></i>
                 <div>
                     <h1 class="text-xl md:text-2xl font-black tracking-widest text-amber-400">TÔNG MÔN TU LUYỆN</h1>
-                    <p class="text-[10px] text-amber-200/70">Cổ Tranh Sáo Trúc • Tiên Cảnh Diệu Âm</p>
+                    <p class="text-[10px] text-amber-200/70">Cổ Phong Kiếm Hiệp • Tiên Cảnh Diệu Âm</p>
                 </div>
             </div>
             
-            <!-- Trình Phát Nhạc Kèm Nút Điều Chỉnh Âm Lượng -->
+            <!-- Trình Phát Nhạc Kiếm Hiệp / Võ Lâm Chi Mộng -->
             <div class="flex items-center space-x-3 bg-amber-950/90 px-4 py-2 rounded-full border border-amber-500/60 shadow-xl">
                 <i class="fa-solid fa-compact-disc text-amber-400 animate-spin" id="disc-icon" style="animation-duration: 4s; animation-play-state: paused;"></i>
                 <div class="text-left hidden sm:block">
-                    <p class="text-[10px] text-amber-400 uppercase font-bold">Tiên Nhạc Cổ Phong:</p>
-                    <p id="song-title" class="text-xs font-bold text-amber-100 w-32 truncate">Thanh Phong Thiền Định</p>
+                    <p class="text-[10px] text-amber-400 uppercase font-bold">Nhạc Nhẹ Võ Lâm:</p>
+                    <p id="song-title" class="text-xs font-bold text-amber-100 w-36 truncate">Tương Tư Khúc (Đàn Tranh)</p>
                 </div>
                 
                 <!-- Thanh trượt chỉnh âm lượng nhạc nền -->
                 <div class="flex items-center space-x-1.5 pl-2 border-l border-amber-700/50">
                     <i class="fa-solid fa-volume-low text-amber-400 text-xs"></i>
-                    <input type="range" id="bg-volume" min="0" max="1" step="0.05" value="0.4" oninput="changeMusicVolume(this.value)" class="w-16 h-1.5 accent-amber-500 rounded-lg cursor-pointer" title="Âm lượng nhạc nền">
+                    <input type="range" id="bg-volume" min="0" max="1" step="0.05" value="0.3" oninput="changeMusicVolume(this.value)" class="w-16 h-1.5 accent-amber-500 rounded-lg cursor-pointer" title="Âm lượng nhạc nền">
                 </div>
 
                 <button onclick="toggleMusic()" id="music-btn" class="text-xs bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-3 py-1.5 rounded-full transition shadow">
@@ -134,34 +134,36 @@
         <p>© 2026 Tông Môn Truyện - Tông Môn Đọc Truyện & Tu Luyện TTS.</p>
     </footer>
 
-    <!-- SCRIPT PHÁT NHẠC VÀ ĐIỀU CHỈNH ÂM LƯỢNG -->
+    <!-- SCRIPT PLAYLIST NHẠC VÕ LÂM CHI MỘNG / KIẾM HIỆP NHẸ NHÀNG -->
     <script>
+        // Playlist nhạc Đàn Tranh / Sáo Trúc / Cổ Cầm chuẩn Võ Lâm - Kiếm Hiệp êm dịu, không dồn dập
         const playlist = [
             { 
-                title: "Thanh Phong Thiền Định (Đàn Tranh)", 
+                title: "Tương Tư Khúc (Đàn Tranh)", 
                 src: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=chinese-traditional-guzheng-relaxing-music-11003.mp3" 
             },
             { 
-                title: "Sáo Trúc Yên Bình (Thiền Tịch)", 
+                title: "Lạc Diệp Yên Bình (Sáo Trúc)", 
                 src: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8b1a8c3d7.mp3?filename=zen-garden-meditation-10940.mp3" 
             },
             { 
-                title: "Mưa Rơi Động Phủ (Nhẹ Nhàng)", 
+                title: "Thanh Phong Tịch Mịch (Cổ Cầm)", 
                 src: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=soft-rain-ambient-111154.mp3" 
             }
         ];
 
         let currentTrack = 0;
         const bgAudio = new Audio(playlist[currentTrack].src);
-        bgAudio.volume = 0.4; // Đặt mặc định 40%
+        bgAudio.volume = 0.3; // Mặc định để nhẹ nhàng 30%
 
-        // Hàm thay đổi âm lượng trực tiếp khi kéo slider
+        // Thay đổi âm lượng trực tiếp từ thanh trượt
         function changeMusicVolume(val) {
             if (bgAudio) {
                 bgAudio.volume = parseFloat(val);
             }
         }
 
+        // Tự động phát bài tiếp theo khi kết thúc
         bgAudio.onended = function() {
             currentTrack = (currentTrack + 1) % playlist.length;
             bgAudio.src = playlist[currentTrack].src;
