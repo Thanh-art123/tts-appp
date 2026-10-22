@@ -142,6 +142,25 @@ def index():
 def download(filename):
     return send_file(os.path.join(OUTPUT_FOLDER, filename), mimetype="audio/mpeg")
 
+from flask import make_response
+
+
+@app.route("/sitemap.xml")
+def sitemap():
+  host = "https://tts-appp.onrender.com"  # Điền chính xác link Render của bạn vào đây
+  xml_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+        <url>
+            <loc>{host}/</loc>
+            <changefreq>daily</changefreq>
+            <priority>1.0</priority>
+        </url>
+    </urlset>
+    """
+  response = make_response(xml_content)
+  response.headers["Content-Type"] = "application/xml"
+  return response
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
