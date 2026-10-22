@@ -24,10 +24,11 @@
             </div>
             <div>
                 <div class="flex justify-between text-xs font-bold text-amber-300 mb-1">
-                    <span>Tốc độ đọc:</span>
-                    <span id="rate-val" class="text-amber-400">0%</span>
+                    <span>Tốc độ đọc (Trực tiếp):</span>
+                    <span id="rate-val" class="text-amber-400">1.0x</span>
                 </div>
-                <input type="range" min="-50" max="50" value="0" id="tts-rate" oninput="document.getElementById('rate-val').innerText = this.value + '%'" class="w-full accent-amber-500 mt-2">
+                <!-- Thay đổi tốc độ trực tiếp trên audio đang phát khi kéo slider -->
+                <input type="range" min="0.5" max="2.0" step="0.1" value="1.0" id="tts-rate" oninput="updateAudioRate(this.value)" class="w-full accent-amber-500 mt-2">
             </div>
             <div>
                 <div class="flex justify-between text-xs font-bold text-amber-300 mb-1">
@@ -48,7 +49,7 @@
         <div class="flex justify-between items-center mb-2">
             <p class="text-xs font-bold text-amber-300 flex items-center space-x-2">
                 <i class="fa-solid fa-circle-check text-emerald-400"></i>
-                <span>Linh Âm Đã Tụ Thành Công:</span>
+                <span>Linh Âm Đã Tụ Thành Công (Có thể kéo chỉnh tốc độ bên trên khi đang nghe):</span>
             </p>
             <a id="download-btn" href="#" download="tu-tien-audio.mp3" class="text-xs bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-3 py-1.5 rounded-lg shadow transition flex items-center space-x-1">
                 <i class="fa-solid fa-download"></i>
@@ -64,12 +65,24 @@
 <script>
     document.getElementById('nav-home').classList.add('active');
 
+    // Hàm thay đổi tốc độ trực tiếp khi thanh trượt thay đổi
+    function updateAudioRate(val) {
+        document.getElementById('rate-val').innerText = parseFloat(val).toFixed(1) + 'x';
+        const audioPlayer = document.getElementById('audio-player');
+        if (audioPlayer) {
+            audioPlayer.playbackRate = parseFloat(val);
+        }
+    }
+
     async function handleTTS(event) {
         event.preventDefault();
         const text = document.getElementById('tts-text').value;
         const voice = document.getElementById('tts-voice').value;
-        const rate = document.getElementById('tts-rate').value;
+        const rateVal = document.getElementById('tts-rate').value;
+        // Chuyển đổi giá trị tốc độ x sang % để gửi lên server edge-tts nếu cần (ví dụ 1.2x -> +20%)
+        const ratePercent = Math.round((parseFloat(rateVal) - 1.0) * 100);
         const pitch = document.getElementById('tts-pitch').value;
+        
         const submitBtn = document.getElementById('submit-btn');
         const audioContainer = document.getElementById('audio-result-container');
         const audioPlayer = document.getElementById('audio-player');
@@ -81,7 +94,7 @@
         const formData = new URLSearchParams();
         formData.append('text', text);
         formData.append('voice', voice);
-        formData.append('rate', rate);
+        formData.append('rate', ratePercent);
         formData.append('pitch', pitch);
 
         try {
@@ -99,6 +112,9 @@
             audioPlayer.src = audioUrl;
             downloadBtn.href = audioUrl;
             audioContainer.classList.remove('hidden');
+            
+            // Đồng bộ tốc độ hiện tại vào audio player
+            audioPlayer.playbackRate = parseFloat(rateVal);
             audioPlayer.play();
         } catch (error) {
             alert("Thất bại: " + error.message);
