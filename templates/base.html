@@ -56,7 +56,6 @@
             <div class="flex items-center space-x-2 sm:space-x-3 bg-amber-950/90 px-3 py-1.5 rounded-full border border-amber-500/60 shadow-xl">
                 <i class="fa-solid fa-compact-disc text-amber-400 animate-spin" id="disc-icon" style="animation-duration: 4s; animation-play-state: paused;"></i>
                 
-                <!-- ẤN VÀO TÀI NGUYÊN ĐỂ MỞ KHO NHẠC TÔNG MÔN -->
                 <div class="text-left cursor-pointer group" onclick="openResourceModal()" title="Ấn vào đây để mở Kho Nhạc Tài Nguyên">
                     <p class="text-[10px] text-amber-400 font-extrabold uppercase tracking-wider group-hover:underline flex items-center space-x-1">
                         <span>TÀI NGUYÊN:</span>
@@ -150,9 +149,7 @@
                 <span>Kho Nhạc Tài Nguyên Tông Môn</span>
             </h3>
 
-            <div id="resource-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
-                <!-- Danh sách bài nhạc trên server sẽ được load tự động vào đây -->
-            </div>
+            <div id="resource-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
 
             <div class="mt-5 text-right border-t border-amber-800/60 pt-3">
                 <button onclick="closeResourceModal()" class="text-xs bg-amber-600 hover:bg-amber-500 text-black font-bold px-4 py-2 rounded-xl transition">
@@ -167,7 +164,7 @@
         <p>© 2026 Tông Môn Truyện - Tông Môn Đọc Truyện & Tu Luyện TTS.</p>
     </footer>
 
-    <!-- SCRIPT XỬ LÝ KHO NHẠC TÀI NGUYÊN & TỰ LẶP LẠI -->
+    <!-- SCRIPT GHI NHỚ TRẠNG THÁI NHẠC QUA CÁC TRANG (LOCALSTORAGE) -->
     <script>
         const playlist = [
             { title: "Burlesque", src: "/static/music/Burlesque - National Sweetheart.mp3" },
@@ -175,10 +172,36 @@
             { title: "Videodrome", src: "/static/music/Videodrome - National Sweetheart.mp3" }
         ];
 
-        let currentTrack = 0;
-        let bgAudio = new Audio(playlist[currentTrack].src);
-        bgAudio.volume = 0.3;
-        bgAudio.loop = true; // Tự động lặp lại bài nhạc
+        // Khởi tạo Audio toàn cục từ bộ nhớ trình duyệt
+        let currentTrack = parseInt(localStorage.getItem('xianxia_track')) || 0;
+        let bgAudio = window.sharedAudio || new Audio(playlist[currentTrack].src);
+        window.sharedAudio = bgAudio;
+
+        bgAudio.volume = parseFloat(localStorage.getItem('xianxia_vol')) || 0.3;
+        bgAudio.loop = true;
+
+        // Lưu thời gian phát liên tục vào bộ nhớ
+        setInterval(() => {
+            if (!bgAudio.paused) {
+                localStorage.setItem('xianxia_time', bgAudio.currentTime);
+            }
+        }, 500);
+
+        // Khôi phục trạng thái khi chuyển trang
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTime = parseFloat(localStorage.getItem('xianxia_time')) || 0;
+            const isPlaying = localStorage.getItem('xianxia_playing') === 'true';
+            
+            document.getElementById('song-title').innerText = playlist[currentTrack].title;
+            document.getElementById('bg-volume').value = bgAudio.volume;
+
+            if (isPlaying) {
+                bgAudio.currentTime = savedTime;
+                bgAudio.play().then(() => {
+                    updatePlayButtonUI(true);
+                }).catch(e => console.log("Autoplay blocked:", e));
+            }
+        });
 
         bgAudio.onended = function() {
             currentTrack = (currentTrack + 1) % playlist.length;
@@ -186,28 +209,39 @@
         };
 
         function changeMusicVolume(val) {
-            if (bgAudio) {
-                bgAudio.volume = parseFloat(val);
-            }
+            bgAudio.volume = parseFloat(val);
+            localStorage.setItem('xianxia_vol', val);
         }
 
         function playTrack(index) {
             currentTrack = index;
+            localStorage.setItem('xianxia_track', index);
             bgAudio.pause();
-            bgAudio = new Audio(playlist[index].src);
+            bgAudio.src = playlist[index].src;
             bgAudio.volume = parseFloat(document.getElementById('bg-volume').value);
-            bgAudio.loop = true; // Duy trì lặp lại cho bài tiếp theo
+            bgAudio.loop = true;
             document.getElementById('song-title').innerText = playlist[index].title;
             
             bgAudio.play().then(() => {
-                const btn = document.getElementById('music-btn');
-                const disc = document.getElementById('disc-icon');
-                btn.innerText = "⏸ Dừng";
-                btn.classList.replace('bg-amber-500', 'bg-red-600');
-                if (disc) disc.style.animationPlayState = 'running';
+                updatePlayButtonUI(true);
+                localStorage.setItem('xianxia_playing', 'true');
             }).catch(e => console.log(e));
             
             closeResourceModal();
+        }
+
+        function updatePlayButtonUI(isPlaying) {
+            const btn = document.getElementById('music-btn');
+            const disc = document.getElementById('disc-icon');
+            if (isPlaying) {
+                btn.innerText = "⏸ Dừng";
+                btn.classList.replace('bg-amber-500', 'bg-red-600');
+                if (disc) disc.style.animationPlayState = 'running';
+            } else {
+                btn.innerText = "▶ Phát";
+                btn.classList.replace('bg-red-600', 'bg-amber-500');
+                if (disc) disc.style.animationPlayState = 'paused';
+            }
         }
 
         function openResourceModal() {
@@ -243,32 +277,27 @@
                 bgAudio = new Audio(customUrl);
                 bgAudio.volume = parseFloat(document.getElementById('bg-volume').value);
                 bgAudio.loop = true;
+                window.sharedAudio = bgAudio;
+                
                 document.getElementById('song-title').innerText = file.name;
                 bgAudio.play();
-                
-                const btn = document.getElementById('music-btn');
-                const disc = document.getElementById('disc-icon');
-                btn.innerText = "⏸ Dừng";
-                btn.classList.replace('bg-amber-500', 'bg-red-600');
-                if (disc) disc.style.animationPlayState = 'running';
+                updatePlayButtonUI(true);
+                localStorage.setItem('xianxia_playing', 'true');
             }
         }
 
         function toggleMusic() {
-            const btn = document.getElementById('music-btn');
-            const disc = document.getElementById('disc-icon');
             if (bgAudio.paused) {
-                bgAudio.play().catch(() => {
+                bgAudio.play().then(() => {
+                    updatePlayButtonUI(true);
+                    localStorage.setItem('xianxia_playing', 'true');
+                }).catch(() => {
                     playTrack((currentTrack + 1) % playlist.length);
                 });
-                btn.innerText = "⏸ Dừng";
-                btn.classList.replace('bg-amber-500', 'bg-red-600');
-                if (disc) disc.style.animationPlayState = 'running';
             } else {
                 bgAudio.pause();
-                btn.innerText = "▶ Phát";
-                btn.classList.replace('bg-red-600', 'bg-amber-500');
-                if (disc) disc.style.animationPlayState = 'paused';
+                updatePlayButtonUI(false);
+                localStorage.setItem('xianxia_playing', 'false');
             }
         }
     </script>
