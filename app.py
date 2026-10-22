@@ -40,11 +40,13 @@ def text_to_speech():
         if not text:
             return jsonify({'error': 'Không có văn bản'}), 400
 
-        # Làm sạch và giới hạn an toàn cao độ Hz từ -50 đến 100
+        # Xử lý an toàn cao độ Hz từ -50 đến 100
         pitch_str = "".join([c for c in str(raw_pitch) if c.isdigit() or c == '-'])
         pitch_val = int(pitch_str) if pitch_str else 0
         pitch_val = max(-50, min(100, pitch_val))
-        pitch = f"{'+' if pitch_val > 0 else ''}{pitch_val}Hz"
+        
+        # Nếu pitch bằng 0 thì để None để tránh hoàn toàn lỗi 'Invalid pitch 0Hz' của edge-tts
+        pitch = f"{'+' if pitch_val > 0 else ''}{pitch_val}Hz" if pitch_val != 0 else None
 
         # Tiền xử lý ngắt nhịp cổ phong
         words = text.split()
@@ -58,7 +60,10 @@ def text_to_speech():
         output_path = os.path.join(AUDIO_DIR, output_filename)
 
         async def generate_speech():
-            communicate = edge_tts.Communicate(processed_text, voice, rate=rate, pitch=pitch)
+            kwargs = {'rate': rate}
+            if pitch:
+                kwargs['pitch'] = pitch
+            communicate = edge_tts.Communicate(processed_text, voice, **kwargs)
             await communicate.save(output_path)
 
         # Chạy bất đồng bộ an toàn trên Render
