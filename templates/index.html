@@ -13,7 +13,6 @@
             background-attachment: fixed;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        /* Khóm trúc background nghệ thuật */
         .bamboo-bg {
             background-image: radial-gradient(circle at 10% 20%, rgba(34, 197, 94, 0.08) 0%, transparent 20%),
                               radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 20%);
@@ -22,6 +21,10 @@
             background-color: #15803d;
             color: white;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .sub-tab-btn.active-sub {
+            background-color: #047857;
+            color: white;
         }
     </style>
 </head>
@@ -35,11 +38,12 @@
                 <h1 class="text-xl md:text-2xl font-bold tracking-wide text-amber-300">TÔNG MÔN TU LUYỆN</h1>
             </div>
             
-            <!-- Nhạc Nền Khung Tiên Cảnh -->
+            <!-- Nhạc Nền Thiền & Tiếng Ồn Trắng Nhẹ Nhàng -->
             <div class="flex items-center space-x-2 bg-emerald-800/80 px-3 py-1.5 rounded-full border border-emerald-600">
-                <i class="fa-solid fa-music text-amber-400 animate-pulse"></i>
-                <span class="text-xs font-medium hidden sm:inline text-emerald-100">Nhạc Tiên Cảnh:</span>
-                <audio id="bg-music" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+                <i class="fa-solid fa-wind text-amber-400 animate-pulse"></i>
+                <span class="text-xs font-medium hidden sm:inline text-emerald-100">Tiếng Tiên Cảnh:</span>
+                <!-- Sound hiệu ứng suối / thiên nhiên nhẹ nhàng -->
+                <audio id="bg-music" loop src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=soft-rain-ambient-111154.mp3"></audio>
                 <button onclick="toggleMusic()" id="music-btn" class="text-xs bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-2.5 py-1 rounded-full transition">
                     ▶ Phát Nhạc
                 </button>
@@ -70,150 +74,147 @@
     </div>
 
     <!-- MAIN CONTENT AREA -->
-    <main class="max-w-6xl mx-auto px-4 my-6 w-full flex-1">
+    <main class="max-w-6xl mx-auto px-4 my-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <!-- 1. TÔNG MÔN - NGHE GIẢNG (TTS & AUDIO) -->
-        <div id="sec-nghe-giang" class="tab-content bg-white/90 rounded-2xl p-6 shadow-xl border border-emerald-100 relative overflow-hidden">
-            <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
-                <i class="fa-solid fa-leaf text-9xl text-emerald-800"></i>
-            </div>
+        <!-- CỘT TRÁI & GIỮA: KHU VỰC NỘI DUNG CHÍNH (2 CỘT) -->
+        <div class="lg:col-span-2 space-y-6">
 
-            <h2 class="text-lg font-bold text-emerald-900 border-b pb-2 mb-4 flex items-center space-x-2">
-                <i class="fa-solid fa-microphone-lines text-emerald-600"></i>
-                <span>Chuyển Văn Bản Thành Giọng Đọc & Nghe Giảng Audio</span>
-            </h2>
+            <!-- 1. TÔNG MÔN - NGHE GIẢNG (TTS & AUDIO) -->
+            <div id="sec-nghe-giang" class="tab-content bg-white/90 rounded-2xl p-6 shadow-xl border border-emerald-100 relative overflow-hidden">
+                <h2 class="text-lg font-bold text-emerald-900 border-b pb-2 mb-4 flex items-center space-x-2">
+                    <i class="fa-solid fa-microphone-lines text-emerald-600"></i>
+                    <span>Chuyển Văn Bản Thành Giọng Đọc & Nghe Giảng Audio</span>
+                </h2>
 
-            <form action="/tts" method="POST" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nội dung truyện / Văn bản tu luyện:</label>
-                    <textarea name="text" rows="5" placeholder="Nhập khẩu quyết hoặc nội dung truyện cần đọc vào đây..." class="w-full p-3 rounded-xl border border-emerald-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-emerald-50/30 text-slate-800" required></textarea>
-                </div>
-
-                <!-- ĐIỀU CHỈNH TỐC ĐỘ VÀ CAO ĐỘ (HZ) -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-emerald-50/60 p-4 rounded-xl border border-emerald-200">
+                <form action="/tts" method="POST" class="space-y-4">
                     <div>
-                        <div class="flex justify-between text-sm font-medium text-emerald-900 mb-1">
-                            <span>Tốc độ đọc (Rate):</span>
-                            <span id="rate-val" class="font-bold">0%</span>
-                        </div>
-                        <input type="range" min="-50" max="50" value="0" name="rate" oninput="document.getElementById('rate-val').innerText = this.value + '%'" class="w-full accent-emerald-700">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Nội dung truyện / Văn bản tu luyện:</label>
+                        <textarea name="text" rows="5" placeholder="Nhập khẩu quyết hoặc nội dung truyện cần đọc vào đây..." class="w-full p-3 rounded-xl border border-emerald-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-emerald-50/30 text-slate-800" required></textarea>
                     </div>
-                    <div>
-                        <div class="flex justify-between text-sm font-medium text-emerald-900 mb-1">
-                            <span>Cao độ giọng (Pitch Hz):</span>
-                            <span id="pitch-val" class="font-bold">0Hz</span>
-                        </div>
-                        <input type="range" min="-50" max="50" value="0" name="pitch" oninput="document.getElementById('pitch-val').innerText = this.value + 'Hz'" class="w-full accent-emerald-700">
-                    </div>
-                </div>
 
-                <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    <span>Khởi Tạo Giọng Đọc (TTS)</span>
-                </button>
-            </form>
-        </div>
-
-        <!-- 2. TÀNG KINH CÁC (TRUYỆN VĂN BẢN TỪ CÁC TÁC GIẢ) -->
-        <div id="sec-tang-kinh-cac" class="tab-content hidden bg-white/90 rounded-2xl p-6 shadow-xl border border-emerald-100">
-            <h2 class="text-lg font-bold text-emerald-900 border-b pb-2 mb-4 flex items-center space-x-2">
-                <i class="fa-solid fa-book-open text-amber-600"></i>
-                <span>Tàng Kinh Các - Kho Sách Tác Giả Đóng Góp</span>
-            </h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="p-4 rounded-xl bg-amber-50/60 border border-amber-200 shadow-sm flex flex-col justify-between">
-                    <div>
-                        <span class="text-xs bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded">Tiên Hiệp</span>
-                        <h3 class="font-bold text-slate-800 text-base mt-2">Phàm Nhân Tu Tiên</h3>
-                        <p class="text-xs text-slate-600 mt-1">Tác giả: Vong Ngữ | Người tải lên: Hàn Lập</p>
-                    </div>
-                    <button onclick="alert('Đang mở bí kíp...')" class="mt-4 text-xs bg-emerald-600 text-white font-bold py-2 rounded-lg hover:bg-emerald-700 transition">Đọc Văn Bản</button>
-                </div>
-
-                <div class="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200 shadow-sm flex flex-col justify-between">
-                    <div>
-                        <span class="text-xs bg-emerald-200 text-emerald-900 font-bold px-2 py-0.5 rounded">Huyền Huyễn</span>
-                        <h3 class="font-bold text-slate-800 text-base mt-2">Đấu Phá Thương Khung</h3>
-                        <p class="text-xs text-slate-600 mt-1">Tác giả: Thiên Tàm Thổ Đậu | Người tải lên: Tiêu Viêm</p>
-                    </div>
-                    <button onclick="alert('Đang mở bí kíp...')" class="mt-4 text-xs bg-emerald-600 text-white font-bold py-2 rounded-lg hover:bg-emerald-700 transition">Đọc Văn Bản</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 3. TẠO CÔNG PHÁP (DOWNLOAD/UPLOAD TRUYỆN BẰNG FILE) -->
-        <div id="sec-tao-cong-phap" class="tab-content hidden bg-white/90 rounded-2xl p-6 shadow-xl border border-emerald-100">
-            <h2 class="text-lg font-bold text-emerald-900 border-b pb-2 mb-4 flex items-center space-x-2">
-                <i class="fa-solid fa-cloud-arrow-up text-blue-600"></i>
-                <span>Tạo Công Pháp - Tải File Truyện Lên</span>
-            </h2>
-
-            <div class="border-2 border-dashed border-emerald-300 rounded-2xl p-8 text-center bg-emerald-50/20 hover:bg-emerald-50/50 transition">
-                <i class="fa-solid fa-file-circle-plus text-5xl text-emerald-600 mb-3"></i>
-                <p class="text-slate-700 font-medium">Kéo thả hoặc chọn file truyện từ máy tính của bạn</p>
-                <p class="text-xs text-slate-500 mt-1">Hỗ trợ các định dạng: .txt, .pdf, .docx</p>
-                <input type="file" id="file-upload" class="hidden" onchange="alert('Đã chọn file: ' + this.files[0].name)">
-                <label for="file-upload" class="inline-block mt-4 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm py-2.5 px-6 rounded-xl cursor-pointer shadow transition">
-                    Chọn File Truyện
-                </label>
-            </div>
-        </div>
-
-        <!-- 4. ĐỘNG PHỦ (LỊCH SỬ NGHE TRUYỆN) -->
-        <div id="sec-dong-phu" class="tab-content hidden bg-white/90 rounded-2xl p-6 shadow-xl border border-emerald-100">
-            <h2 class="text-lg font-bold text-emerald-900 border-b pb-2 mb-4 flex items-center space-x-2">
-                <i class="fa-solid fa-clock-rotate-left text-purple-600"></i>
-                <span>Động Phủ - Lịch Sử Đã Nghe & Tu Luyện</span>
-            </h2>
-
-            <ul class="space-y-3">
-                <li class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-200">
-                    <div class="flex items-center space-x-3">
-                        <i class="fa-solid fa-headphones text-emerald-600"></i>
+                    <!-- TỐC ĐỘ VÀ CAO ĐỘ (HZ) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-emerald-50/60 p-4 rounded-xl border border-emerald-200">
                         <div>
-                            <p class="text-sm font-bold text-slate-800">Chương 1: Khởi đầu tu luyện</p>
-                            <p class="text-xs text-slate-500">Đã nghe lúc: 10:30 - Hôm nay</p>
+                            <div class="flex justify-between text-sm font-medium text-emerald-900 mb-1">
+                                <span>Tốc độ đọc (Rate):</span>
+                                <span id="rate-val" class="font-bold">0%</span>
+                            </div>
+                            <input type="range" min="-50" max="50" value="0" name="rate" oninput="document.getElementById('rate-val').innerText = this.value + '%'" class="w-full accent-emerald-700">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm font-medium text-emerald-900 mb-1">
+                                <span>Cao độ giọng (Pitch Hz):</span>
+                                <span id="pitch-val" class="font-bold">0Hz</span>
+                            </div>
+                            <input type="range" min="-50" max="50" value="0" name="pitch" oninput="document.getElementById('pitch-val').innerText = this.value + 'Hz'" class="w-full accent-emerald-700">
                         </div>
                     </div>
-                    <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-1 rounded">Hoàn thành</span>
-                </li>
-            </ul>
+
+                    <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Khởi Tạo Giọng Đọc (TTS)</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- 2. TÀNG KINH CÁC -->
+            <div id="sec-tang-kinh-cac" class="tab-content hidden bg-white/90 rounded-2xl p-6 shadow-xl border border-emerald-100">
+                <h2 class="text-lg font-bold text-emerald-900 border-b pb-2 mb-4 flex items-center space-x-2">
+                    <i class="fa-solid fa-book-open text-amber-600"></i>
+                    <span>Tàng Kinh Các - Kho Truyện Tu Luyện</span>
+                </h2>
+
+                <!-- SUB TABS: TRUYỆN DỊCH & TRUYỆN COVER -->
+                <div class="flex space-x-2 border-b border-emerald-200 pb-3 mb-4">
+                    <button onclick="switchCategory('truyen-dich')" id="btn-truyen-dich" class="sub-tab-btn active-sub text-xs font-bold px-4 py-2 rounded-lg bg-slate-100 text-emerald-800 hover:bg-emerald-200 transition">
+                        📜 Truyện Dịch
+                    </button>
+                    <button onclick="switchCategory('truyen-cover')" id="btn-truyen-cover" class="sub-tab-btn text-xs font-bold px-4 py-2 rounded-lg bg-slate-100 text-emerald-800 hover:bg-emerald-200 transition">
+                        ✨ Truyện Cover
+                    </button>
+                </div>
+
+                <!-- ĐANH SÁCH 10 THUỘC TÍNH PHÂN LOẠI -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-6">
+                    <button class="text-xs py-1.5 px-2 bg-amber-100/70 border border-amber-300 rounded-md font-bold text-amber-900">🟡 Kim</button>
+                    <button class="text-xs py-1.5 px-2 bg-emerald-100/70 border border-emerald-300 rounded-md font-bold text-emerald-900">🟢 Mộc</button>
+                    <button class="text-xs py-1.5 px-2 bg-blue-100/70 border border-blue-300 rounded-md font-bold text-blue-900">🔵 Thủy</button>
+                    <button class="text-xs py-1.5 px-2 bg-red-100/70 border border-red-300 rounded-md font-bold text-red-900">🔴 Hỏa</button>
+                    <button class="text-xs py-1.5 px-2 bg-yellow-100/70 border border-yellow-300 rounded-md font-bold text-yellow-900">🟤 Thổ</button>
+                    <button class="text-xs py-1.5 px-2 bg-purple-100/70 border border-purple-300 rounded-md font-bold text-purple-900">⚡ Lôi</button>
+                    <button class="text-xs py-1.5 px-2 bg-teal-100/70 border border-teal-300 rounded-md font-bold text-teal-900">🌪️ Phong</button>
+                    <button class="text-xs py-1.5 px-2 bg-cyan-100/70 border border-cyan-300 rounded-md font-bold text-cyan-900">❄️ Băng</button>
+                    <button class="text-xs py-1.5 px-2 bg-indigo-100/70 border border-indigo-300 rounded-md font-bold text-indigo-900">🌌 Không Gian</button>
+                    <button class="text-xs py-1.5 px-2 bg-rose-100/70 border border-rose-300 rounded-md font-bold text-rose-900">⏳ Thời Gian</button>
+                </div>
+
+                <!-- KHU VỰC TRỐNG CHỜ TẢI TRUYỆN -->
+                <div class="text-center py-12 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+                    <i class="fa-solid fa-scroll text-4xl text-slate-300 mb-2"></i>
+                    <p class="text-slate-500 font-medium text-sm">Hiện tại chưa có truyện nào trong mục này.</p>
+                    <p class="text-xs text-slate-400 mt-1">Hãy chuyển sang mục <b>Tạo Công Pháp</b> để tải lên bí kíp đầu tiên!</p>
+                </div>
+            </div>
+
+            <!-- 3. TẠO CÔNG PHÁP -->
+            <div id="sec-tao-cong-phap" class="tab-content hidden bg-white/90 rounded-2xl p-6 shadow-xl border border-emerald-100">
+                <h2 class="text-lg font-bold text-emerald-900 border-b pb-2 mb-4 flex items-center space-x-2">
+                    <i class="fa-solid fa-cloud-arrow-up text-blue-600"></i>
+                    <span>Tạo Công Pháp - Tải File Truyện Lên</span>
+                </h2>
+
+                <div class="border-2 border-dashed border-emerald-300 rounded-2xl p-8 text-center bg-emerald-50/20 hover:bg-emerald-50/50 transition">
+                    <i class="fa-solid fa-file-circle-plus text-5xl text-emerald-600 mb-3"></i>
+                    <p class="text-slate-700 font-medium">Kéo thả hoặc chọn file truyện từ máy tính của bạn</p>
+                    <p class="text-xs text-slate-500 mt-1">Hỗ trợ định dạng: .txt, .pdf, .docx</p>
+                    <input type="file" id="file-upload" class="hidden" onchange="alert('Đã chọn file: ' + this.files[0].name)">
+                    <label for="file-upload" class="inline-block mt-4 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm py-2.5 px-6 rounded-xl cursor-pointer shadow transition">
+                        Chọn File Truyện
+                    </label>
+                </div>
+            </div>
+
+            <!-- 4. ĐỘNG PHỦ (LỊCH SỬ) -->
+            <div id="sec-dong-phu" class="tab-content hidden bg-white/90 rounded-2xl p-6 shadow-xl border border-emerald-100">
+                <h2 class="text-lg font-bold text-emerald-900 border-b pb-2 mb-4 flex items-center space-x-2">
+                    <i class="fa-solid fa-clock-rotate-left text-purple-600"></i>
+                    <span>Động Phủ - Lịch Sử Tu Luyện</span>
+                </h2>
+
+                <div class="text-center py-8 text-slate-400 text-sm">
+                    <i class="fa-solid fa-box-open text-3xl mb-2"></i>
+                    <p>Chưa có lịch sử nghe truyện.</p>
+                </div>
+            </div>
+
         </div>
 
-    </main>
+        <!-- CỘT PHẢI: THIÊN THƯ BẢNG (BẢNG XẾP HẠNG TRANG CHÍNH) -->
+        <div class="lg:col-span-1">
+            <div class="bg-gradient-to-b from-amber-50 to-white rounded-2xl p-5 shadow-xl border-2 border-amber-300/80 sticky top-20">
+                <div class="flex items-center space-x-2 border-b-2 border-amber-400/50 pb-3 mb-4">
+                    <i class="fa-solid fa-trophy text-amber-500 text-xl"></i>
+                    <h2 class="font-extrabold text-amber-900 text-base tracking-wide">THIÊN THƯ BẢNG</h2>
+                </div>
+                <p class="text-xs text-amber-800/80 mb-4">Ghi danh tác giả & thính giả có điểm cống hiến và cơ duyên cao nhất Tông Môn.</p>
 
-    <!-- FOOTER -->
-    <footer class="bg-emerald-950 text-emerald-200 text-center py-4 text-xs border-t border-emerald-800">
-        <p>© 2026 Tông Môn Truyện - Tông Môn Đọc Truyện & Tu Luyện TTS.</p>
-        <p class="text-emerald-400/80 mt-1">Cảnh sắc khóm trúc thanh tịnh, trợ lực tu sĩ ngộ đạo.</p>
-    </footer>
+                <!-- TOP THIÊN THƯ BẢNG -->
+                <div class="space-y-3">
+                    <!-- HẠNG 1 -->
+                    <div class="flex items-center justify-between p-2.5 bg-amber-100/80 border border-amber-300 rounded-xl">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-xs shadow">1</span>
+                            <div>
+                                <p class="text-xs font-bold text-amber-950">Đế Tôn Tông Chủ</p>
+                                <p class="text-[10px] text-amber-700">Tác giả xuất sắc</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-extrabold text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded-full">99,999 Điểm</span>
+                    </div>
 
-    <!-- JAVASCRIPT XỬ LÝ CHUYỂN TAB & NHẠC -->
-    <script>
-        // Chuyển Tab
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-
-            document.getElementById('sec-' + tabName).classList.remove('hidden');
-            document.getElementById('tab-' + tabName).classList.add('active');
-        }
-
-        // Bật / Tắt Nhạc Nền
-        function toggleMusic() {
-            const music = document.getElementById('bg-music');
-            const btn = document.getElementById('music-btn');
-            if (music.paused) {
-                music.play();
-                btn.innerText = "⏸ Dừng Nhạc";
-                btn.classList.replace('bg-amber-500', 'bg-red-500');
-            } else {
-                music.pause();
-                btn.innerText = "▶ Phát Nhạc";
-                btn.classList.replace('bg-red-500', 'bg-amber-500');
-            }
-        }
-    </script>
-</body>
-</html>
+                    <!-- HẠNG 2 -->
+                    <div class="flex items-center justify-between p-2.5 bg-slate-100 border border-slate-300 rounded-xl">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-6 h-6 rounded-full bg-slate-400 text-white flex items-center justify-center font-bold text-xs">2</span>
+                            <div>
+                                <p class="text-xs font-bold text-slate-800
