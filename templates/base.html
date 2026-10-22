@@ -15,7 +15,7 @@
         }
         .xianxia-bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-            background: url('https://image.pollinations.ai/prompt/xianxia%20golden%20temples%20monk%20cultivation%20mystic?width=1920&height=1080&nologo=true') center/cover no-repeat;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1920&auto=format&fit=crop') center/cover no-repeat;
             z-index: -1; filter: brightness(0.85) contrast(1.1);
         }
         .panel-3d {
@@ -32,30 +32,23 @@
             border: 2px solid rgba(245, 158, 11, 0.4);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            background: #000;
+            background: linear-gradient(135deg, #1c1408, #2d1a04);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 95px;
+            text-decoration: none;
         }
-        .building-card img {
-            width: 100%;
-            height: 90px;
-            object-fit: cover;
-            transition: transform 0.5s ease, filter 0.5s ease;
-            filter: brightness(0.7) contrast(1.1);
-        }
-        .building-card:hover img, .building-card.active img {
-            transform: scale(1.12);
-            filter: brightness(0.95) contrast(1.2);
-        }
-        .building-card.active, .building-card:hover {
+        .building-card:hover, .building-card.active {
             border-color: #f59e0b;
             box-shadow: 0 0 25px rgba(245, 158, 11, 0.8);
-            transform: translateY(-5px);
+            transform: translateY(-4px);
+            background: linear-gradient(135deg, #b45309, #d97706);
         }
-        .building-overlay {
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.3), transparent);
-            padding: 8px 4px 4px 4px;
-            text-align: center;
+        .building-card:hover i, .building-card.active i {
+            transform: scale(1.15);
+            color: #ffffff;
         }
     </style>
 </head>
@@ -103,43 +96,33 @@
         </div>
     </header>
 
-    <!-- THANH ĐIỀU HƯỚNG BẰNG HÌNH ẢNH CÁC TẦNG LẦU TIÊN CẢNH -->
+    <!-- THANH ĐIỀU HƯỚNG CÁC TẦNG LẦU TIÊN CẢNH -->
     <div class="relative z-20 max-w-7xl mx-auto px-4 mt-6 w-full">
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3" id="nav-container">
             <!-- Nghe Giảng Kinh -->
             <a href="/" class="nav-link building-card group">
-                <img src="https://image.pollinations.ai/prompt/xianxia%20golden%20temple%20roof%20mystic%20pagoda%20architecture?width=400&height=200&nologo=true" alt="Nghe Giảng Kinh">
-                <div class="building-overlay">
-                    <p class="text-[11px] font-extrabold text-amber-300 group-hover:text-amber-400 tracking-wider">📜 Nghe Giảng Kinh</p>
-                </div>
+                <i class="fa-solid fa-scroll text-2xl text-amber-400 mb-1.5 transition-transform"></i>
+                <span class="text-xs font-black text-amber-200 group-hover:text-white tracking-wider">Nghe Giảng Kinh</span>
             </a>
             <!-- Tàng Kinh Các -->
             <a href="/tang-kinh-cac" class="nav-link building-card group">
-                <img src="https://image.pollinations.ai/prompt/ancient%20chinese%20library%20scrolls%20golden%20pagoda%20pavilion?width=400&height=200&nologo=true" alt="Tàng Kinh Các">
-                <div class="building-overlay">
-                    <p class="text-[11px] font-extrabold text-amber-300 group-hover:text-amber-400 tracking-wider">📚 Tàng Kinh Các</p>
-                </div>
+                <i class="fa-solid fa-book-journal-whills text-2xl text-amber-400 mb-1.5 transition-transform"></i>
+                <span class="text-xs font-black text-amber-200 group-hover:text-white tracking-wider">Tàng Kinh Các</span>
             </a>
             <!-- Chế Tạp Các -->
             <a href="/che-tap-cac" class="nav-link building-card group">
-                <img src="https://image.pollinations.ai/prompt/xianxia%20alchemy%20forge%20temple%20glowing%20magical%20artifacts?width=400&height=200&nologo=true" alt="Chế Tạp Các">
-                <div class="building-overlay">
-                    <p class="text-[11px] font-extrabold text-amber-300 group-hover:text-amber-400 tracking-wider">🔨 Chế Tạp Các</p>
-                </div>
+                <i class="fa-solid fa-hammer text-2xl text-amber-400 mb-1.5 transition-transform"></i>
+                <span class="text-xs font-black text-amber-200 group-hover:text-white tracking-wider">Chế Tạp Các</span>
             </a>
             <!-- Động Phủ -->
             <a href="/dong-phu" class="nav-link building-card group">
-                <img src="https://image.pollinations.ai/prompt/mystical%20cave%20dwelling%20xianxia%20gateway%20golden%20light?width=400&height=200&nologo=true" alt="Động Phủ">
-                <div class="building-overlay">
-                    <p class="text-[11px] font-extrabold text-amber-300 group-hover:text-amber-400 tracking-wider">⛩️ Động Phủ</p>
-                </div>
+                <i class="fa-solid fa-torii-gate text-2xl text-amber-400 mb-1.5 transition-transform"></i>
+                <span class="text-xs font-black text-amber-200 group-hover:text-white tracking-wider">Động Phủ</span>
             </a>
             <!-- Bí Cảnh Tu Luyện -->
             <a href="/bi-canh" class="nav-link building-card group col-span-2 md:col-span-1">
-                <img src="https://image.pollinations.ai/prompt/mystical%20realm%20xianxia%20floating%20island%20crystals%20golden%20aura?width=400&height=200&nologo=true" alt="Bí Cảnh">
-                <div class="building-overlay">
-                    <p class="text-[11px] font-extrabold text-amber-300 group-hover:text-amber-400 tracking-wider">💎 Bí Cảnh Tu Luyện</p>
-                </div>
+                <i class="fa-solid fa-gem text-2xl text-amber-400 mb-1.5 transition-transform"></i>
+                <span class="text-xs font-black text-amber-200 group-hover:text-white tracking-wider">Bí Cảnh Tu Luyện</span>
             </a>
         </div>
     </div>
@@ -286,7 +269,7 @@
                 const customUrl = URL.createObjectURL(file);
                 bgAudio.pause();
                 bgAudio = new Audio(customUrl);
-                bgAudio.volume = parseFloat(document.getElementById('bg-volume'].value);
+                bgAudio.volume = parseFloat(document.getElementById('bg-volume').value);
                 bgAudio.loop = true;
                 window.sharedAudio = bgAudio;
                 
