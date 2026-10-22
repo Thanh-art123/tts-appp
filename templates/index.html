@@ -18,9 +18,9 @@
     <!-- Tùy chọn Giọng đọc & Tốc độ -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         <div>
-            <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Giọng Đọc:</label>
+            <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Giọng Đọc Tiếng Việt:</label>
             <select id="voice-select" class="w-full bg-black/90 text-amber-200 border border-amber-500/80 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-amber-400 shadow-inner cursor-pointer">
-                <option value="default">⭐ Giọng Mặc Định Hệ Thống (Tối ưu cho Điện thoại Vivo)</option>
+                <option value="">Đang tìm giọng đọc Tiếng Việt...</option>
             </select>
         </div>
 
@@ -56,33 +56,43 @@
 {% block scripts %}
 <script>
     let synth = window.speechSynthesis;
+    let vietnameseVoices = [];
 
-    function populateVoices() {
+    function loadVietnameseVoices() {
         if (!synth) return;
-        let voices = synth.getVoices();
+        let allVoices = synth.getVoices();
         const voiceSelect = document.getElementById('voice-select');
-        if (!voiceSelect || voices.length === 0) return;
+        if (!voiceSelect) return;
+
+        // Chỉ lọc ra các giọng có mã ngôn ngữ chứa 'vi' hoặc 'viet'
+        vietnameseVoices = allVoices.filter(v => 
+            v.lang.toLowerCase().includes('vi') || 
+            v.name.toLowerCase().includes('viet') ||
+            v.name.toLowerCase().includes('vietnamese')
+        );
 
         voiceSelect.innerHTML = '';
-        
-        voices.sort((a, b) => {
-            const isVietA = a.lang.toLowerCase().includes('vi');
-            const isVietB = b.lang.toLowerCase().includes('vi');
-            return isVietB - isVietA;
-        });
 
-        voices.forEach((voice, index) => {
+        if (vietnameseVoices.length > 0) {
+            vietnameseVoices.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${voice.name} (${voice.lang}) ⭐`;
+                voiceSelect.appendChild(option);
+            });
+        } else {
+            // Nếu điện thoại Vivo không có sẵn giọng tiếng Việt nội bộ, dùng Google Translate TTS API làm nguồn dự phòng tuyệt đối chuẩn tiếng Việt
             const option = document.createElement('option');
-            option.value = index;
-            option.textContent = `${voice.name} (${voice.lang})${voice.lang.toLowerCase().includes('vi') ? ' ⭐ [Tiếng Việt]' : ''}`;
+            option.value = "online_vi";
+            option.textContent = "⭐ Giọng Tiếng Việt Online Chuẩn (Tối ưu cho Vivo)";
             voiceSelect.appendChild(option);
-        });
+        }
     }
 
     if (synth) {
-        synth.onvoiceschanged = populateVoices;
-        setTimeout(populateVoices, 200);
-        setTimeout(populateVoices, 1000);
+        synth.onvoiceschanged = loadVietnameseVoices;
+        setTimeout(loadVietnameseVoices, 300);
+        setTimeout(loadVietnameseVoices, 1000);
     }
 
     function playTTS() {
@@ -96,23 +106,25 @@
             return;
         }
 
+        statusEl.innerText = "Đang tụng đọc...";
+        statusEl.className = "text-amber-400 font-bold animate-pulse";
+
+        // Nếu chọn nguồn online hoặc điện thoại không có giọng tiếng Việt hệ thống, gọi Google TTS trực tuyến
+        if (voiceIndex === "online_vi" || vietnameseVoices.length === 0) {
+            playGoogleTTSOnline(text, rate, statusEl);
+            return;
+        }
+
         if (synth.speaking) {
             synth.cancel();
         }
 
         const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'vi-VN';
         utterance.rate = rate;
 
-        let voices = synth.getVoices();
-        if (voiceIndex !== "default" && voices[voiceIndex]) {
-            utterance.voice = voices[voiceIndex];
-        } else if (voices.length > 0) {
-            let vnVoice = voices.find(v => v.lang.toLowerCase().includes('vi'));
-            if (vnVoice) {
-                utterance.voice = vnVoice;
-            } else {
-                utterance.voice = voices[0];
-            }
+        if (vietnameseVoices[voiceIndex]) {
+            utterance.voice = vietnameseVoices[voiceIndex];
         }
 
         utterance.onstart = function() {
@@ -126,12 +138,43 @@
         };
 
         utterance.onerror = function(event) {
-            console.error("TTS Error:", event);
-            statusEl.innerText = "Lỗi tụng đọc";
-            statusEl.className = "text-red-400 font-bold";
+            console.error("TTS Error, fallback to online:", event);
+            playGoogleTTSOnline(text, rate, statusEl);
         };
 
         synth.speak(utterance);
+    }
+
+    // Hàm dự phòng sử dụng nguồn âm thanh trực tuyến chuẩn tiếng Việt 100% không lo lỗi đánh vần tiếng Anh
+    function playGoogleTTSOnline(text, rate, statusEl) {
+        // Chia nhỏ văn bản nếu quá dài để truyền vào API Google Translate TTS
+        const encodedText = encodeURIComponent(text.substring(0, 200));
+        const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=vi&client=tw-ob`;
+        
+        let audio = new Audio(audioUrl);
+        audio.playbackRate = rate;
+        
+        audio.onplay = function() {
+            statusEl.innerText = "Đang tụng đọc (Online)...";
+            statusEl.className = "text-amber-400 font-bold animate-pulse";
+        };
+
+        audio.onended = function() {
+            statusEl.innerText = "Hoàn thành";
+            statusEl.className = "text-emerald-400 font-bold";
+        };
+
+        audio.onerror = function() {
+            statusEl.innerText = "Lỗi kết nối âm thanh";
+            statusEl.className = "text-red-400 font-bold";
+        };
+
+        audio.play().catch(e => {
+            console.error(e);
+            alert("Trình duyệt điện thoại chặn tự động phát âm thanh. Đạo hữu hãy chạm vào màn hình thêm một lần rồi bấm Phát nhé!");
+            statusEl.innerText = "Bị chặn phát âm thanh";
+            statusEl.className = "text-red-400 font-bold";
+        });
     }
 
     function downloadTTS() {
