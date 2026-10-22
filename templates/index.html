@@ -20,7 +20,7 @@
         <div>
             <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Giọng Đọc Tiếng Việt:</label>
             <select id="voice-select" class="w-full bg-black/90 text-amber-200 border border-amber-500/80 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-amber-400 shadow-inner cursor-pointer">
-                <option value="google_vi">⭐ Giọng Tiếng Việt Chuẩn (Nguồn Trực Tuyến - Tối Ưu Cho Vivo & Mobile)</option>
+                <option value="google_vi">⭐ Giọng Tiếng Việt Chuẩn (Nguồn Trực Tuyến - Tối Ưu Cho Điện Thoại & PC)</option>
             </select>
         </div>
 
@@ -35,21 +35,25 @@
 
     <!-- Trình Phát Âm Thanh (PC & Mobile) -->
     <div class="mb-4 bg-black/60 p-3 rounded-xl border border-amber-600/60">
-        <label class="block text-xs font-bold text-amber-400 mb-2">Trình Phát Âm Thanh (PC & Mobile):</label>
+        <label class="block text-xs font-bold text-amber-400 mb-2">Trình Phát Âm Thanh (Hỗ trợ PC & Điện thoại):</label>
         <audio id="tts-audio-player" class="w-full h-10 accent-amber-500" controls></audio>
     </div>
 
-    <!-- Trạng thái -->
+    <!-- Trạng thái & Thời lượng thực tế -->
     <div class="flex justify-between items-center text-xs text-amber-300/80 mb-5 bg-black/40 px-3 py-2 rounded-xl border border-amber-700/40">
-        <span>⏱ Thời lượng ước tính: <strong id="est-time" class="text-amber-400">00:06</strong></span>
+        <span>⏱ Thời lượng: <strong id="est-time" class="text-amber-400">00:00</strong></span>
         <span>Trạng thái: <strong id="tts-status" class="text-emerald-400">Sẵn sàng</strong></span>
     </div>
 
-    <!-- Nút điều khiển kết xuất âm thanh -->
+    <!-- Nút điều khiển: Phát & Tải xuống -->
     <div class="flex flex-col sm:flex-row gap-3">
         <button onclick="prepareTTS()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold py-3 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm cursor-pointer">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-            <span>Kết Xuất Giọng Đọc (1 Click)</span>
+            <i class="fa-solid fa-play"></i>
+            <span>Phát Âm Thanh (1 Click)</span>
+        </button>
+        <button onclick="downloadTTS()" class="flex-1 bg-amber-600 hover:bg-amber-500 text-black font-extrabold py-3 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm cursor-pointer">
+            <i class="fa-solid fa-download"></i>
+            <span>Tải Nhạc (MP3)</span>
         </button>
     </div>
 </div>
@@ -59,21 +63,17 @@
 <script>
     let synth = window.speechSynthesis;
     let localVoices = [];
+    let currentAudioUrl = "";
 
-    // Nạp danh sách giọng đọc của máy tính (nếu có)
     function loadVoices() {
         if (!synth) return;
         let allVoices = synth.getVoices();
         const voiceSelect = document.getElementById('voice-select');
         if (!voiceSelect) return;
 
-        // Lọc các giọng Tiếng Việt của hệ thống
         localVoices = allVoices.filter(v => v.lang.toLowerCase().includes('vi'));
+        voiceSelect.innerHTML = '<option value="google_vi">⭐ Giọng Tiếng Việt Chuẩn (Nguồn Trực Tuyến - Tối Ưu Cho Điện Thoại & PC)</option>';
 
-        // Reset danh sách và giữ lại giọng chuẩn Google
-        voiceSelect.innerHTML = '<option value="google_vi">⭐ Giọng Tiếng Việt Chuẩn (Nguồn Trực Tuyến - Tối Ưu Cho Vivo & Mobile)</option>';
-
-        // Thêm các giọng hệ thống nếu máy tính/điện thoại có sẵn
         localVoices.forEach((voice, index) => {
             const option = document.createElement('option');
             option.value = `local_${index}`;
@@ -87,12 +87,19 @@
         setTimeout(loadVoices, 300);
     }
 
+    function formatTime(seconds) {
+        let mins = Math.floor(seconds / 60);
+        let secs = Math.floor(seconds % 60);
+        return (mins < 10 ? "0" : "") + mins + ":" + (secs < 10 ? "0" : "") + secs;
+    }
+
     function prepareTTS() {
         const text = document.getElementById('tts-text').value;
         const rate = parseFloat(document.getElementById('tts-rate').value);
         const selectedVoice = document.getElementById('voice-select').value;
         const statusEl = document.getElementById('tts-status');
         const audioPlayer = document.getElementById('tts-audio-player');
+        const timeEl = document.getElementById('est-time');
 
         if (!text.trim()) {
             alert("Xin hãy nhập khẩu quyết văn bản!");
@@ -102,18 +109,21 @@
         statusEl.innerText = "Đang kết xuất...";
         statusEl.className = "text-amber-400 font-bold animate-pulse";
 
-        // Nếu chọn giọng trực tuyến (hoặc trên điện thoại di động)
         if (selectedVoice === "google_vi" || !selectedVoice.startsWith("local_")) {
             if (synth && synth.speaking) synth.cancel();
 
-            const encodedText = encodeURIComponent(text.substring(0, 300));
-            const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=vi&client=tw-ob`;
+            const encodedText = encodeURIComponent(text.substring(0, 400));
+            currentAudioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=vi&client=tw-ob`;
             
-            audioPlayer.src = audioUrl;
+            audioPlayer.src = currentAudioUrl;
             audioPlayer.playbackRate = rate;
 
+            audioPlayer.onloadedmetadata = function() {
+                timeEl.innerText = formatTime(audioPlayer.duration);
+            };
+
             audioPlayer.oncanplaythrough = function() {
-                statusEl.innerText = "Đã sẵn sàng phát!";
+                statusEl.innerText = "Đã sẵn sàng!";
                 statusEl.className = "text-emerald-400 font-bold";
             };
 
@@ -128,12 +138,11 @@
                 statusEl.innerText = "Đang tụng đọc...";
                 statusEl.className = "text-amber-400 font-bold animate-pulse";
             }).catch(e => {
-                console.log("Autoplay restricted:", e);
-                statusEl.innerText = "Hãy bấm nút Play trên thanh phát!";
+                console.log("Autoplay restricted on mobile:", e);
+                statusEl.innerText = "Hãy bấm nút Play trên thanh âm thanh!";
                 statusEl.className = "text-amber-300 font-bold";
             });
         } else {
-            // Nếu chọn giọng hệ thống máy tính
             if (synth.speaking) synth.cancel();
 
             const voiceIndex = parseInt(selectedVoice.replace("local_", ""));
@@ -145,8 +154,9 @@
             }
 
             utterance.onstart = function() {
-                statusEl.innerText = "Đang tụng đọc (Máy tính)...";
+                statusEl.innerText = "Đang tụng đọc (Hệ thống)...";
                 statusEl.className = "text-amber-400 font-bold animate-pulse";
+                timeEl.innerText = "00:05";
             };
 
             utterance.onend = function() {
@@ -156,6 +166,19 @@
 
             synth.speak(utterance);
         }
+    }
+
+    function downloadTTS() {
+        if (!currentAudioUrl) {
+            alert("Đạo hữu hãy bấm 'Phát Âm Thanh' trước để kết xuất tệp nhạc nhé!");
+            return;
+        }
+        const a = document.createElement('a');
+        a.href = currentAudioUrl;
+        a.download = 'Thu_Luyen_Kinh_Van.mp3';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 </script>
 {% endblock %}
