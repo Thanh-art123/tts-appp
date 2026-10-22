@@ -15,12 +15,12 @@
         <textarea id="tts-text" rows="5" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl p-3 text-sm focus:outline-none focus:border-amber-400 shadow-inner resize-none" placeholder="Nhập hoặc dán đoạn kinh văn, truyện tiên hiệp vào đây...">Một khoảng lặng kéo dài. Cuối cùng, giọng nói kia chỉ để lại hai chữ: Tạm biệt.</textarea>
     </div>
 
-    <!-- Tùy chọn Giọng đọc & Tốc độ (Tối ưu hiển thị trên điện thoại) -->
+    <!-- Tùy chọn Giọng đọc & Tốc độ -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         <div>
             <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Giọng Đọc:</label>
             <select id="voice-select" class="w-full bg-black/90 text-amber-200 border border-amber-500/80 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-amber-400 shadow-inner cursor-pointer">
-                <!-- Danh sách giọng đọc sẽ được nạp tự động bằng JavaScript -->
+                <option value="">Đang tải hệ thống giọng đọc...</option>
             </select>
         </div>
 
@@ -41,11 +41,11 @@
 
     <!-- Nút điều khiển phát âm thanh -->
     <div class="flex flex-col sm:flex-row gap-3">
-        <button onclick="playTTS()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold py-3 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm">
+        <button onclick="playTTS()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold py-3 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm cursor-pointer">
             <i class="fa-solid fa-play"></i>
             <span>Phát Âm Thanh (1 Click)</span>
         </button>
-        <button onclick="downloadTTS()" class="flex-1 bg-amber-600 hover:bg-amber-500 text-black font-extrabold py-3 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm">
+        <button onclick="downloadTTS()" class="flex-1 bg-amber-600 hover:bg-amber-500 text-black font-extrabold py-3 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm cursor-pointer">
             <i class="fa-solid fa-download"></i>
             <span>Tải Nhạc (MP3)</span>
         </button>
@@ -58,33 +58,40 @@
     let synth = window.speechSynthesis;
     let voices = [];
 
-    function populateVoices() {
+    function loadVoices() {
         if (!synth) return;
         voices = synth.getVoices();
         const voiceSelect = document.getElementById('voice-select');
         if (!voiceSelect) return;
 
-        voiceSelect.innerHTML = '';
-        
-        // Lọc ưu tiên tiếng Việt nếu có, sau đó hiển thị toàn bộ giọng có sẵn
-        voices.forEach((voice, index) => {
-            const option = document.createElement('option');
-            option.value = index;
-            option.textContent = `${voice.name} (${voice.lang})${voice.lang.includes('vi') ? ' ⭐' : ''}`;
-            voiceSelect.appendChild(option);
-        });
+        if (voices.length > 0) {
+            voiceSelect.innerHTML = '';
+            
+            // Sắp xếp đưa giọng tiếng Việt lên đầu danh sách cho tiện
+            voices.sort((a, b) => {
+                const isVietA = a.lang.toLowerCase().includes('vi');
+                const isVietB = b.lang.toLowerCase().includes('vi');
+                return isVietB - isVietA;
+            });
 
-        // Nếu không có giọng nào, thêm thông báo
-        if (voices.length === 0) {
-            const option = document.createElement('option');
-            option.textContent = "Đang tải hệ thống giọng đọc...";
-            voiceSelect.appendChild(option);
+            voices.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${voice.name} (${voice.lang})${voice.lang.toLowerCase().includes('vi') ? ' ⭐ [Tiếng Việt]' : ''}`;
+                voiceSelect.appendChild(option);
+            });
         }
     }
 
-    populateVoices();
-    if (synth && synth.onvoiceschanged !== undefined) {
-        synth.onvoiceschanged = populateVoices;
+    // Tải ngay lập tức và lắng nghe sự kiện thay đổi giọng trên mobile
+    loadVoices();
+    if (synth) {
+        if (synth.onvoiceschanged !== undefined) {
+            synth.onvoiceschanged = loadVoices;
+        }
+        // Thêm cơ chế quét lại sau 500ms cho các dòng điện thoại Vivo/Android tải chậm
+        setTimeout(loadVoices, 500);
+        setTimeout(loadVoices, 1500);
     }
 
     function playTTS() {
@@ -102,9 +109,16 @@
             synth.cancel();
         }
 
+        // Đảm bảo lấy lại danh sách giọng nếu mobile chưa kịp load ở lần đầu bấm
+        if (voices.length === 0) {
+            voices = synth.getVoices();
+        }
+
         const utterance = new SpeechSynthesisUtterance(text);
         if (voices[voiceIndex]) {
             utterance.voice = voices[voiceIndex];
+        } else if (voices.length > 0) {
+            utterance.voice = voices[0]; // Mặc định lấy giọng đầu tiên nếu chưa chọn
         }
         utterance.rate = rate;
 
@@ -118,7 +132,8 @@
             statusEl.className = "text-emerald-400 font-bold";
         };
 
-        utterance.onerror = function() {
+        utterance.onerror = function(event) {
+            console.error("TTS Error:", event);
             statusEl.innerText = "Lỗi tụng đọc";
             statusEl.className = "text-red-400 font-bold";
         };
