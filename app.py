@@ -147,7 +147,8 @@ from flask import make_response
 
 @app.route("/sitemap.xml")
 def sitemap():
-  host = "https://tts-appp.onrender.com"  # Điền chính xác link Render của bạn vào đây
+  host = 'https://chuyen-van-ban-thanh-giong-doc.onrender.com'
+
   xml_content = f"""<?xml version="1.0" encoding="UTF-8"?>
     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
         <url>
@@ -158,8 +159,13 @@ def sitemap():
     </urlset>
     """
   response = make_response(xml_content)
-  response.headers["Content-Type"] = "application/xml"
+  response.headers['Content-Type'] = 'application/xml'
   return response
+
+# Xác minh Google Search Console
+@app.route('/google7cf85b3b17783f9c.html')
+def google_verify():
+  return 'google-site-verification: google7cf85b3b17783f9c.html'
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
