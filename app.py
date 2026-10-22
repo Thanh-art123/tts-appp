@@ -1,11 +1,10 @@
 import os
-import asyncio
-import edge_tts
+import subprocess
 from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 
-# Thư mục chứa audio đầu ra
+# Thư mục chứa audio xuất ra
 AUDIO_DIR = os.path.join(app.static_folder, 'audio')
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
@@ -26,7 +25,7 @@ def dong_phu():
     return render_template('dong_phu.html')
 
 @app.route('/bi-canh')
-def bi-canh():
+def bi_canh():
     return render_template('bi_canh.html')
 
 @app.route('/tts', methods=['POST'])
@@ -41,7 +40,7 @@ def text_to_speech():
         if not text:
             return jsonify({'error': 'Không có văn bản'}), 400
 
-        # Xử lý ngắt nhịp cổ phong
+        # Tiền xử lý chèn nhịp đọc cổ phong
         words = text.split()
         processed_text = ""
         for i, word in enumerate(words):
@@ -52,15 +51,20 @@ def text_to_speech():
         output_filename = "speech_output.mp3"
         output_path = os.path.join(AUDIO_DIR, output_filename)
 
-        async def generate_speech():
-            communicate = edge_tts.Communicate(processed_text, voice, rate=rate, pitch=pitch)
-            await communicate.save(output_path)
+        # Sử dụng Subprocess gọi CLI edge-tts trực tiếp (Tránh tuyệt đối lỗi Asyncio Event Loop trên Render)
+        cmd = [
+            "edge-tts",
+            "--text", processed_text,
+            "--voice", voice,
+            "--rate", rate,
+            "--pitch", pitch,
+            "--write-media", output_path
+        ]
 
-        # Chạy async cho edge-tts
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(generate_speech())
-        loop.close()
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+
+        if result.returncode != 0:
+            return jsonify({'error': f"Lỗi tạo âm thanh: {result.stderr}"}), 500
 
         return jsonify({
             'success': True, 
@@ -70,4 +74,5 @@ def text_to_speech():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
