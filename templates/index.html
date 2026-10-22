@@ -18,9 +18,9 @@
     <!-- Tùy chọn Giọng đọc & Tốc độ -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         <div>
-            <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Giọng Đọc Tiếng Việt:</label>
+            <label class="block text-xs font-bold text-amber-300 mb-1">Nguồn Đọc Tiếng Việt:</label>
             <select id="voice-select" class="w-full bg-black/90 text-amber-200 border border-amber-500/80 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-amber-400 shadow-inner cursor-pointer">
-                <option value="">Đang tìm giọng đọc Tiếng Việt...</option>
+                <option value="online_vi">⭐ Giọng Tiếng Việt Chuẩn (Tối ưu cho Vivo)</option>
             </select>
         </div>
 
@@ -55,50 +55,9 @@
 
 {% block scripts %}
 <script>
-    let synth = window.speechSynthesis;
-    let vietnameseVoices = [];
-
-    function loadVietnameseVoices() {
-        if (!synth) return;
-        let allVoices = synth.getVoices();
-        const voiceSelect = document.getElementById('voice-select');
-        if (!voiceSelect) return;
-
-        // Chỉ lọc ra các giọng có mã ngôn ngữ chứa 'vi' hoặc 'viet'
-        vietnameseVoices = allVoices.filter(v => 
-            v.lang.toLowerCase().includes('vi') || 
-            v.name.toLowerCase().includes('viet') ||
-            v.name.toLowerCase().includes('vietnamese')
-        );
-
-        voiceSelect.innerHTML = '';
-
-        if (vietnameseVoices.length > 0) {
-            vietnameseVoices.forEach((voice, index) => {
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = `${voice.name} (${voice.lang}) ⭐`;
-                voiceSelect.appendChild(option);
-            });
-        } else {
-            // Nếu điện thoại Vivo không có sẵn giọng tiếng Việt nội bộ, dùng Google Translate TTS API làm nguồn dự phòng tuyệt đối chuẩn tiếng Việt
-            const option = document.createElement('option');
-            option.value = "online_vi";
-            option.textContent = "⭐ Giọng Tiếng Việt Online Chuẩn (Tối ưu cho Vivo)";
-            voiceSelect.appendChild(option);
-        }
-    }
-
-    if (synth) {
-        synth.onvoiceschanged = loadVietnameseVoices;
-        setTimeout(loadVietnameseVoices, 300);
-        setTimeout(loadVietnameseVoices, 1000);
-    }
-
     function playTTS() {
         const text = document.getElementById('tts-text').value;
         const rate = parseFloat(document.getElementById('tts-rate').value);
-        const voiceIndex = document.getElementById('voice-select').value;
         const statusEl = document.getElementById('tts-status');
 
         if (!text.trim()) {
@@ -109,53 +68,14 @@
         statusEl.innerText = "Đang tụng đọc...";
         statusEl.className = "text-amber-400 font-bold animate-pulse";
 
-        // Nếu chọn nguồn online hoặc điện thoại không có giọng tiếng Việt hệ thống, gọi Google TTS trực tuyến
-        if (voiceIndex === "online_vi" || vietnameseVoices.length === 0) {
-            playGoogleTTSOnline(text, rate, statusEl);
-            return;
-        }
-
-        if (synth.speaking) {
-            synth.cancel();
-        }
-
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'vi-VN';
-        utterance.rate = rate;
-
-        if (vietnameseVoices[voiceIndex]) {
-            utterance.voice = vietnameseVoices[voiceIndex];
-        }
-
-        utterance.onstart = function() {
-            statusEl.innerText = "Đang tụng đọc...";
-            statusEl.className = "text-amber-400 font-bold animate-pulse";
-        };
-
-        utterance.onend = function() {
-            statusEl.innerText = "Hoàn thành";
-            statusEl.className = "text-emerald-400 font-bold";
-        };
-
-        utterance.onerror = function(event) {
-            console.error("TTS Error, fallback to online:", event);
-            playGoogleTTSOnline(text, rate, statusEl);
-        };
-
-        synth.speak(utterance);
-    }
-
-    // Hàm dự phòng sử dụng nguồn âm thanh trực tuyến chuẩn tiếng Việt 100% không lo lỗi đánh vần tiếng Anh
-    function playGoogleTTSOnline(text, rate, statusEl) {
-        // Chia nhỏ văn bản nếu quá dài để truyền vào API Google Translate TTS
-        const encodedText = encodeURIComponent(text.substring(0, 200));
+        const encodedText = encodeURIComponent(text.substring(0, 300));
         const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=vi&client=tw-ob`;
         
         let audio = new Audio(audioUrl);
         audio.playbackRate = rate;
         
         audio.onplay = function() {
-            statusEl.innerText = "Đang tụng đọc (Online)...";
+            statusEl.innerText = "Đang tụng đọc...";
             statusEl.className = "text-amber-400 font-bold animate-pulse";
         };
 
@@ -169,11 +89,15 @@
             statusEl.className = "text-red-400 font-bold";
         };
 
-        audio.play().catch(e => {
+        // Kích hoạt phát trực tiếp ngay khi người dùng vừa bấm nút
+        audio.play().then(() => {
+            statusEl.innerText = "Đang tụng đọc...";
+            statusEl.className = "text-amber-400 font-bold animate-pulse";
+        }).catch(e => {
             console.error(e);
-            alert("Trình duyệt điện thoại chặn tự động phát âm thanh. Đạo hữu hãy chạm vào màn hình thêm một lần rồi bấm Phát nhé!");
             statusEl.innerText = "Bị chặn phát âm thanh";
             statusEl.className = "text-red-400 font-bold";
+            alert("Đạo hữu hãy bấm vào nút 'Phát Âm Thanh' thêm một lần nữa để trình duyệt cấp phép chạy âm thanh nhé!");
         });
     }
 
