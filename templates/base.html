@@ -1,4 +1,4 @@
-F<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -9,28 +9,28 @@ F<!DOCTYPE html>
     <style>
         body {
             margin: 0; padding: 0;
-            background-color: #050505;
+            background-color: #0c1b2a; /* Nền xanh nước biển đậm huyền ảo */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #fef3c7; overflow-x: hidden;
         }
         .xianxia-bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-            background: #050505;
+            background: linear-gradient(to bottom, #0f2537, #0c1b2a, #070e17);
             z-index: -1;
         }
         .panel-3d {
-            background: rgba(12, 9, 7, 0.88);
+            background: rgba(15, 32, 51, 0.88);
             backdrop-filter: blur(14px);
             border: 1px solid rgba(245, 158, 11, 0.45);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(245, 158, 11, 0.15);
         }
-        /* BẢN ĐỒ TƯƠNG TÁC (HOTSPOTS) */
+        /* BẢN ĐỒ TƯƠNG TÁC: Đã ẩn hoàn toàn khung viền nét đứt, chỉ hiện nhãn tên */
         .hotspot {
             position: absolute;
             cursor: pointer;
-            border: 2px dashed rgba(245, 158, 11, 0.6);
-            background: rgba(245, 158, 11, 0.15);
-            border-radius: 16px;
+            border: none;
+            background: transparent;
+            border-radius: 12px;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
@@ -38,13 +38,12 @@ F<!DOCTYPE html>
             text-decoration: none;
         }
         .hotspot:hover {
-            border-color: #f59e0b;
-            background: rgba(245, 158, 11, 0.4);
-            box-shadow: 0 0 25px rgba(245, 158, 11, 0.8);
-            transform: scale(1.03);
+            background: rgba(245, 158, 11, 0.15);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+            transform: scale(1.02);
         }
         .hotspot-label {
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(5, 15, 25, 0.9);
             color: #fef3c7;
             border: 1px solid #f59e0b;
             padding: 4px 12px;
@@ -54,6 +53,11 @@ F<!DOCTYPE html>
             pointer-events: none;
             box-shadow: 0 4px 12px rgba(0,0,0,0.9);
             white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+        .hotspot:hover .hotspot-label {
+            background: rgba(245, 158, 11, 0.9);
+            color: #000;
         }
     </style>
 </head>
@@ -62,7 +66,7 @@ F<!DOCTYPE html>
     <div class="xianxia-bg"></div>
 
     <!-- HEADER & TRÌNH PHÁT NHẠC NỀN TÔNG MÔN -->
-    <header class="relative z-20 bg-black/85 text-amber-200 border-b border-amber-600/40 backdrop-blur-md sticky top-0 shadow-2xl">
+    <header class="relative z-20 bg-[#0c1b2a]/90 text-amber-200 border-b border-amber-600/40 backdrop-blur-md sticky top-0 shadow-2xl">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <i class="fa-solid fa-dharmachakra text-amber-400 text-3xl animate-spin" style="animation-duration: 20s;"></i>
@@ -101,11 +105,11 @@ F<!DOCTYPE html>
         </div>
     </header>
 
-  <!-- BẢN ĐỒ TÔNG MÔN TƯƠNG TÁC (IMAGE MAP 3D) -->
+    <!-- BẢN ĐỒ TÔNG MÔN TƯƠNG TÁC (IMAGE MAP 3D) -->
     <div class="relative z-20 max-w-7xl mx-auto px-4 mt-6 w-full">
         <div class="relative w-full h-[350px] md:h-[480px] rounded-2xl overflow-hidden border-2 border-amber-600/60 shadow-2xl bg-cover bg-center" style="background-image: url('{{ url_for('static', filename='music/map.jpg') }}');">
             
-            <!-- VÙNG HOTSPOT 1: Quyển sách to -> Nghe Giảng Kinh (Thu hẹp gọn gàng sát quyển sách) -->
+            <!-- VÙNG HOTSPOT 1: Quyển sách to -> Nghe Giảng Kinh -->
             <a href="/" class="hotspot" style="top: 48%; left: 10%; width: 26%; height: 35%;">
                 <span class="hotspot-label"><i class="fa-solid fa-scroll text-amber-400 mr-1"></i> Quyển Sách (Nghe Giảng Kinh)</span>
             </a>
@@ -131,6 +135,7 @@ F<!DOCTYPE html>
             </a>
         </div>
     </div>
+
     <!-- MAIN CONTENT -->
     <main class="relative z-20 max-w-7xl mx-auto px-4 my-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6" id="main-content">
         <div class="lg:col-span-2 space-y-6">
@@ -145,7 +150,7 @@ F<!DOCTYPE html>
                     <h2 class="font-black text-amber-300 text-base tracking-wider">THIÊN THƯ BẢNG</h2>
                 </div>
                 <div class="space-y-3">
-                    <div class="flex items-center justify-between p-2.5 bg-amber-950/90 border border-amber-500/70 rounded-xl">
+                    <div class="flex items-center justify-between p-2.5 bg-[#0f2027]/90 border border-amber-500/70 rounded-xl">
                         <div class="flex items-center space-x-2">
                             <span class="w-6 h-6 rounded-full bg-amber-500 text-black flex items-center justify-center font-black text-xs">1</span>
                             <div>
@@ -183,7 +188,7 @@ F<!DOCTYPE html>
     </div>
 
     <!-- FOOTER -->
-    <footer class="relative z-20 bg-black/95 text-amber-200/70 text-center py-4 text-xs border-t border-amber-900/60">
+    <footer class="relative z-20 bg-[#070e17]/95 text-amber-200/70 text-center py-4 text-xs border-t border-amber-900/60">
         <p>© 2026 Tông Môn Truyện - Tông Môn Đọc Truyện & Tu Luyện TTS.</p>
     </footer>
 
