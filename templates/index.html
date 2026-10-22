@@ -373,7 +373,8 @@
         async function handleTTS(event) {
             event.preventDefault();
             const text = document.getElementById('tts-text').value;
-            const voice = document.getElementById('tts-voice').value;
+           const voice = document.getElementById('tts-voice').value;
+formData.append('voice', voice);
             const rate = document.getElementById('tts-rate').value;
             const pitch = document.getElementById('tts-pitch').value;
             const submitBtn = document.getElementById('submit-btn');
