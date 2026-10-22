@@ -1,1 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Chế Tạp Các - Tải File Công Pháp{% endblock %}
 
+{% block content %}
+<div class="panel-3d rounded-2xl p-6">
+    <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 mb-4 flex items-center space-x-2">
+        <i class="fa-solid fa-hammer text-amber-500"></i>
+        <span>Chế Tạp Các - Tải File Truyện Công Pháp</span>
+    </h2>
+
+    <div class="border-2 border-dashed border-amber-500/60 rounded-2xl p-8 text-center bg-black/60">
+        <i class="fa-solid fa-file-circle-plus text-5xl text-amber-500 mb-3"></i>
+        <p class="text-amber-200 font-medium">Kéo thả hoặc chọn file công pháp từ máy tính</p>
+        <p class="text-xs text-amber-400/80 mt-1">File tải lên sẽ được đưa vào kho Tàng Kinh Các</p>
+        <input type="file" id="file-upload" class="hidden" onchange="alert('Đã tiếp nhận file: ' + this.files[0].name)">
+        <label for="file-upload" class="inline-block mt-4 bg-amber-600 hover:bg-amber-500 text-black font-extrabold text-sm py-2.5 px-6 rounded-xl cursor-pointer shadow-lg transition">
+            Chọn File Công Pháp (.txt, .pdf, .docx)
+        </label>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('nav-che').classList.add('active');
+</script>
+{% endblock %}
