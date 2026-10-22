@@ -40,11 +40,13 @@ def text_to_speech():
         if not text:
             return jsonify({'error': 'Không có văn bản'}), 400
 
-        # Làm sạch và chuẩn hóa định dạng pitch cho edge-tts (ví dụ: +10Hz, -20Hz)
+        # Làm sạch và giới hạn an toàn giá trị pitch để tránh lỗi 403 từ Bing TTS
         pitch_cleaned = "".join([c for c in str(raw_pitch) if c.isdigit() or c in ['+', '-']])
-        pitch = f"{pitch_cleaned}Hz" if pitch_cleaned else "+0Hz"
-        if not pitch.startswith('+') and not pitch.startswith('-'):
-            pitch = f"+{pitch}"
+        pitch_val = int(pitch_cleaned) if pitch_cleaned else 0
+        
+        # Giới hạn pitch trong khoảng an toàn của Microsoft Edge TTS (-30Hz đến +30Hz)
+        pitch_val = max(-30, min(30, pitch_val))
+        pitch = f"{'+' if pitch_val > 0 else ''}{pitch_val}Hz"
 
         # Tiền xử lý ngắt nhịp cổ phong
         words = text.split()
