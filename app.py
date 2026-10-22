@@ -33,11 +33,18 @@ def text_to_speech():
     try:
         data = request.json or {}
         text = data.get('text', '')
-        voice = data.get('voice', 'vi-VN-HoaiMyNeural')
+        voice = data.get('voice', 'vi-VN-AnNeural')
         rate = data.get('rate', '+0%')
+        raw_pitch = data.get('pitch', '+0Hz')
 
         if not text:
             return jsonify({'error': 'Không có văn bản'}), 400
+
+        # Làm sạch và giới hạn an toàn cao độ Hz từ -50 đến 100
+        pitch_str = "".join([c for c in str(raw_pitch) if c.isdigit() or c == '-'])
+        pitch_val = int(pitch_str) if pitch_str else 0
+        pitch_val = max(-50, min(100, pitch_val))
+        pitch = f"{'+' if pitch_val > 0 else ''}{pitch_val}Hz"
 
         # Tiền xử lý ngắt nhịp cổ phong
         words = text.split()
@@ -51,7 +58,7 @@ def text_to_speech():
         output_path = os.path.join(AUDIO_DIR, output_filename)
 
         async def generate_speech():
-            communicate = edge_tts.Communicate(processed_text, voice, rate=rate)
+            communicate = edge_tts.Communicate(processed_text, voice, rate=rate, pitch=pitch)
             await communicate.save(output_path)
 
         # Chạy bất đồng bộ an toàn trên Render
