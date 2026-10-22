@@ -16,8 +16,8 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-amber-950/60 p-3.5 rounded-xl border border-amber-700/50">
             <div>
-                <label class="block text-xs font-bold text-amber-300 mb-1">Giọng Tôn Giả:</label>
-                <select id="tts-voice" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
+                <label class="block text-xs font-bold text-amber-300 mb-1">Giọng Tôn Giả (Đổi trực tiếp):</label>
+                <select id="tts-voice" onchange="autoReGenerate()" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
                     <option value="vi-VN-HoaiMyNeural">Hoài Mỹ (Nữ - Thanh thoát)</option>
                     <option value="vi-VN-NamMinhNeural">Nam Minh (Nam - Uy nghiêm)</option>
                 </select>
@@ -27,15 +27,14 @@
                     <span>Tốc độ đọc (Trực tiếp):</span>
                     <span id="rate-val" class="text-amber-400">1.0x</span>
                 </div>
-                <!-- Thay đổi tốc độ trực tiếp trên audio đang phát khi kéo slider -->
                 <input type="range" min="0.5" max="2.0" step="0.1" value="1.0" id="tts-rate" oninput="updateAudioRate(this.value)" class="w-full accent-amber-500 mt-2">
             </div>
             <div>
                 <div class="flex justify-between text-xs font-bold text-amber-300 mb-1">
-                    <span>Cao độ (-200 đến 200Hz):</span>
+                    <span>Cao độ Hz (Đổi trực tiếp):</span>
                     <span id="pitch-val" class="text-amber-400">0Hz</span>
                 </div>
-                <input type="range" min="-200" max="200" value="0" id="tts-pitch" oninput="document.getElementById('pitch-val').innerText = this.value + 'Hz'" class="w-full accent-amber-500 mt-2">
+                <input type="range" min="-200" max="200" value="0" id="tts-pitch" onchange="autoReGenerate()" oninput="document.getElementById('pitch-val').innerText = this.value + 'Hz'" class="w-full accent-amber-500 mt-2">
             </div>
         </div>
 
@@ -49,7 +48,7 @@
         <div class="flex justify-between items-center mb-2">
             <p class="text-xs font-bold text-amber-300 flex items-center space-x-2">
                 <i class="fa-solid fa-circle-check text-emerald-400"></i>
-                <span>Linh Âm Đã Tụ Thành Công (Có thể kéo chỉnh tốc độ bên trên khi đang nghe):</span>
+                <span>Linh Âm Đã Tụ (Tự động đổi Giọng / Pitch Hz giữ nguyên vị trí đang nghe):</span>
             </p>
             <a id="download-btn" href="#" download="tu-tien-audio.mp3" class="text-xs bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-3 py-1.5 rounded-lg shadow transition flex items-center space-x-1">
                 <i class="fa-solid fa-download"></i>
@@ -65,7 +64,6 @@
 <script>
     document.getElementById('nav-home').classList.add('active');
 
-    // Hàm thay đổi tốc độ trực tiếp khi thanh trượt thay đổi
     function updateAudioRate(val) {
         document.getElementById('rate-val').innerText = parseFloat(val).toFixed(1) + 'x';
         const audioPlayer = document.getElementById('audio-player');
@@ -74,12 +72,21 @@
         }
     }
 
-    async function handleTTS(event) {
-        event.preventDefault();
+    // Tự động tái ngưng tụ khi đổi Giọng hoặc kéo Pitch Hz mà không làm ngắt vị trí đang nghe
+    function autoReGenerate() {
+        const audioPlayer = document.getElementById('audio-player');
+        if (audioPlayer && !audioPlayer.paused && audioPlayer.src) {
+            const currentTime = audioPlayer.currentTime; // Lưu lại giây đang phát
+            handleTTS(null, currentTime);
+        }
+    }
+
+    async function handleTTS(event, preserveTime = 0) {
+        if (event) event.preventDefault();
+        
         const text = document.getElementById('tts-text').value;
         const voice = document.getElementById('tts-voice').value;
         const rateVal = document.getElementById('tts-rate').value;
-        // Chuyển đổi giá trị tốc độ x sang % để gửi lên server edge-tts nếu cần (ví dụ 1.2x -> +20%)
         const ratePercent = Math.round((parseFloat(rateVal) - 1.0) * 100);
         const pitch = document.getElementById('tts-pitch').value;
         
@@ -88,8 +95,10 @@
         const audioPlayer = document.getElementById('audio-player');
         const downloadBtn = document.getElementById('download-btn');
 
-        submitBtn.innerText = "⚡ Đang Vận Công Ngưng Tụ Âm Thanh...";
-        submitBtn.disabled = true;
+        if (!preserveTime) {
+            submitBtn.innerText = "⚡ Đang Vận Công Ngưng Tụ Âm Thanh...";
+            submitBtn.disabled = true;
+        }
 
         const formData = new URLSearchParams();
         formData.append('text', text);
@@ -113,8 +122,12 @@
             downloadBtn.href = audioUrl;
             audioContainer.classList.remove('hidden');
             
-            // Đồng bộ tốc độ hiện tại vào audio player
             audioPlayer.playbackRate = parseFloat(rateVal);
+            
+            // Nếu chuyển đổi khi đang phát, nhảy đến vị trí giây đang nghe dở
+            if (preserveTime > 0) {
+                audioPlayer.currentTime = preserveTime;
+            }
             audioPlayer.play();
         } catch (error) {
             alert("Thất bại: " + error.message);
