@@ -8,34 +8,34 @@ app = Flask(__name__)
 
 def add_xianxia_pauses(text):
     """
-    Hàm tự động ngắt câu thông minh theo chuẩn 10-15 từ
-    và chèn khoảng nghỉ SSML cho giọng đọc tu tiên cuốn hút.
+    Tự động ngắt nhịp tu tiên thông minh: cứ 12 - 15 từ sẽ chèn khoảng nghỉ
+    giúp thính giả nghe cuốn hút và đúng nhịp độ.
     """
-    # Chia nhỏ văn bản thành các dòng/câu nhỏ
     lines = text.split('\n')
-    processed_text = ""
+    processed_lines = []
 
     for line in lines:
         words = line.split()
         if not words:
+            processed_lines.append('')
             continue
         
-        # Cứ mỗi 12-15 từ sẽ thêm khoảng nghỉ nhẹ (300ms)
+        # Nhóm 13 từ thành 1 cụm ngắt nhịp
         chunk_size = 13
         chunks = [' '.join(words[i:i+chunk_size]) for i in range(0, len(words), chunk_size)]
         
-        # Ghép lại kèm thẻ nghỉ SSML hoặc dấu ngắt nhịp
+        # Nối các cụm từ lại bằng khoảng dừng tự nhiên
         line_processed = " ... ".join(chunks)
-        processed_text += line_processed + " ... ... \n"
+        processed_lines.append(line_processed)
 
-    return processed_text
+    return " ... ... \n".join(processed_lines)
 
 @app.route('/')
 def home():
     return render_template('index.html')
 
 @app.route('/tang-kinh-cac')
-def tang_kinh-cac():
+def tang_kinh_cac():
     return render_template('tang_kinh_cac.html')
 
 @app.route('/che-tap-cac')
@@ -61,7 +61,7 @@ def generate_tts():
         if not raw_text:
             return "Vui lòng nhập nội dung văn bản!", 400
 
-        # Áp dụng chuẩn ngắt nhịp tự động theo từ
+        # Áp dụng khuôn mẫu ngắt nhịp tu tiên cuốn hút
         formatted_text = add_xianxia_pauses(raw_text)
 
         rate_str = f"{int(rate):+d}%"
