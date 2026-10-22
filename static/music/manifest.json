@@ -1,1 +1,21 @@
-
+{
+  "name": "Tông Môn Tu Luyện TTS",
+  "short_name": "Tông Môn",
+  "description": "Ứng dụng Đọc Kinh Văn & Chuyển Văn Bản Thành Giọng Đọc Thần Âm",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#d97706",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3502/3502685.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3502/3502685.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
