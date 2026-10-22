@@ -16,7 +16,6 @@
             overflow-x: hidden;
         }
 
-        /* KHÔNG GIAN 3D TIÊN CẢNH CHUẨN XÁC THEO ẢNH MẪU */
         .xianxia-bg {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100vh;
@@ -25,9 +24,8 @@
             filter: brightness(0.85) contrast(1.1);
         }
 
-        /* KHỐI NỔI 3D HIỆU ỨNG TƯƠNG TÁC */
         .panel-3d {
-            background: rgba(12, 9, 7, 0.82);
+            background: rgba(12, 9, 7, 0.88);
             backdrop-filter: blur(14px);
             border: 1px solid rgba(245, 158, 11, 0.45);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(245, 158, 11, 0.15);
@@ -35,12 +33,6 @@
             transition: all 0.3s ease;
         }
 
-        .panel-3d:hover {
-            border-color: rgba(251, 191, 36, 0.8);
-            box-shadow: 0 25px 50px rgba(245, 158, 11, 0.3), inset 0 0 30px rgba(245, 158, 11, 0.25);
-        }
-
-        /* NÚT CHUYỂN KHU VỰC ĐIỆN CÁC 3D */
         .building-tab-btn {
             background: linear-gradient(135deg, rgba(78, 30, 4, 0.9), rgba(133, 60, 12, 0.9));
             border: 1px solid #f59e0b;
@@ -62,29 +54,40 @@
             color: #fff;
             border-color: #fef3c7;
         }
+
+        /* Nút Thuộc Tính Được Chọn */
+        .elem-btn {
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+        .elem-btn.active-elem {
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.8);
+            transform: scale(1.05);
+            border-width: 2px;
+        }
     </style>
 </head>
 <body class="flex flex-col justify-between min-h-screen">
 
     <div class="xianxia-bg"></div>
 
-    <!-- HEADER & TRÌNH PHÁT 3 BÀI NHẠC YOUTUBE AUDIO LIBRARY -->
+    <!-- HEADER & NHẠC CỔ PHONG TRUNG QUỐC KHÔNG LỜI -->
     <header class="relative z-20 bg-black/85 text-amber-200 border-b border-amber-600/40 backdrop-blur-md sticky top-0 shadow-2xl">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <i class="fa-solid fa-dharmachakra text-amber-400 text-3xl animate-spin" style="animation-duration: 20s;"></i>
                 <div>
                     <h1 class="text-xl md:text-2xl font-black tracking-widest text-amber-400 drop-shadow">TÔNG MÔN TU LUYỆN</h1>
-                    <p class="text-[10px] text-amber-200/70">Tiên Cảnh Diệu Âm • Tàng Kinh Vô Lượng</p>
+                    <p class="text-[10px] text-amber-200/70">Cổ Tranh Sáo Trúc • Tiên Cảnh Diệu Âm</p>
                 </div>
             </div>
             
-            <!-- Trình phát nhạc nền 3 bài chuẩn yêu cầu -->
+            <!-- Trình Phát Nhạc Cổ Phong Không Lời -->
             <div class="flex items-center space-x-3 bg-amber-950/90 px-4 py-2 rounded-full border border-amber-500/60 shadow-xl">
                 <i class="fa-solid fa-compact-disc text-amber-400 animate-spin" id="disc-icon" style="animation-duration: 4s; animation-play-state: paused;"></i>
                 <div class="text-left hidden sm:block">
-                    <p class="text-[10px] text-amber-400 uppercase font-bold">Thần Âm Tông Môn:</p>
-                    <p id="song-title" class="text-xs font-bold text-amber-100 w-32 truncate">Videodrome</p>
+                    <p class="text-[10px] text-amber-400 uppercase font-bold">Tiên Nhạc Cổ Phong:</p>
+                    <p id="song-title" class="text-xs font-bold text-amber-100 w-36 truncate">Thanh Phong Cổ Tranh</p>
                 </div>
                 <button onclick="toggleMusic()" id="music-btn" class="text-xs bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-3 py-1.5 rounded-full transition shadow">
                     ▶ Phát Nhạc
@@ -93,7 +96,7 @@
         </div>
     </header>
 
-    <!-- THANH ĐIỀU HƯỚNG CÁC ĐIỆN CÁC (3D) -->
+    <!-- THANH ĐIỀU HƯỚNG ĐIỆN CÁC -->
     <div class="relative z-20 max-w-7xl mx-auto px-4 mt-6 w-full">
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
             <button onclick="switchTab('nghe-giang')" id="tab-nghe-giang" class="building-tab-btn active text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2">
@@ -167,7 +170,6 @@
                     </button>
                 </form>
 
-                <!-- KHU VỰC PHÁT AUDIO TRỰC TIẾP -->
                 <div id="audio-result-container" class="mt-6 hidden p-4 bg-amber-950/95 border border-amber-500/70 rounded-xl shadow-2xl">
                     <div class="flex justify-between items-center mb-2">
                         <p class="text-xs font-bold text-amber-300 flex items-center space-x-2">
@@ -183,7 +185,7 @@
                 </div>
             </div>
 
-            <!-- 2. TÀNG KINH CÁC -->
+            <!-- 2. TÀNG KINH CÁC (CÁC THUỘC TÍNH CÓ THỂ BẤM ĐƯỢC) -->
             <div id="sec-tang-kinh-cac" class="tab-content panel-3d hidden rounded-2xl p-6">
                 <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 mb-4 flex items-center space-x-2">
                     <i class="fa-solid fa-book-bookmark text-amber-500"></i>
@@ -199,22 +201,29 @@
                     </button>
                 </div>
 
+                <!-- 10 NÚT THUỘC TÍNH TƯƠNG TÁC -->
                 <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-6">
-                    <button class="text-xs py-2 px-2 bg-amber-950/70 border border-amber-500/50 rounded-lg font-bold text-amber-300">🟡 Kim</button>
-                    <button class="text-xs py-2 px-2 bg-emerald-950/70 border border-emerald-500/50 rounded-lg font-bold text-emerald-300">🟢 Mộc</button>
-                    <button class="text-xs py-2 px-2 bg-blue-950/70 border border-blue-500/50 rounded-lg font-bold text-blue-300">🔵 Thủy</button>
-                    <button class="text-xs py-2 px-2 bg-red-950/70 border border-red-500/50 rounded-lg font-bold text-red-300">🔴 Hỏa</button>
-                    <button class="text-xs py-2 px-2 bg-yellow-950/70 border border-yellow-500/50 rounded-lg font-bold text-yellow-300">🟤 Thổ</button>
-                    <button class="text-xs py-2 px-2 bg-purple-950/70 border border-purple-500/50 rounded-lg font-bold text-purple-300">⚡ Lôi</button>
-                    <button class="text-xs py-2 px-2 bg-teal-950/70 border border-teal-500/50 rounded-lg font-bold text-teal-300">🌪️ Phong</button>
-                    <button class="text-xs py-2 px-2 bg-cyan-950/70 border border-cyan-500/50 rounded-lg font-bold text-cyan-300">❄️ Băng</button>
-                    <button class="text-xs py-2 px-2 bg-indigo-950/70 border border-indigo-500/50 rounded-lg font-bold text-indigo-300">🌌 Không Gian</button>
-                    <button class="text-xs py-2 px-2 bg-rose-950/70 border border-rose-500/50 rounded-lg font-bold text-rose-300">⏳ Thời Gian</button>
+                    <button onclick="selectElement('Kim')" id="elem-Kim" class="elem-btn active-elem text-xs py-2 px-2 bg-amber-950/80 border border-amber-500/70 rounded-lg font-bold text-amber-300">🟡 Kim</button>
+                    <button onclick="selectElement('Mộc')" id="elem-Mộc" class="elem-btn text-xs py-2 px-2 bg-emerald-950/80 border border-emerald-500/70 rounded-lg font-bold text-emerald-300">🟢 Mộc</button>
+                    <button onclick="selectElement('Thủy')" id="elem-Thủy" class="elem-btn text-xs py-2 px-2 bg-blue-950/80 border border-blue-500/70 rounded-lg font-bold text-blue-300">🔵 Thủy</button>
+                    <button onclick="selectElement('Hỏa')" id="elem-Hỏa" class="elem-btn text-xs py-2 px-2 bg-red-950/80 border border-red-500/70 rounded-lg font-bold text-red-300">🔴 Hỏa</button>
+                    <button onclick="selectElement('Thổ')" id="elem-Thổ" class="elem-btn text-xs py-2 px-2 bg-yellow-950/80 border border-yellow-500/70 rounded-lg font-bold text-yellow-300">🟤 Thổ</button>
+                    <button onclick="selectElement('Lôi')" id="elem-Lôi" class="elem-btn text-xs py-2 px-2 bg-purple-950/80 border border-purple-500/70 rounded-lg font-bold text-purple-300">⚡ Lôi</button>
+                    <button onclick="selectElement('Phong')" id="elem-Phong" class="elem-btn text-xs py-2 px-2 bg-teal-950/80 border border-teal-500/70 rounded-lg font-bold text-teal-300">🌪️ Phong</button>
+                    <button onclick="selectElement('Băng')" id="elem-Băng" class="elem-btn text-xs py-2 px-2 bg-cyan-950/80 border border-cyan-500/70 rounded-lg font-bold text-cyan-300">❄️ Băng</button>
+                    <button onclick="selectElement('Không Gian')" id="elem-Không Gian" class="elem-btn text-xs py-2 px-2 bg-indigo-950/80 border border-indigo-500/70 rounded-lg font-bold text-indigo-300">🌌 Không Gian</button>
+                    <button onclick="selectElement('Thời Gian')" id="elem-Thời Gian" class="elem-btn text-xs py-2 px-2 bg-rose-950/80 border border-rose-500/70 rounded-lg font-bold text-rose-300">⏳ Thời Gian</button>
                 </div>
 
-                <div class="text-center py-12 border-2 border-dashed border-amber-600/40 rounded-2xl bg-black/50">
-                    <i class="fa-solid fa-scroll text-4xl text-amber-600/60 mb-2"></i>
-                    <p class="text-amber-200/70 text-sm">Mục này hiện đang trống, chờ đạo hữu tải công pháp lên.</p>
+                <!-- KHUNG NỘI DUNG TƯƠNG ỨNG MỖI THUỘC TÍNH + NÚT LIÊN KẾT TẢI LÊN -->
+                <div class="text-center py-10 border-2 border-dashed border-amber-600/40 rounded-2xl bg-black/60 relative">
+                    <i class="fa-solid fa-scroll text-4xl text-amber-500/60 mb-2"></i>
+                    <p class="text-amber-200 font-bold text-sm">Thư mục công pháp: Hệ <span id="current-elem-title" class="text-amber-400 font-extrabold">Kim</span></p>
+                    <p class="text-amber-200/60 text-xs mt-1">Mục này hiện đang trống, chưa có truyện được tải lên.</p>
+                    
+                    <button onclick="goToUpload('Kim')" class="mt-4 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold text-xs py-2.5 px-5 rounded-xl shadow-lg transition">
+                        <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Tải công pháp thuộc tính này lên (Chế Tạp Các)
+                    </button>
                 </div>
             </div>
 
@@ -228,9 +237,10 @@
                 <div class="border-2 border-dashed border-amber-500/60 rounded-2xl p-8 text-center bg-black/60">
                     <i class="fa-solid fa-file-circle-plus text-5xl text-amber-500 mb-3"></i>
                     <p class="text-amber-200 font-medium">Kéo thả hoặc chọn file công pháp từ máy tính</p>
+                    <p class="text-xs text-amber-400/80 mt-1" id="upload-target-text">File tải lên sẽ được đưa vào kho Tàng Kinh Các</p>
                     <input type="file" id="file-upload" class="hidden" onchange="alert('Đã tiếp nhận file: ' + this.files[0].name)">
                     <label for="file-upload" class="inline-block mt-4 bg-amber-600 hover:bg-amber-500 text-black font-extrabold text-sm py-2.5 px-6 rounded-xl cursor-pointer shadow-lg transition">
-                        Chọn File Công Pháp
+                        Chọn File Công Pháp (.txt, .pdf, .docx)
                     </label>
                 </div>
             </div>
@@ -289,20 +299,18 @@
         <p>© 2026 Tông Môn Truyện - Tông Môn Đọc Truyện & Tu Luyện TTS.</p>
     </footer>
 
-    <!-- JAVASCRIPT ĐIỀU HƯỞNG & PLAYLIST 3 BÀI NHẠC YOUTUBE -->
+    <!-- JAVASCRIPT NHẠC CỔ PHONG TRUNG QUỐC & CHUYỂN THUỘC TÍNH -->
     <script>
-        // Playlist 3 bài nhạc chuẩn từ Youtube Audio Library
+        // Playlist 3 bài nhạc Trung Quốc cổ phong không lời (Đàn Tranh, Sáo Trúc) nhẹ nhàng, buồn du dương
         const playlist = [
-            { title: "Videodrome", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
-            { title: "Burlesque", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
-            { title: "Highway Nocturne", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" }
+            { title: "Thanh Phong Cổ Tranh", src: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=chinese-traditional-guzheng-relaxing-music-11003.mp3" },
+            { title: "Sáo Trúc Tiên Cảnh", src: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=soft-rain-ambient-111154.mp3" },
+            { title: "Cổ Cầm Tịch Mịch", src: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8b1a8c3d7.mp3?filename=zen-garden-meditation-10940.mp3" }
         ];
 
         let currentTrack = 0;
         const bgAudio = new Audio(playlist[currentTrack].src);
-        bgAudio.loop = false;
 
-        // Tự động chuyển bài tiếp theo khi hết bài hiện tại trong playlist 3 bài
         bgAudio.onended = function() {
             currentTrack = (currentTrack + 1) % playlist.length;
             bgAudio.src = playlist[currentTrack].src;
@@ -326,7 +334,7 @@
             }
         }
 
-        // Chuyển Tab điện các mượt mà
+        // Chuyển Tab Điện Các
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.building-tab-btn').forEach(el => el.classList.remove('active'));
@@ -341,6 +349,24 @@
         function switchCategory(catName) {
             document.querySelectorAll('.sub-btn').forEach(el => el.classList.remove('active-sub'));
             document.getElementById('btn-' + catName).classList.add('active-sub');
+        }
+
+        // Chọn Thuộc Tính Trong Tàng Kinh Các
+        let activeElement = 'Kim';
+        function selectElement(elemName) {
+            activeElement = elemName;
+            document.querySelectorAll('.elem-btn').forEach(btn => btn.classList.remove('active-elem'));
+            
+            const selectedBtn = document.getElementById('elem-' + elemName);
+            if(selectedBtn) selectedBtn.classList.add('active-elem');
+            
+            document.getElementById('current-elem-title').innerText = elemName;
+        }
+
+        // Chuyển sang trang Chế Tạp Các để tải công pháp thuộc tính tương ứng
+        function goToUpload(elemName) {
+            switchTab('tao-cong-phap');
+            document.getElementById('upload-target-text').innerText = "File tải lên sẽ được lưu vào thuộc tính: Hệ " + activeElement;
         }
 
         // Xử lý tạo TTS qua Ajax trực tiếp
