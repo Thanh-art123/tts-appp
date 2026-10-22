@@ -28,8 +28,8 @@
         .hotspot {
             position: absolute;
             cursor: pointer;
-            border: 2px dashed rgba(245, 158, 11, 0.5);
-            background: rgba(245, 158, 11, 0.1);
+            border: 2px dashed rgba(245, 158, 11, 0.6);
+            background: rgba(245, 158, 11, 0.15);
             border-radius: 16px;
             transition: all 0.3s ease;
             display: flex;
@@ -39,7 +39,7 @@
         }
         .hotspot:hover {
             border-color: #f59e0b;
-            background: rgba(245, 158, 11, 0.35);
+            background: rgba(245, 158, 11, 0.4);
             box-shadow: 0 0 25px rgba(245, 158, 11, 0.8);
             transform: scale(1.03);
         }
@@ -101,11 +101,11 @@
         </div>
     </header>
 
-    <!-- BẢN ĐỒ BẢN TÔNG MÔN TƯƠNG TÁC (IMAGE MAP 3D) -->
+    <!-- BẢN ĐỒ TÔNG MÔN TƯƠNG TÁC (IMAGE MAP 3D) -->
     <div class="relative z-20 max-w-7xl mx-auto px-4 mt-6 w-full">
         <div class="relative w-full rounded-2xl overflow-hidden border-2 border-amber-600/60 shadow-2xl bg-black">
-            <!-- Ảnh bản đồ do đạo hữu tải lên -->
-           <img src="{{ url_for('static', filename='map.jpg') }}" class="w-full h-[320px] md:h-[450px] object-cover" alt="Tông môn bản đồ">
+            <!-- Ảnh bản đồ sắc nét -->
+            <img src="https://images.rawpixel.com/image_800/cwvhY29sbGVjdGlvbnMvbWVkaWEvczNkMTE3NDkyOC5qcGc.jpg" class="w-full h-[320px] md:h-[450px] object-cover" alt="Tông môn bản đồ">
 
             <!-- VÙNG HOTSPOT 1: Quyển sách to -> Nghe Giảng Kinh -->
             <a href="/" class="hotspot" style="top: 48%; left: 5%; width: 35%; height: 42%;">
@@ -163,6 +163,28 @@
         </div>
     </main>
 
+    <!-- BẢNG POPUP KHO TÀI NGUYÊN NHẠC TÔNG MÔN -->
+    <div id="resource-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="panel-3d rounded-2xl max-w-md w-full mx-4 p-6 relative border border-amber-500/80 shadow-2xl">
+            <button onclick="closeResourceModal()" class="absolute top-4 right-4 text-amber-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <h3 class="text-lg font-extrabold text-amber-400 border-b border-amber-600/40 pb-3 mb-4 flex items-center space-x-2">
+                <i class="fa-solid fa-music text-amber-500"></i>
+                <span>Kho Nhạc Tài Nguyên Tông Môn</span>
+            </h3>
+
+            <div id="resource-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+
+            <div class="mt-5 text-right border-t border-amber-800/60 pt-3">
+                <button onclick="closeResourceModal()" class="text-xs bg-amber-600 hover:bg-amber-500 text-black font-bold px-4 py-2 rounded-xl transition">
+                    Đóng Kho
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- FOOTER -->
     <footer class="relative z-20 bg-black/95 text-amber-200/70 text-center py-4 text-xs border-t border-amber-900/60">
         <p>© 2026 Tông Môn Truyện - Tông Môn Đọc Truyện & Tu Luyện TTS.</p>
@@ -182,23 +204,100 @@
         bgAudio.volume = 0.3;
         bgAudio.loop = true;
 
+        bgAudio.onended = function() {
+            currentTrack = (currentTrack + 1) % playlist.length;
+            playTrack(currentTrack);
+        };
+
         function changeMusicVolume(val) {
-            if (bgAudio) bgAudio.volume = parseFloat(val);
+            if (bgAudio) {
+                bgAudio.volume = parseFloat(val);
+            }
+        }
+
+        function playTrack(index) {
+            currentTrack = index;
+            bgAudio.pause();
+            bgAudio = new Audio(playlist[index].src);
+            bgAudio.volume = parseFloat(document.getElementById('bg-volume').value);
+            bgAudio.loop = true;
+            window.sharedAudio = bgAudio;
+            document.getElementById('song-title').innerText = playlist[index].title;
+            
+            bgAudio.play().then(() => {
+                updatePlayButtonUI(true);
+            }).catch(e => console.log(e));
+            
+            closeResourceModal();
+        }
+
+        function updatePlayButtonUI(isPlaying) {
+            const btn = document.getElementById('music-btn');
+            const disc = document.getElementById('disc-icon');
+            if (isPlaying) {
+                btn.innerText = "⏸ Dừng";
+                btn.classList.replace('bg-amber-500', 'bg-red-600');
+                if (disc) disc.style.animationPlayState = 'running';
+            } else {
+                btn.innerText = "▶ Phát";
+                btn.classList.replace('bg-red-600', 'bg-amber-500');
+                if (disc) disc.style.animationPlayState = 'paused';
+            }
+        }
+
+        function openResourceModal() {
+            const listContainer = document.getElementById('resource-list');
+            listContainer.innerHTML = '';
+            
+            playlist.forEach((track, index) => {
+                const item = document.createElement('div');
+                item.className = `flex justify-between items-center p-3 rounded-xl border transition cursor-pointer ${index === currentTrack ? 'bg-amber-900/80 border-amber-400 text-amber-200' : 'bg-black/60 border-amber-700/40 text-amber-300 hover:bg-amber-950/60'}`;
+                item.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid ${index === currentTrack ? 'fa-compact-disc text-amber-400 animate-spin' : 'fa-music text-amber-600'} text-xs"></i>
+                        <span class="text-xs font-bold truncate w-56">${track.title}</span>
+                    </div>
+                    <span class="text-[10px] bg-amber-500 text-black px-2 py-0.5 rounded-full font-bold">${index === currentTrack ? 'Đang phát' : 'Chọn'}</span>
+                `;
+                item.onclick = () => playTrack(index);
+                listContainer.appendChild(item);
+            });
+
+            document.getElementById('resource-modal').classList.remove('hidden');
+        }
+
+        function closeResourceModal() {
+            document.getElementById('resource-modal').classList.add('hidden');
+        }
+
+        function loadCustomMusic(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const customUrl = URL.createObjectURL(file);
+                bgAudio.pause();
+                bgAudio = new Audio(customUrl);
+                bgAudio.volume = parseFloat(document.getElementById('bg-volume').value);
+                bgAudio.loop = true;
+                window.sharedAudio = bgAudio;
+                
+                document.getElementById('song-title').innerText = file.name;
+                bgAudio.play();
+                updatePlayButtonUI(true);
+            }
         }
 
         function toggleMusic() {
             const btn = document.getElementById('music-btn');
             const disc = document.getElementById('disc-icon');
             if (bgAudio.paused) {
-                bgAudio.play();
-                btn.innerText = "⏸ Dừng";
-                btn.classList.replace('bg-amber-500', 'bg-red-600');
-                if (disc) disc.style.animationPlayState = 'running';
+                bgAudio.play().then(() => {
+                    updatePlayButtonUI(true);
+                }).catch(() => {
+                    playTrack((currentTrack + 1) % playlist.length);
+                });
             } else {
                 bgAudio.pause();
-                btn.innerText = "▶ Phát";
-                btn.classList.replace('bg-red-600', 'bg-amber-500');
-                if (disc) disc.style.animationPlayState = 'paused';
+                updatePlayButtonUI(false);
             }
         }
     </script>
