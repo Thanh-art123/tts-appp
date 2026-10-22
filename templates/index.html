@@ -5,72 +5,34 @@
 <div class="panel-3d rounded-2xl p-6 relative space-y-6">
     <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
         <i class="fa-solid fa-scroll text-amber-500"></i>
-        <span>Giảng Kinh Điện - Tùy Chỉnh Chuyên Sâu Hz & Tốc Độ TTS</span>
+        <span>Giảng Kinh Điện - Giọng Đọc Tông Môn (Nam & Nữ)</span>
     </h2>
 
     <div class="space-y-4">
         <div>
             <label class="block text-xs font-semibold text-amber-200/90 mb-1">Nhập kinh văn / chương truyện tu tiên cần ngâm tụng:</label>
-            <textarea id="tts-text" rows="4" placeholder="Nhập khẩu quyết hoặc nội dung chương truyện tại đây..." class="w-full p-3 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none bg-black/75 text-amber-100 placeholder-amber-700/70 shadow-inner" required></textarea>
+            <textarea id="tts-text" rows="5" placeholder="Nhập khẩu quyết hoặc nội dung chương truyện tại đây..." class="w-full p-3 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none bg-black/75 text-amber-100 placeholder-amber-700/70 shadow-inner" required></textarea>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <!-- Chọn Giọng Đọc Cơ Bản -->
+            <!-- Chọn Giọng Đọc -->
             <div>
-                <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Giọng Gốc:</label>
+                <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Giọng Đọc:</label>
                 <select id="voice-select" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
-                    <option value="vi-VN-HoaiMyNeural">👩 Hoài Mỹ (Giọng Nữ Dịu Dàng / Chuẩn Đọc Truyện)</option>
-                    <option value="vi-VN-NamMinhNeural">👨 Nam Minh (Giọng Nam Trầm Ấm / Tông Chủ)</option>
-                    <option value="en-US-ChristopherNeural">🎙 Christopher (Giọng Nam Tây Phương / Adam Style)</option>
+                    <option value="vi-VN-HoaiMyNeural">👩 Hoài Mỹ (Giọng Nữ Dịu Dàng, Truyền Cảm)</option>
+                    <option value="vi-VN-NamMinhNeural">👨 Nam Minh (Giọng Nam Trầm Ấm, Uy Nghi)</option>
                 </select>
             </div>
 
-            <!-- Gợi ý Nhanh Phong Cách -->
+            <!-- Tốc Độ Đọc -->
             <div>
-                <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Mẫu Biến Hóa Nhanh:</label>
-                <select id="quick-preset" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none" onchange="applyQuickPreset(this.value)">
-                    <option value="default">☯ Mặc Định (Tự Nhiên)</option>
-                    <option value="old_master">📜 Lão Tôn / Nam Trầm Sâu (-30Hz, 1.0x)</option>
-                    <option value="deep_woman">🌹 Nữ Trầm Mị (-15Hz, 1.0x)</option>
-                    <option value="baby">👶 Em Bé / Đồng Tử (+40Hz, 1.2x)</option>
-                    <option value="hero">⚔ Kiếm Đế Uy Nghi (+10Hz, 1.5x)</option>
+                <label class="block text-xs font-bold text-amber-300 mb-1">Tốc Độ Ngâm Tụng:</label>
+                <select id="rate-select" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
+                    <option value="-15%">Chậm Rãi (-15%)</option>
+                    <option value="+0%" selected>Bình Thường (0%)</option>
+                    <option value="+15%">Nhanh (+15%)</option>
+                    <option value="+30%">Nhanh Vù Vù (+30%)</option>
                 </select>
-            </div>
-        </div>
-
-        <!-- BẢNG ĐIỀU CHỈNH THỦ CÔNG CHUYÊN SÂU (-50Hz đến 100Hz & 0.9x đến 3.5x) -->
-        <div class="p-4 bg-amber-950/40 border border-amber-600/40 rounded-xl space-y-3">
-            <h3 class="text-xs font-extrabold text-amber-400 uppercase tracking-wider flex items-center space-x-2">
-                <i class="fa-solid fa-sliders text-amber-500"></i>
-                <span>Bảng Tinh Chỉnh Thủ Công (-50Hz đến 100Hz | 0.9x - 3.5x)</span>
-            </h3>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- Tùy chỉnh Cao độ Hz (-50 đến 100) -->
-                <div>
-                    <div class="flex justify-between text-xs text-amber-200 mb-1">
-                        <span>Cao Độ (Pitch Hz):</span>
-                        <span id="pitch-val" class="font-bold text-amber-400">+0Hz</span>
-                    </div>
-                    <input type="range" id="pitch-range" min="-50" max="100" step="1" value="0" oninput="updatePitchDisplay(this.value)" class="w-full h-1.5 accent-amber-500 rounded-lg cursor-pointer">
-                    <div class="flex justify-between text-[10px] text-amber-400/60 mt-0.5">
-                        <span>-50Hz (Trầm sâu)</span>
-                        <span>+100Hz (Cao vút)</span>
-                    </div>
-                </div>
-
-                <!-- Tùy chỉnh Tốc độ (0.9x đến 3.5x) -->
-                <div>
-                    <div class="flex justify-between text-xs text-amber-200 mb-1">
-                        <span>Tốc Độ Đọc:</span>
-                        <span id="rate-val" class="font-bold text-amber-400">1.0x</span>
-                    </div>
-                    <input type="range" id="rate-range" min="0.9" max="3.5" step="0.1" value="1.0" oninput="updateRateDisplay(this.value)" class="w-full h-1.5 accent-amber-500 rounded-lg cursor-pointer">
-                    <div class="flex justify-between text-[10px] text-amber-400/60 mt-0.5">
-                        <span>0.9x (Chậm)</span>
-                        <span>3.5x (Siêu tốc)</span>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -93,54 +55,10 @@
 
 {% block scripts %}
 <script>
-    function updatePitchDisplay(val) {
-        document.getElementById('pitch-val').innerText = (val > 0 ? "+" : "") + val + "Hz";
-    }
-
-    function updateRateDisplay(val) {
-        document.getElementById('rate-val').innerText = parseFloat(val).toFixed(1) + "x";
-    }
-
-    function applyQuickPreset(preset) {
-        const pitchRange = document.getElementById('pitch-range');
-        const rateRange = document.getElementById('rate-range');
-        const voiceSelect = document.getElementById('voice-select');
-
-        if (preset === 'old_master') {
-            voiceSelect.value = "vi-VN-NamMinhNeural";
-            pitchRange.value = -30;
-            rateRange.value = 1.0;
-        } else if (preset === 'deep_woman') {
-            voiceSelect.value = "vi-VN-HoaiMyNeural";
-            pitchRange.value = -15;
-            rateRange.value = 1.0;
-        } else if (preset === 'baby') {
-            voiceSelect.value = "vi-VN-HoaiMyNeural";
-            pitchRange.value = 40;
-            rateRange.value = 1.2;
-        } else if (preset === 'hero') {
-            voiceSelect.value = "vi-VN-NamMinhNeural";
-            pitchRange.value = 10;
-            rateRange.value = 1.5;
-        } else {
-            pitchRange.value = 0;
-            rateRange.value = 1.0;
-        }
-        updatePitchDisplay(pitchRange.value);
-        updateRateDisplay(rateRange.value);
-    }
-
     async function speakText() {
         const text = document.getElementById('tts-text').value.trim();
         const voice = document.getElementById('voice-select').value;
-        const pitchVal = document.getElementById('pitch-range').value;
-        const rateVal = parseFloat(document.getElementById('rate-range').value);
-        
-        const pitch = (pitchVal > 0 ? "+" : "") + pitchVal + "Hz";
-        
-        // Chuyển đổi hệ số thập phân (1.0x, 2.5x...) sang định dạng phần trăm của edge-tts (+0%, +150%...)
-        const ratePercentValue = Math.round((rateVal - 1.0) * 100);
-        const rate = (ratePercentValue >= 0 ? "+" : "") + ratePercentValue + "%";
+        const rate = document.getElementById('rate-select').value;
         
         const btn = document.getElementById('speak-btn');
         const container = document.getElementById('tts-audio-container');
@@ -158,7 +76,7 @@
             const response = await fetch('/tts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text, voice, rate, pitch })
+                body: JSON.stringify({ text, voice, rate })
             });
 
             const resData = await response.json();
