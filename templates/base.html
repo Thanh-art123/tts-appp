@@ -56,9 +56,13 @@
             <div class="flex items-center space-x-2 sm:space-x-3 bg-amber-950/90 px-3 py-1.5 rounded-full border border-amber-500/60 shadow-xl">
                 <i class="fa-solid fa-compact-disc text-amber-400 animate-spin" id="disc-icon" style="animation-duration: 4s; animation-play-state: paused;"></i>
                 
-                <div class="text-left hidden md:block">
-                    <p class="text-[10px] text-amber-400 uppercase font-bold">Nhạc Nền Võ Lâm:</p>
-                    <p id="song-title" class="text-xs font-bold text-amber-100 w-28 truncate">Burlesque</p>
+                <!-- ẤN VÀO TÀI NGUYÊN ĐỂ MỞ KHO NHẠC TẢI LÊN -->
+                <div class="text-left cursor-pointer group" onclick="openResourceModal()" title="Ấn vào đây để mở Kho Nhạc Tài Nguyên">
+                    <p class="text-[10px] text-amber-400 font-extrabold uppercase tracking-wider group-hover:underline flex items-center space-x-1">
+                        <span>TÀI NGUYÊN:</span>
+                        <i class="fa-solid fa-folder-open text-[9px]"></i>
+                    </p>
+                    <p id="song-title" class="text-xs font-bold text-amber-100 w-28 truncate group-hover:text-amber-300">Burlesque</p>
                 </div>
                 
                 <div class="flex items-center space-x-1 pl-1 border-l border-amber-700/50">
@@ -134,26 +138,41 @@
         </div>
     </main>
 
+    <!-- BẢNG POPUP KHO TÀI NGUYÊN NHẠC TÔNG MÔN -->
+    <div id="resource-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="panel-3d rounded-2xl max-w-md w-full mx-4 p-6 relative border border-amber-500/80 shadow-2xl">
+            <button onclick="closeResourceModal()" class="absolute top-4 right-4 text-amber-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <h3 class="text-lg font-extrabold text-amber-400 border-b border-amber-600/40 pb-3 mb-4 flex items-center space-x-2">
+                <i class="fa-solid fa-music text-amber-500"></i>
+                <span>Kho Nhạc Tài Nguyên Tông Môn</span>
+            </h3>
+
+            <div id="resource-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                <!-- Danh sách bài nhạc trên server sẽ được load tự động vào đây -->
+            </div>
+
+            <div class="mt-5 text-right border-t border-amber-800/60 pt-3">
+                <button onclick="closeResourceModal()" class="text-xs bg-amber-600 hover:bg-amber-500 text-black font-bold px-4 py-2 rounded-xl transition">
+                    Đóng Kho
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- FOOTER -->
     <footer class="relative z-20 bg-black/95 text-amber-200/70 text-center py-4 text-xs border-t border-amber-900/60">
         <p>© 2026 Tông Môn Truyện - Tông Môn Đọc Truyện & Tu Luyện TTS.</p>
     </footer>
 
-    <!-- SCRIPT PHÁT NHẠC SERVER VÀ CHO PHÉP TẢI NHẠC CÁ NHÂN -->
+    <!-- SCRIPT XỬ LÝ KHO NHẠC TÀI NGUYÊN -->
     <script>
         const playlist = [
-            { 
-                title: "Burlesque", 
-                src: "/static/music/Burlesque - National Sweetheart.mp3" 
-            },
-            { 
-                title: "The Joint is Jumpin", 
-                src: "/static/music/The Joint is Jumpin - Joel Cummins.mp3" 
-            },
-            { 
-                title: "Videodrome", 
-                src: "/static/music/Videodrome - National Sweetheart.mp3" 
-            }
+            { title: "Burlesque", src: "/static/music/Burlesque - National Sweetheart.mp3" },
+            { title: "The Joint is Jumpin", src: "/static/music/The Joint is Jumpin - Joel Cummins.mp3" },
+            { title: "Videodrome", src: "/static/music/Videodrome - National Sweetheart.mp3" }
         ];
 
         let currentTrack = 0;
@@ -162,15 +181,56 @@
 
         bgAudio.onended = function() {
             currentTrack = (currentTrack + 1) % playlist.length;
-            bgAudio.src = playlist[currentTrack].src;
-            document.getElementById('song-title').innerText = playlist[currentTrack].title;
-            bgAudio.play();
+            playTrack(currentTrack);
         };
 
         function changeMusicVolume(val) {
             if (bgAudio) {
                 bgAudio.volume = parseFloat(val);
             }
+        }
+
+        function playTrack(index) {
+            currentTrack = index;
+            bgAudio.pause();
+            bgAudio = new Audio(playlist[index].src);
+            bgAudio.volume = parseFloat(document.getElementById('bg-volume').value);
+            document.getElementById('song-title').innerText = playlist[index].title;
+            
+            bgAudio.play().then(() => {
+                const btn = document.getElementById('music-btn');
+                const disc = document.getElementById('disc-icon');
+                btn.innerText = "⏸ Dừng";
+                btn.classList.replace('bg-amber-500', 'bg-red-600');
+                if (disc) disc.style.animationPlayState = 'running';
+            }).catch(e => console.log(e));
+            
+            closeResourceModal();
+        }
+
+        function openResourceModal() {
+            const listContainer = document.getElementById('resource-list');
+            listContainer.innerHTML = '';
+            
+            playlist.forEach((track, index) => {
+                const item = document.createElement('div');
+                item.className = `flex justify-between items-center p-3 rounded-xl border transition cursor-pointer ${index === currentTrack ? 'bg-amber-900/80 border-amber-400 text-amber-200' : 'bg-black/60 border-amber-700/40 text-amber-300 hover:bg-amber-950/60'}`;
+                item.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid ${index === currentTrack ? 'fa-compact-disc text-amber-400 animate-spin' : 'fa-music text-amber-600'} text-xs"></i>
+                        <span class="text-xs font-bold truncate w-56">${track.title}</span>
+                    </div>
+                    <span class="text-[10px] bg-amber-500 text-black px-2 py-0.5 rounded-full font-bold">${index === currentTrack ? 'Đang phát' : 'Chọn'}</span>
+                `;
+                item.onclick = () => playTrack(index);
+                listContainer.appendChild(item);
+            });
+
+            document.getElementById('resource-modal').classList.remove('hidden');
+        }
+
+        function closeResourceModal() {
+            document.getElementById('resource-modal').classList.add('hidden');
         }
 
         function loadCustomMusic(event) {
@@ -197,10 +257,7 @@
             const disc = document.getElementById('disc-icon');
             if (bgAudio.paused) {
                 bgAudio.play().catch(() => {
-                    currentTrack = (currentTrack + 1) % playlist.length;
-                    bgAudio.src = playlist[currentTrack].src;
-                    document.getElementById('song-title').innerText = playlist[currentTrack].title;
-                    bgAudio.play();
+                    playTrack((currentTrack + 1) % playlist.length);
                 });
                 btn.innerText = "⏸ Dừng";
                 btn.classList.replace('bg-amber-500', 'bg-red-600');
