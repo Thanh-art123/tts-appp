@@ -84,32 +84,32 @@
 
     <!-- THANH ĐIỀU HƯỚNG ĐIỆN CÁC -->
     <div class="relative z-20 max-w-7xl mx-auto px-4 mt-6 w-full">
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <a href="/" id="nav-home" class="building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3" id="nav-container">
+            <a href="/" data-target="home" class="nav-link building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center">
                 <i class="fa-solid fa-scroll text-amber-400"></i>
                 <span>Nghe Giảng Kinh</span>
             </a>
-            <a href="/tang-kinh-cac" id="nav-tang" class="building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center">
+            <a href="/tang-kinh-cac" data-target="tang" class="nav-link building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center">
                 <i class="fa-solid fa-book-journal-whills text-amber-400"></i>
                 <span>Tàng Kinh Các</span>
             </a>
-            <a href="/che-tap-cac" id="nav-che" class="building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center">
+            <a href="/che-tap-cac" data-target="che" class="nav-link building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center">
                 <i class="fa-solid fa-hammer text-amber-400"></i>
                 <span>Chế Tạp Các (Tải Lên)</span>
             </a>
-            <a href="/dong-phu" id="nav-dong" class="building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center">
+            <a href="/dong-phu" data-target="dong" class="nav-link building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center">
                 <i class="fa-solid fa-torii-gate text-amber-400"></i>
                 <span>Động Phủ</span>
             </a>
-            <a href="/bi-canh" id="nav-bi" class="building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center col-span-2 md:col-span-1">
+            <a href="/bi-canh" data-target="bi" class="nav-link building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center col-span-2 md:col-span-1">
                 <i class="fa-solid fa-gem text-amber-400"></i>
                 <span>Bí Cảnh Tu Luyện</span>
             </a>
         </div>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <main class="relative z-20 max-w-7xl mx-auto px-4 my-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- MAIN CONTENT (ĐƯỢC NẠP NGẦM KHÔNG TẢI LẠI TRANG) -->
+    <main class="relative z-20 max-w-7xl mx-auto px-4 my-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6" id="main-content">
         <div class="lg:col-span-2 space-y-6">
             {% block content %}{% endblock %}
         </div>
@@ -164,7 +164,7 @@
         <p>© 2026 Tông Môn Truyện - Tông Môn Đọc Truyện & Tu Luyện TTS.</p>
     </footer>
 
-    <!-- SCRIPT GHI NHỚ TRẠNG THÁI NHẠC QUA CÁC TRANG (LOCALSTORAGE) -->
+    <!-- SCRIPT ĐIỀU HƯỚNG NẠC NGẦM AJAX & NHẠC XUYÊN SUỐT -->
     <script>
         const playlist = [
             { title: "Burlesque", src: "/static/music/Burlesque - National Sweetheart.mp3" },
@@ -172,36 +172,54 @@
             { title: "Videodrome", src: "/static/music/Videodrome - National Sweetheart.mp3" }
         ];
 
-        // Khởi tạo Audio toàn cục từ bộ nhớ trình duyệt
-        let currentTrack = parseInt(localStorage.getItem('xianxia_track')) || 0;
+        let currentTrack = 0;
         let bgAudio = window.sharedAudio || new Audio(playlist[currentTrack].src);
         window.sharedAudio = bgAudio;
 
-        bgAudio.volume = parseFloat(localStorage.getItem('xianxia_vol')) || 0.3;
+        bgAudio.volume = 0.3;
         bgAudio.loop = true;
 
-        // Lưu thời gian phát liên tục vào bộ nhớ
-        setInterval(() => {
-            if (!bgAudio.paused) {
-                localStorage.setItem('xianxia_time', bgAudio.currentTime);
-            }
-        }, 500);
-
-        // Khôi phục trạng thái khi chuyển trang
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedTime = parseFloat(localStorage.getItem('xianxia_time')) || 0;
-            const isPlaying = localStorage.getItem('xianxia_playing') === 'true';
-            
-            document.getElementById('song-title').innerText = playlist[currentTrack].title;
-            document.getElementById('bg-volume').value = bgAudio.volume;
-
-            if (isPlaying) {
-                bgAudio.currentTime = savedTime;
-                bgAudio.play().then(() => {
-                    updatePlayButtonUI(true);
-                }).catch(e => console.log("Autoplay blocked:", e));
+        // Bắt sự kiện click các nút điều hướng để load ngầm (AJAX) không tắt nhạc
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('.nav-link');
+            if (link) {
+                e.preventDefault();
+                const url = link.getAttribute('href');
+                loadPageContent(url);
             }
         });
+
+        async function loadPageContent(url) {
+            try {
+                const response = await fetch(url);
+                const htmlText = await response.text();
+                
+                // Trích xuất phần nội dung <main> từ trang mới
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlText, 'text/html');
+                const newMain = doc.querySelector('#main-content');
+                
+                if (newMain) {
+                    document.querySelector('#main-content').innerHTML = newMain.innerHTML;
+                    window.history.pushState({}, '', url);
+                    updateActiveNav(url);
+                } else {
+                    window.location.href = url; // Fallback nếu có lỗi
+                }
+            } catch (err) {
+                window.location.href = url;
+            }
+        }
+
+        function updateActiveNav(url) {
+            document.querySelectorAll('.nav-link').forEach(btn => {
+                if (btn.getAttribute('href') === url) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
 
         bgAudio.onended = function() {
             currentTrack = (currentTrack + 1) % playlist.length;
@@ -209,22 +227,22 @@
         };
 
         function changeMusicVolume(val) {
-            bgAudio.volume = parseFloat(val);
-            localStorage.setItem('xianxia_vol', val);
+            if (bgAudio) {
+                bgAudio.volume = parseFloat(val);
+            }
         }
 
         function playTrack(index) {
             currentTrack = index;
-            localStorage.setItem('xianxia_track', index);
             bgAudio.pause();
-            bgAudio.src = playlist[index].src;
+            bgAudio = new Audio(playlist[index].src);
             bgAudio.volume = parseFloat(document.getElementById('bg-volume').value);
             bgAudio.loop = true;
+            window.sharedAudio = bgAudio;
             document.getElementById('song-title').innerText = playlist[index].title;
             
             bgAudio.play().then(() => {
                 updatePlayButtonUI(true);
-                localStorage.setItem('xianxia_playing', 'true');
             }).catch(e => console.log(e));
             
             closeResourceModal();
@@ -282,22 +300,21 @@
                 document.getElementById('song-title').innerText = file.name;
                 bgAudio.play();
                 updatePlayButtonUI(true);
-                localStorage.setItem('xianxia_playing', 'true');
             }
         }
 
         function toggleMusic() {
+            const btn = document.getElementById('music-btn');
+            const disc = document.getElementById('disc-icon');
             if (bgAudio.paused) {
                 bgAudio.play().then(() => {
                     updatePlayButtonUI(true);
-                    localStorage.setItem('xianxia_playing', 'true');
                 }).catch(() => {
                     playTrack((currentTrack + 1) % playlist.length);
                 });
             } else {
                 bgAudio.pause();
                 updatePlayButtonUI(false);
-                localStorage.setItem('xianxia_playing', 'false');
             }
         }
     </script>
