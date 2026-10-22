@@ -30,48 +30,46 @@
                 <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Mẫu Biến Hóa Nhanh:</label>
                 <select id="quick-preset" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none" onchange="applyQuickPreset(this.value)">
                     <option value="default">☯ Mặc Định (Tự Nhiên)</option>
-                    <option value="old_master">📜 Lão Tôn / Nam Trầm Sâu (-8Hz, Chậm)</option>
-                    <option value="deep_woman">🌹 Nữ Trầm Mị (-6Hz)</option>
-                    <option value="baby">👶 Em Bé / Đồng Tử (+12Hz, Nhanh)</option>
-                    <option value="hero">⚔ Kiếm Đế Uy Nghi (+3Hz, Nhanh)</option>
+                    <option value="old_master">📜 Lão Tôn / Nam Trầm Sâu (-30Hz, 1.0x)</option>
+                    <option value="deep_woman">🌹 Nữ Trầm Mị (-15Hz, 1.0x)</option>
+                    <option value="baby">👶 Em Bé / Đồng Tử (+40Hz, 1.2x)</option>
+                    <option value="hero">⚔ Kiếm Đế Uy Nghi (+10Hz, 1.5x)</option>
                 </select>
             </div>
         </div>
 
-        <!-- BẢNG ĐIỀU CHỈNH THỦ CÔNG CHUYÊN SÂU (HZ & TỐC ĐỘ) -->
+        <!-- BẢNG ĐIỀU CHỈNH THỦ CÔNG CHUYÊN SÂU (-50Hz đến 100Hz & 0.9x đến 3.5x) -->
         <div class="p-4 bg-amber-950/40 border border-amber-600/40 rounded-xl space-y-3">
             <h3 class="text-xs font-extrabold text-amber-400 uppercase tracking-wider flex items-center space-x-2">
                 <i class="fa-solid fa-sliders text-amber-500"></i>
-                <span>Bảng Tinh Chỉnh Thủ Công (Hz & Tốc Độ)</span>
+                <span>Bảng Tinh Chỉnh Thủ Công (-50Hz đến 100Hz | 0.9x - 3.5x)</span>
             </h3>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- Tùy chỉnh Cao độ Hz -->
+                <!-- Tùy chỉnh Cao độ Hz (-50 đến 100) -->
                 <div>
                     <div class="flex justify-between text-xs text-amber-200 mb-1">
                         <span>Cao Độ (Pitch Hz):</span>
                         <span id="pitch-val" class="font-bold text-amber-400">+0Hz</span>
                     </div>
-                    <input type="range" id="pitch-range" min="-15" max="15" step="1" value="0" oninput="updatePitchDisplay(this.value)" class="w-full h-1.5 accent-amber-500 rounded-lg cursor-pointer">
+                    <input type="range" id="pitch-range" min="-50" max="100" step="1" value="0" oninput="updatePitchDisplay(this.value)" class="w-full h-1.5 accent-amber-500 rounded-lg cursor-pointer">
                     <div class="flex justify-between text-[10px] text-amber-400/60 mt-0.5">
-                        <span>Trầm hơn (-15Hz)</span>
-                        <span>Cao hơn (+15Hz)</span>
+                        <span>-50Hz (Trầm sâu)</span>
+                        <span>+100Hz (Cao vút)</span>
                     </div>
                 </div>
 
-                <!-- Tùy chỉnh Tốc độ -->
+                <!-- Tùy chỉnh Tốc độ (0.9x đến 3.5x) -->
                 <div>
                     <div class="flex justify-between text-xs text-amber-200 mb-1">
                         <span>Tốc Độ Đọc:</span>
-                        <span id="rate-val" class="font-bold text-amber-400">+0%</span>
+                        <span id="rate-val" class="font-bold text-amber-400">1.0x</span>
                     </div>
-                    <select id="rate-select-custom" onchange="updateRateDisplay(this.value)" class="w-full p-2 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
-                        <option value="-30%">Rất Chậm (-30%)</option>
-                        <option value="-15%">Chậm (-15%)</option>
-                        <option value="+0%" selected>Bình Thường (0%)</option>
-                        <option value="+15%">Nhanh (+15%)</option>
-                        <option value="+30%">Rất Nhanh (+30%)</option>
-                    </select>
+                    <input type="range" id="rate-range" min="0.9" max="3.5" step="0.1" value="1.0" oninput="updateRateDisplay(this.value)" class="w-full h-1.5 accent-amber-500 rounded-lg cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-amber-400/60 mt-0.5">
+                        <span>0.9x (Chậm)</span>
+                        <span>3.5x (Siêu tốc)</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -100,43 +98,49 @@
     }
 
     function updateRateDisplay(val) {
-        document.getElementById('rate-val').innerText = val;
+        document.getElementById('rate-val').innerText = parseFloat(val).toFixed(1) + "x";
     }
 
     function applyQuickPreset(preset) {
         const pitchRange = document.getElementById('pitch-range');
-        const rateSelect = document.getElementById('rate-select-custom');
+        const rateRange = document.getElementById('rate-range');
         const voiceSelect = document.getElementById('voice-select');
 
         if (preset === 'old_master') {
             voiceSelect.value = "vi-VN-NamMinhNeural";
-            pitchRange.value = -8;
-            rateSelect.value = "-15%";
+            pitchRange.value = -30;
+            rateRange.value = 1.0;
         } else if (preset === 'deep_woman') {
             voiceSelect.value = "vi-VN-HoaiMyNeural";
-            pitchRange.value = -6;
-            rateSelect.value = "+0%";
+            pitchRange.value = -15;
+            rateRange.value = 1.0;
         } else if (preset === 'baby') {
             voiceSelect.value = "vi-VN-HoaiMyNeural";
-            pitchRange.value = 12;
-            rateSelect.value = "+15%";
+            pitchRange.value = 40;
+            rateRange.value = 1.2;
         } else if (preset === 'hero') {
             voiceSelect.value = "vi-VN-NamMinhNeural";
-            pitchRange.value = 3;
-            rateSelect.value = "+15%";
+            pitchRange.value = 10;
+            rateRange.value = 1.5;
         } else {
             pitchRange.value = 0;
-            rateSelect.value = "+0%";
+            rateRange.value = 1.0;
         }
         updatePitchDisplay(pitchRange.value);
+        updateRateDisplay(rateRange.value);
     }
 
     async function speakText() {
         const text = document.getElementById('tts-text').value.trim();
         const voice = document.getElementById('voice-select').value;
         const pitchVal = document.getElementById('pitch-range').value;
-        const rate = document.getElementById('rate-select-custom').value;
+        const rateVal = parseFloat(document.getElementById('rate-range').value);
+        
         const pitch = (pitchVal > 0 ? "+" : "") + pitchVal + "Hz";
+        
+        // Chuyển đổi hệ số thập phân (1.0x, 2.5x...) sang định dạng phần trăm của edge-tts (+0%, +150%...)
+        const ratePercentValue = Math.round((rateVal - 1.0) * 100);
+        const rate = (ratePercentValue >= 0 ? "+" : "") + ratePercentValue + "%";
         
         const btn = document.getElementById('speak-btn');
         const container = document.getElementById('tts-audio-container');
