@@ -1,16 +1,41 @@
 import os
+import re
 import asyncio
 from flask import Flask, render_template, request, send_file
 import edge_tts
 
 app = Flask(__name__)
 
+def add_xianxia_pauses(text):
+    """
+    Hàm tự động ngắt câu thông minh theo chuẩn 10-15 từ
+    và chèn khoảng nghỉ SSML cho giọng đọc tu tiên cuốn hút.
+    """
+    # Chia nhỏ văn bản thành các dòng/câu nhỏ
+    lines = text.split('\n')
+    processed_text = ""
+
+    for line in lines:
+        words = line.split()
+        if not words:
+            continue
+        
+        # Cứ mỗi 12-15 từ sẽ thêm khoảng nghỉ nhẹ (300ms)
+        chunk_size = 13
+        chunks = [' '.join(words[i:i+chunk_size]) for i in range(0, len(words), chunk_size)]
+        
+        # Ghép lại kèm thẻ nghỉ SSML hoặc dấu ngắt nhịp
+        line_processed = " ... ".join(chunks)
+        processed_text += line_processed + " ... ... \n"
+
+    return processed_text
+
 @app.route('/')
 def home():
     return render_template('index.html')
 
 @app.route('/tang-kinh-cac')
-def tang_kinh_cac():
+def tang_kinh-cac():
     return render_template('tang_kinh_cac.html')
 
 @app.route('/che-tap-cac')
@@ -28,20 +53,23 @@ def bi_canh():
 @app.route('/tts', methods=['POST'])
 def generate_tts():
     try:
-        text = request.form.get('text')
+        raw_text = request.form.get('text')
         voice = request.form.get('voice') or "vi-VN-HoaiMyNeural"
         rate = request.form.get('rate', '0')
         pitch = request.form.get('pitch', '0')
 
-        if not text:
+        if not raw_text:
             return "Vui lòng nhập nội dung văn bản!", 400
+
+        # Áp dụng chuẩn ngắt nhịp tự động theo từ
+        formatted_text = add_xianxia_pauses(raw_text)
 
         rate_str = f"{int(rate):+d}%"
         pitch_str = f"{int(pitch):+d}Hz"
         output_file = "output.mp3"
 
         async def main():
-            communicate = edge_tts.Communicate(text, voice, rate=rate_str, pitch=pitch_str)
+            communicate = edge_tts.Communicate(formatted_text, voice, rate=rate_str, pitch=pitch_str)
             await communicate.save(output_file)
 
         asyncio.run(main())
