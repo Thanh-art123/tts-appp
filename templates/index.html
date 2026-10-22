@@ -5,95 +5,142 @@
 <div class="panel-3d rounded-2xl p-6 relative space-y-6">
     <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
         <i class="fa-solid fa-scroll text-amber-500"></i>
-        <span>Giảng Kinh Điện - Giọng Đọc Tông Môn (Nam & Nữ)</span>
+        <span>Giảng Kinh Điện - Đọc Trực Tiếp Real-Time (Không Lỗi Mạng)</span>
     </h2>
 
     <div class="space-y-4">
         <div>
             <label class="block text-xs font-semibold text-amber-200/90 mb-1">Nhập kinh văn / chương truyện tu tiên cần ngâm tụng:</label>
-            <textarea id="tts-text" rows="5" placeholder="Nhập khẩu quyết hoặc nội dung chương truyện tại đây..." class="w-full p-3 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none bg-black/75 text-amber-100 placeholder-amber-700/70 shadow-inner" required></textarea>
+            <textarea id="tts-text" rows="5" placeholder="Nhập khẩu quyết hoặc nội dung chương truyện tại đây..." class="w-full p-3 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none bg-black/75 text-amber-100 placeholder-amber-700/70 shadow-inner" required>Một khoảng lặng kéo dài. Cuối cùng, giọng nói kia chỉ để lại hai chữ: "Tạm biệt."</textarea>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <!-- Chọn Giọng Đọc -->
+            <!-- Chọn Giọng Đọc Nam/Nữ -->
             <div>
-                <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Giọng Đọc:</label>
+                <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Giọng Đọc (Nam / Nữ):</label>
                 <select id="voice-select" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
-                    <option value="vi-VN-HoaiMyNeural">👩 Hoài Mỹ (Giọng Nữ Dịu Dàng, Truyền Cảm)</option>
-                    <option value="vi-VN-NamMinhNeural">👨 Nam Minh (Giọng Nam Trầm Ấm, Uy Nghi)</option>
+                    <!-- Danh sách giọng sẽ được tự động tải từ trình duyệt -->
                 </select>
             </div>
 
-            <!-- Tốc Độ Đọc -->
+            <!-- Tốc độ đọc (0.9x đến 3.5x) -->
             <div>
-                <label class="block text-xs font-bold text-amber-300 mb-1">Tốc Độ Ngâm Tụng:</label>
-                <select id="rate-select" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
-                    <option value="-15%">Chậm Rãi (-15%)</option>
-                    <option value="+0%" selected>Bình Thường (0%)</option>
-                    <option value="+15%">Nhanh (+15%)</option>
-                    <option value="+30%">Nhanh Vù Vù (+30%)</option>
-                </select>
+                <div class="flex justify-between text-xs text-amber-200 mb-1">
+                    <span class="font-bold text-amber-300">Tốc Độ Đọc (0.9x - 3.5x):</span>
+                    <span id="rate-val" class="font-bold text-amber-400">1.0x</span>
+                </div>
+                <input type="range" id="rate-range" min="0.9" max="3.5" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" class="w-full h-1.5 accent-amber-500 rounded-lg cursor-pointer">
             </div>
         </div>
 
-        <button onclick="speakText()" id="speak-btn" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold py-3.5 rounded-xl shadow-2xl transition flex items-center justify-center space-x-2 text-sm">
-            <i class="fa-solid fa-volume-high"></i>
-            <span>Khai Khẩu Ngâm Tụng (Phát Âm Thanh)</span>
-        </button>
-    </div>
+        <!-- BẢNG TÙY CHỈNH HZ (-50Hz đến 100Hz tương ứng Pitch 0.1 đến 2.0) -->
+        <div class="p-4 bg-amber-950/40 border border-amber-600/40 rounded-xl space-y-3">
+            <div class="flex justify-between text-xs text-amber-200 mb-1">
+                <span class="font-extrabold text-amber-400 uppercase tracking-wider flex items-center space-x-2">
+                    <i class="fa-solid fa-sliders text-amber-500"></i>
+                    <span>Cao Độ (Pitch Hz tương đương -50 đến 100):</span>
+                </span>
+                <span id="pitch-val" class="font-bold text-amber-400">1.0 (Chuẩn)</span>
+            </div>
+            <input type="range" id="pitch-range" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updatePitchLabel(this.value)" class="w-full h-1.5 accent-amber-500 rounded-lg cursor-pointer">
+            <div class="flex justify-between text-[10px] text-amber-400/60 mt-0.5">
+                <span>Trầm sâu (-50Hz)</span>
+                <span>Cao vút (+100Hz)</span>
+            </div>
+        </div>
 
-    <!-- Trình Phát Âm Thanh Kết Quả -->
-    <div id="tts-audio-container" class="hidden text-center space-y-3 pt-4 border-t border-amber-800/60">
-        <p class="text-xs font-bold text-amber-300 flex items-center justify-center space-x-2">
-            <i class="fa-solid fa-circle-play text-emerald-400"></i>
-            <span>Kinh Văn Đã Được Khai Khẩu Mượt Mà!</span>
-        </p>
-        <audio id="tts-audio-player" controls class="w-full max-w-md mx-auto accent-amber-500 rounded-lg"></audio>
+        <!-- CÁC NÚT ĐIỀU KHIỂN REAL-TIME NGAY KHI ĐANG ĐỌC -->
+        <div class="grid grid-cols-3 gap-3 pt-2">
+            <button onclick="startSpeech()" class="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-black font-extrabold py-3 rounded-xl shadow-2xl transition flex items-center justify-center space-x-1 text-xs">
+                <i class="fa-solid fa-play"></i>
+                <span>Phát / Đọc Tiếp</span>
+            </button>
+            <button onclick="pauseSpeech()" class="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold py-3 rounded-xl shadow-2xl transition flex items-center justify-center space-x-1 text-xs">
+                <i class="fa-solid fa-pause"></i>
+                <span>Tạm Dừng</span>
+            </button>
+            <button onclick="stopSpeech()" class="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold py-3 rounded-xl shadow-2xl transition flex items-center justify-center space-x-1 text-xs">
+                <i class="fa-solid fa-stop"></i>
+                <span>Dừng Lại</span>
+            </button>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    async function speakText() {
-        const text = document.getElementById('tts-text').value.trim();
-        const voice = document.getElementById('voice-select').value;
-        const rate = document.getElementById('rate-select').value;
-        
-        const btn = document.getElementById('speak-btn');
-        const container = document.getElementById('tts-audio-container');
-        const player = document.getElementById('tts-audio-player');
+    let synth = window.speechSynthesis;
+    let voices = [];
 
+    function populateVoices() {
+        voices = synth.getVoices().filter(v => v.lang.includes('vi') || v.lang.includes('en'));
+        const voiceSelect = document.getElementById('voice-select');
+        voiceSelect.innerHTML = '';
+        
+        voices.forEach((voice, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = `${voice.name} (${voice.lang})`;
+            voiceSelect.appendChild(option);
+        });
+
+        // Chọn mặc định giọng tiếng Việt nếu có
+        let viVoiceIndex = voices.findIndex(v => v.lang.includes('vi'));
+        if (viVoiceIndex !== -1) {
+            voiceSelect.value = viVoiceIndex;
+        }
+    }
+
+    populateVoices();
+    if (synth.onvoiceschanged !== undefined) {
+        synth.onvoiceschanged = populateVoices;
+    }
+
+    function updateRateLabel(val) {
+        document.getElementById('rate-val').innerText = parseFloat(val).toFixed(1) + "x";
+        // Nếu đang đọc, có thể cập nhật trực tiếp hoặc giữ nguyên tùy trạng thái
+    }
+
+    function updatePitchLabel(val) {
+        document.getElementById('pitch-val').innerText = parseFloat(val).toFixed(1);
+    }
+
+    function startSpeech() {
+        const text = document.getElementById('tts-text').value.trim();
         if (!text) {
-            alert("Xin hãy nhập kinh văn cần ngâm tụng!");
+            alert("Xin hãy nhập kinh văn!");
             return;
         }
 
-        btn.innerText = "⏳ Đang khai khẩu ngâm tụng, xin chờ chốc lát...";
-        btn.disabled = true;
-
-        try {
-            const response = await fetch('/tts', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text, voice, rate })
-            });
-
-            const resData = await response.json();
-
-            if (resData.success) {
-                player.src = resData.audio_url;
-                container.classList.remove('hidden');
-                player.play();
-            } else {
-                alert("Lỗi khai khẩu: " + (resData.error || "Không thể phát âm thanh"));
-            }
-        } catch (err) {
-            alert("Lỗi kết nối Tông Môn!");
-        } finally {
-            btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> <span>Khai Khẩu Ngâm Tụng (Phát Âm Thanh)</span>';
-            btn.disabled = false;
+        // Nếu đang tạm dừng thì bấm đọc tiếp
+        if (synth.paused) {
+            synth.resume();
+            return;
         }
+
+        synth.cancel(); // Dừng câu cũ nếu đang đọc
+
+        let utterThis = new SpeechSynthesisUtterance(text);
+        const voiceIndex = document.getElementById('voice-select').value;
+        if (voices[voiceIndex]) {
+            utterThis.voice = voices[voiceIndex];
+        }
+
+        utterThis.rate = parseFloat(document.getElementById('rate-range').value);
+        utterThis.pitch = parseFloat(document.getElementById('pitch-range').value);
+
+        synth.speak(utterThis);
+    }
+
+    function pauseSpeech() {
+        if (synth.speaking && !synth.paused) {
+            synth.pause();
+        }
+    }
+
+    function stopSpeech() {
+        synth.cancel();
     }
 </script>
 {% endblock %}
