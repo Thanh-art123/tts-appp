@@ -24,17 +24,38 @@
             border: 1px solid rgba(245, 158, 11, 0.45);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(245, 158, 11, 0.15);
         }
-        .building-tab-btn {
-            background: linear-gradient(135deg, rgba(78, 30, 4, 0.9), rgba(133, 60, 12, 0.9));
-            border: 1px solid #f59e0b; color: #fef3c7;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-            transition: all 0.3s ease;
+        /* HIỆU ỨNG TẦNG LẦU TIÊN CẢNH */
+        .building-card {
+            position: relative;
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 2px solid rgba(245, 158, 11, 0.4);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #000;
         }
-        .building-tab-btn.active, .building-tab-btn:hover {
-            background: linear-gradient(135deg, #d97706, #b45309);
-            color: #ffffff; box-shadow: 0 0 25px rgba(245, 158, 11, 0.7);
-            transform: translateY(-4px) scale(1.02);
+        .building-card img {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+            transition: transform 0.5s ease, filter 0.5s ease;
+            filter: brightness(0.7) contrast(1.1);
+        }
+        .building-card:hover img, .building-card.active img {
+            transform: scale(1.12);
+            filter: brightness(0.95) contrast(1.2);
+        }
+        .building-card.active, .building-card:hover {
+            border-color: #f59e0b;
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.8);
+            transform: translateY(-5px);
+        }
+        .building-overlay {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.3), transparent);
+            padding: 8px 4px 4px 4px;
+            text-align: center;
         }
     </style>
 </head>
@@ -82,28 +103,43 @@
         </div>
     </header>
 
-    <!-- THANH ĐIỀU HƯỚNG ĐIỆN CÁC -->
+    <!-- THANH ĐIỀU HƯỚNG BẰNG HÌNH ẢNH CÁC TẦNG LẦU TIÊN CẢNH -->
     <div class="relative z-20 max-w-7xl mx-auto px-4 mt-6 w-full">
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3" id="nav-container">
-            <a href="/" data-target="home" class="nav-link building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center">
-                <i class="fa-solid fa-scroll text-amber-400"></i>
-                <span>Nghe Giảng Kinh</span>
+            <!-- Nghe Giảng Kinh -->
+            <a href="/" class="nav-link building-card group">
+                <img src="https://image.pollinations.ai/prompt/xianxia%20golden%20temple%20roof%20mystic%20pagoda%20architecture?width=400&height=200&nologo=true" alt="Nghe Giảng Kinh">
+                <div class="building-overlay">
+                    <p class="text-[11px] font-extrabold text-amber-300 group-hover:text-amber-400 tracking-wider">📜 Nghe Giảng Kinh</p>
+                </div>
             </a>
-            <a href="/tang-kinh-cac" data-target="tang" class="nav-link building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center">
-                <i class="fa-solid fa-book-journal-whills text-amber-400"></i>
-                <span>Tàng Kinh Các</span>
+            <!-- Tàng Kinh Các -->
+            <a href="/tang-kinh-cac" class="nav-link building-card group">
+                <img src="https://image.pollinations.ai/prompt/ancient%20chinese%20library%20scrolls%20golden%20pagoda%20pavilion?width=400&height=200&nologo=true" alt="Tàng Kinh Các">
+                <div class="building-overlay">
+                    <p class="text-[11px] font-extrabold text-amber-300 group-hover:text-amber-400 tracking-wider">📚 Tàng Kinh Các</p>
+                </div>
             </a>
-            <a href="/che-tap-cac" data-target="che" class="nav-link building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center">
-                <i class="fa-solid fa-hammer text-amber-400"></i>
-                <span>Chế Tạp Các (Tải Lên)</span>
+            <!-- Chế Tạp Các -->
+            <a href="/che-tap-cac" class="nav-link building-card group">
+                <img src="https://image.pollinations.ai/prompt/xianxia%20alchemy%20forge%20temple%20glowing%20magical%20artifacts?width=400&height=200&nologo=true" alt="Chế Tạp Các">
+                <div class="building-overlay">
+                    <p class="text-[11px] font-extrabold text-amber-300 group-hover:text-amber-400 tracking-wider">🔨 Chế Tạp Các</p>
+                </div>
             </a>
-            <a href="/dong-phu" data-target="dong" class="nav-link building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center">
-                <i class="fa-solid fa-torii-gate text-amber-400"></i>
-                <span>Động Phủ</span>
+            <!-- Động Phủ -->
+            <a href="/dong-phu" class="nav-link building-card group">
+                <img src="https://image.pollinations.ai/prompt/mystical%20cave%20dwelling%20xianxia%20gateway%20golden%20light?width=400&height=200&nologo=true" alt="Động Phủ">
+                <div class="building-overlay">
+                    <p class="text-[11px] font-extrabold text-amber-300 group-hover:text-amber-400 tracking-wider">⛩️ Động Phủ</p>
+                </div>
             </a>
-            <a href="/bi-canh" data-target="bi" class="nav-link building-tab-btn text-xs md:text-sm font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-center col-span-2 md:col-span-1">
-                <i class="fa-solid fa-gem text-amber-400"></i>
-                <span>Bí Cảnh Tu Luyện</span>
+            <!-- Bí Cảnh Tu Luyện -->
+            <a href="/bi-canh" class="nav-link building-card group col-span-2 md:col-span-1">
+                <img src="https://image.pollinations.ai/prompt/mystical%20realm%20xianxia%20floating%20island%20crystals%20golden%20aura?width=400&height=200&nologo=true" alt="Bí Cảnh">
+                <div class="building-overlay">
+                    <p class="text-[11px] font-extrabold text-amber-300 group-hover:text-amber-400 tracking-wider">💎 Bí Cảnh Tu Luyện</p>
+                </div>
             </a>
         </div>
     </div>
@@ -250,7 +286,7 @@
                 const customUrl = URL.createObjectURL(file);
                 bgAudio.pause();
                 bgAudio = new Audio(customUrl);
-                bgAudio.volume = parseFloat(document.getElementById('bg-volume').value);
+                bgAudio.volume = parseFloat(document.getElementById('bg-volume'].value);
                 bgAudio.loop = true;
                 window.sharedAudio = bgAudio;
                 
