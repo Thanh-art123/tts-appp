@@ -78,11 +78,9 @@
         <!-- KHUNG ĐỌC TRUYỆN CHÍNH -->
         <div class="reader-container-box" id="main-reader-box" style="text-align: left;">
             
-            <!-- THANH CÔNG CỤ & ĐIỀU HƯỚNG CHƯƠNG -->
+            <!-- THANH CÔNG CỤ TÙY CHỈNH HIỂN THỊ ĐẶT NGAY TRÊN ĐẦU -->
             <div style="background: #fafafa; border: 1px solid #e4e4e7; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px;">
-                
-                <!-- Dòng 1: Tàng Kinh Các & Tùy chỉnh hiển thị -->
-                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; border-bottom: 1px solid #f4f4f5; pb-2; margin-bottom: 10px; padding-bottom: 8px;">
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
                     <a href="/tang-kinh-cac" style="font-weight: bold; color: #047857; text-decoration: none; font-size: 13px;">
                         ⬅ Tàng Kinh Các
                     </a>
@@ -114,49 +112,28 @@
                         <button onclick="changeContainerWidth('100%')" class="tool-btn">100%</button>
                     </div>
                 </div>
-
-                <!-- Dòng 2: Nút Chuyển Chương / Chọn Chương -->
-                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
-                    <button onclick="prevChapter()" class="tool-btn" style="background: #ecfdf5; color: #047857; border-color: #a7f3d0; padding: 6px 12px;">
-                        ❮ Chương trước
-                    </button>
-
-                    <!-- Chọn chương trực tiếp qua Dropdown -->
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <span style="font-size: 12px; color: #71717a; font-weight: bold;">Chọn chương:</span>
-                        <select id="chapter-select" onchange="jumpToChapter(this.value)" class="bg-white border border-zinc-300 rounded px-2 py-1 text-xs font-bold text-emerald-800 outline-none max-w-[240px]">
-                            <option value="0">Đang phân tích danh sách...</option>
-                        </select>
-                    </div>
-
-                    <button onclick="nextChapter()" class="action-btn">
-                        Chương tiếp ❯
-                    </button>
-                </div>
             </div>
 
-            <!-- TIÊU ĐỀ CHƯƠNG -->
+            <!-- TIÊU ĐỀ BỘ TRUYỆN -->
             <div style="text-align: center; border-bottom: 1px solid #e4e4e7; padding-bottom: 16px; margin-bottom: 24px;">
-                <h1 id="chapter-title-display" style="font-size: 20px; font-weight: bold; color: #065f46; margin: 0 0 6px 0;">
+                <h1 style="font-size: 20px; font-weight: bold; color: #065f46; margin: 0 0 6px 0;">
                     {{ chapter_title }}
                 </h1>
                 <p style="font-size: 12px; color: #a1a1aa; margin: 0;">Tông Môn Đọc Truyện • Chế độ tập trung</p>
             </div>
 
-            <!-- NỘI DUNG VĂN BẢN GỐC (ĐÃ LỌC BỎ THẺ CSS RÁC) -->
-            <div id="raw-hidden-content" style="display: none;">{{ chapter_content | safe }}</div>
+            <!-- NỘI DUNG VĂN BẢN HIỂN THỊ ĐẦY ĐỦ TRỌN VẸN 100% -->
+            <div id="hidden-raw" style="display: none;">{{ chapter_content | safe }}</div>
             <div id="story-content-body" class="story-content-text">
-                Đang xử lý văn bản...
+                Đang tải toàn văn...
             </div>
 
             <!-- CHÂN TRANG ĐIỀU HƯỚNG -->
             <div style="border-top: 1px solid #e4e4e7; margin-top: 35px; padding-top: 20px; text-align: center;">
                 <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 12px;">
-                    <button onclick="prevChapter()" class="tool-btn" style="padding: 6px 14px;">❮ Chương trước</button>
-                    <a href="/tang-kinh-cac" class="action-btn">📋 Mục Lục Tàng Kinh Các</a>
-                    <button onclick="nextChapter()" class="action-btn">Chương tiếp ❯</button>
+                    <a href="/tang-kinh-cac" class="action-btn">📋 Trở Về Mục Lục Tàng Kinh Các</a>
                 </div>
-                <p style="font-size: 12px; color: #a1a1aa; margin: 0;">--- Hết Chương ---</p>
+                <p style="font-size: 12px; color: #a1a1aa; margin: 0;">--- Hết Nội Dung ---</p>
             </div>
 
         </div>
@@ -164,8 +141,6 @@
 
     <script>
         let currentFontSize = 16;
-        let parsedChapters = [];
-        let currentChapterIdx = 0;
 
         function changeFontSize(delta) {
             currentFontSize += delta;
@@ -184,94 +159,28 @@
             document.getElementById('main-reader-box').style.maxWidth = widthStr;
         }
 
-        // Làm sạch dữ liệu HTML/CSS rác và tách chương chuẩn xác
-        function initChapterParser() {
-            let rawHTML = document.getElementById('raw-hidden-content').innerHTML;
-            
-            // Loại bỏ hoàn toàn các thẻ style / css rác nếu file tải lên là HTML
+        // Tự động làm sạch mã rác HTML/CSS và hiển thị toàn bộ nội dung chuẩn xác
+        window.addEventListener('DOMContentLoaded', () => {
+            let rawHTML = document.getElementById('hidden-raw').innerHTML;
             let tempDiv = document.createElement('div');
             tempDiv.innerHTML = rawHTML;
             
-            // Xóa các thẻ style, script thừa
-            const styles = tempDiv.querySelectorAll('style, script');
-            styles.forEach(s => s.remove());
+            // Xóa thẻ style/script thừa nếu có
+            tempDiv.querySelectorAll('style, script').forEach(el => el.remove());
 
             let cleanText = tempDiv.textContent || tempDiv.innerText || "";
 
-            // Nếu văn bản chứa các đoạn khai báo CSS dạng body{...}, tự động cắt bỏ phần rác đầu file
+            // Nếu file chứa chuỗi CSS rác dạng body{...}, lọc bỏ phần rác đầu file
             if (cleanText.includes("{") && cleanText.includes("}")) {
                 let lastBraceIdx = cleanText.lastIndexOf("}");
-                if (lastBraceIdx !== -1 && lastBraceIdx < 1000) {
+                if (lastBraceIdx !== -1 && lastBraceIdx < 1200) {
                     cleanText = cleanText.substring(lastBraceIdx + 1).trim();
                 }
             }
 
-            // Tách chương dựa theo từ khóa "Chương"
-            const regex = /(?=Chương\s+\d+)/gi;
-            let parts = cleanText.split(regex);
-
-            if (parts.length > 1) {
-                parsedChapters = parts.filter(p => p.trim().length > 0).map(p => {
-                    const lines = p.trim().split('\n').filter(l => l.trim().length > 0);
-                    return {
-                        title: lines[0] || "Chương truyện",
-                        content: lines.slice(1).join('\n').trim() || p
-                    };
-                });
-            } else {
-                parsedChapters = [{
-                    title: "{{ chapter_title }}",
-                    content: cleanText
-                }];
-            }
-
-            // Đổ vào menu chọn chương
-            const selectEl = document.getElementById('chapter-select');
-            selectEl.innerHTML = '';
-            parsedChapters.forEach((chap, idx) => {
-                const opt = document.createElement('option');
-                opt.value = idx;
-                // Giới hạn độ dài tiêu đề trong dropdown cho gọn gàng
-                opt.innerText = chap.title.length > 40 ? chap.title.substring(0, 40) + '...' : chap.title;
-                selectEl.appendChild(opt);
-            });
-
-            renderChapter(0);
-        }
-
-        function renderChapter(index) {
-            if (index < 0 || index >= parsedChapters.length) return;
-            currentChapterIdx = index;
-
-            const chap = parsedChapters[index];
-            document.getElementById('chapter-title-display').innerText = chap.title;
-            document.getElementById('story-content-body').innerText = chap.content;
-            document.getElementById('chapter-select').value = index;
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function prevChapter() {
-            if (currentChapterIdx > 0) {
-                renderChapter(currentChapterIdx - 1);
-            } else {
-                alert("Đạo hữu đang ở chương đầu tiên!");
-            }
-        }
-
-        function nextChapter() {
-            if (currentChapterIdx < parsedChapters.length - 1) {
-                renderChapter(currentChapterIdx + 1);
-            } else {
-                alert("Đã đến chương cuối cùng!");
-            }
-        }
-
-        function jumpToChapter(idx) {
-            renderChapter(parseInt(idx));
-        }
-
-        document.addEventListener('DOMContentLoaded', initChapterParser);
+            document.getElementById('story-content-body').innerText = cleanText;
+            window.scrollTo(0, 0);
+        });
     </script>
 </body>
 </html>
