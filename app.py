@@ -1,7 +1,28 @@
 import os
-from flask import Flask, render_template
+import random
+from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
+
+# Lưu trữ dữ liệu tu luyện giả lập
+tu_luyen_data = {
+    "diem_tich_tuyem": 120,
+    "cap_hien_tai": 1, # 1 đến 12 (Phàm Nhân -> Hỗn Độn Chúa Tể)
+    "tieu_canh": 0,    # 0: Nhập Môn, 1: Tiểu Thành, 2: Đại Thành, 3: Viên Mãn
+    "vat_pham": {
+        "hoa": 2,      # Hoa tăng cấp
+        "lua": 1,      # Lửa tăng cấp
+        "cay": 3       # Cây tăng cấp
+    }
+}
+
+TEN_CANH_GIOI = [
+    "Phàm Nhân", "Luyện Khí", "Trúc Cơ", "Kim Đan", 
+    "Nguyên Anh", "Hóa Thần", "Luyện Hư", "Hợp Thể", 
+    "Độ Kiếp", "Chân Tiên", "Tiên Vương", "Hỗn Độn Chúa Tể"
+]
+
+TEN_TIEU_CANH = ["Nhập Môn", "Tiểu Thành", "Đại Thành", "Viên Mãn"]
 
 @app.route('/')
 def home():
@@ -21,7 +42,64 @@ def dong_phu():
 
 @app.route('/bi-canh')
 def bi_canh():
-    return render_template('bi_canh.html')
+    n = tu_luyen_data["cap_hien_tai"]
+    tieu_canh_idx = tu_luyen_data["tieu_canh"]
+    
+    # Công thức tính điểm cần thiết cho tiểu cảnh/đại cảnh giới
+    diem_can_thiet = 100 * n + (tieu_canh_idx + 1) * 50 + (n ** 2) * 10
+    
+    return render_template('bi_canh.html', 
+                           data=tu_luyen_data, 
+                           ten_canh=TEN_CANH_GIOI[n-1], 
+                           ten_tieu_canh=TEN_TIEU_CANH[tieu_canh_idx],
+                           diem_max=diem_can_thiet)
+
+@app.route('/api/hanh-dong', methods=['POST'])
+def hanh_dong():
+    req = request.json or {}
+    loai = req.get('loai') # 'dang_bai', 'nghe_truyen', 'nhat_vat_pham'
+    
+    if loai == 'dang_bai':
+        tu_luyen_data["diem_tich_tuyem"] += 50
+    elif loai == 'nghe_truyen':
+        tu_luyen_data["diem_tich_tuyem"] += 30
+    elif loai == 'nhat_vat_pham':
+        tu_luyen_data["diem_tich_tuyem"] += 20
+        vp = random.choice(['hoa', 'lua', 'cay'])
+        tu_luyen_data["vat_pham"][vp] += 1
+        
+    return jsonify({"success": True, "data": tu_luyen_data})
+
+@app.route('/api/dot-pha', methods=['POST'])
+def dot_pha():
+    n = tu_luyen_data["cap_hien_tai"]
+    tieu_canh_idx = tu_luyen_data["tieu_canh"]
+    diem_hien_tai = tu_luyen_data["diem_tich_tuyem"]
+    
+    diem_can_thiet = 100 * n + (tieu_canh_idx + 1) * 50 + (n ** 2) * 10
+    
+    if diem_hien_tai < diem_can_thiet:
+        return jsonify({"success": False, "message": "Không đủ điểm tu luyện để đột phá!"})
+        
+    # Nếu đang ở cảnh giới Viên Mãn (index 3) thì cần vật phẩm Hoa và Lửa để lên Đại Cảnh Giới mới
+    if tieu_canh_idx == 3:
+        if tu_luyen_data["vat_pham"]["hoa"] < 1 or tu_luyen_data["vat_pham"]["lua"] < 1:
+            return jsonify({"success": False, "message": "Đột phá Đại Cảnh Giới yêu cầu phải có ít nhất 1 Hoa và 1 Lửa thần!"})
+        
+        tu_luyen_data["vat_pham"]["hoa"] -= 1
+        tu_luyen_data["vat_pham"]["lua"] -= 1
+        
+        if n < 12:
+            tu_luyen_data["cap_hien_tai"] += 1
+            tu_luyen_data["tieu_canh"] = 0
+            tu_luyen_data["diem_tich_tuyem"] -= diem_can_thiet
+        else:
+            return jsonify({"success": False, "message": "Đạo hữu đã đạt đến đỉnh phong Hỗn Độn Chúa Tể, vô địch thiên địa rồi!"})
+    else:
+        tu_luyen_data["tieu_canh"] += 1
+        tu_luyen_data["diem_tich_tuyem"] -= diem_can_thiet
+        
+    return jsonify({"success": True, "message": "Đột phá thành công!", "data": tu_luyen_data})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
