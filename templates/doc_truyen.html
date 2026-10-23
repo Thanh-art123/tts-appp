@@ -3,53 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ chapter_title }} - Tông Môn Đọc Truyện</title>
+    <title>{{ chapter_title }} - Đọc Truyện</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #070e17;
-            color: #fef3c7;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f5; /* Nền sáng trang nhã */
+            color: #27272a;           /* Chữ tối màu dễ đọc */
+            font-family: 'Georgia', 'Segoe UI', serif;
         }
-        .reader-container {
-            max-width: 900px;
+        .reader-wrapper {
+            max-width: 850px;
             margin: 40px auto;
-            background: rgba(15, 32, 51, 0.95);
-            border: 1px solid rgba(245, 158, 11, 0.4);
-            border-radius: 16px;
-            padding: 40px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+            background: #ffffff;
+            border: 1px solid #e4e4e7;
+            border-radius: 12px;
+            padding: 50px 60px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
         }
     </style>
 </head>
-<body class="min-h-screen py-10 px-4">
+<body class="min-h-screen py-8 px-4">
 
-    <!-- Thanh điều hướng trên cùng -->
-    <div class="max-w-[900px] mx-auto mb-6 flex justify-between items-center bg-black/60 px-5 py-3 rounded-xl border border-amber-600/30 shadow-xl">
-        <a href="/tang-kinh-cac" class="text-xs font-bold text-amber-400 hover:text-white flex items-center space-x-2 transition">
-            <i class="fa-solid fa-arrow-left"></i>
-            <span>Trở về Tàng Kinh Các</span>
-        </a>
-        <h1 class="text-xs font-extrabold text-amber-200 uppercase tracking-widest">Tông Môn Tịnh Thất • Đọc Sách Thuần Túy</h1>
-    </div>
-
-    <!-- Khung nội dung đọc truyện -->
-    <div class="reader-container space-y-6">
-        <div class="border-b border-amber-600/40 pb-4 text-center">
-            <h2 class="text-2xl font-black text-amber-400">{{ chapter_title }}</h2>
+    <!-- Khu vực khung đọc truyện chính -->
+    <div class="reader-wrapper space-y-8">
+        
+        <!-- Tiêu đề truyện và chương -->
+        <div class="text-center space-y-2 border-b border-zinc-200 pb-6">
+            <h1 class="text-xl font-bold text-emerald-700 tracking-wide uppercase">Lá Xanh - Bán Tiệt Bạch Thái</h1>
+            <p class="text-sm font-semibold text-zinc-600">{{ chapter_title }}</p>
+            
+            <!-- Biểu tượng trang trí cổ điển -->
+            <div class="flex justify-center items-center space-x-2 pt-2 text-zinc-400">
+                <span class="h-[1px] w-12 bg-zinc-300"></span>
+                <i class="fa-solid fa-feather text-xs"></i>
+                <span class="h-[1px] w-12 bg-zinc-300"></span>
+            </div>
         </div>
 
-        <div class="text-base text-amber-100/95 leading-loose space-y-4 text-justify font-normal whitespace-pre-line">
+        <!-- Các nút điều hướng (Chương trước, Mục lục, Chương tiếp) -->
+        <div class="flex justify-center items-center space-x-3">
+            <button onclick="alert('Đang ở chương đầu tiên!')" class="bg-emerald-600/30 hover:bg-emerald-600/40 text-emerald-800 font-bold px-4 py-2 rounded-lg text-xs transition flex items-center space-x-1 cursor-pointer">
+                <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                <span>Chương trước</span>
+            </button>
+            <a href="/tang-kinh-cac" class="bg-emerald-600 hover:bg-emerald-500 text-white p-2.5 rounded-lg text-xs transition shadow flex items-center justify-center cursor-pointer" title="Trở về Mục Lục Tàng Kinh Các">
+                <i class="fa-solid fa-list"></i>
+            </a>
+            <button onclick="alert('Đã đến chương cuối!')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-xs transition flex items-center space-x-1 shadow cursor-pointer">
+                <span>Chương tiếp</span>
+                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </button>
+        </div>
+
+        <!-- Hoa văn trang trí ngăn cách -->
+        <div class="text-center text-zinc-400 py-2">
+            <i class="fa-solid fa-pagoda text-lg opacity-60"></i>
+        </div>
+
+        <!-- Nội dung văn bản chương truyện -->
+        <div class="text-base text-zinc-800 leading-loose space-y-6 text-justify font-normal whitespace-pre-line">
             {{ chapter_content | safe }}
         </div>
 
-        <div class="border-t border-amber-600/40 pt-6 flex justify-between items-center text-xs">
-            <a href="/tang-kinh-cac" class="bg-amber-950/80 hover:bg-amber-900 text-amber-300 font-bold px-4 py-2.5 rounded-xl border border-amber-600/50 transition inline-flex items-center space-x-1">
-                <i class="fa-solid fa-list mr-1"></i> <span>Quay Lại Tàng Kinh Các</span>
+        <!-- Chân trang đọc -->
+        <div class="border-t border-zinc-200 pt-6 text-center text-xs text-zinc-500">
+            <p>--- Hoàn chương ---</p>
+            <a href="/tang-kinh-cac" class="inline-mt-3 text-emerald-700 hover:underline font-semibold mt-2 inline-block">
+                <i class="fa-solid fa-arrow-left mr-1"></i> Quay lại Tàng Kinh Các
             </a>
-            <span class="text-amber-400/60 font-semibold">Tông Môn Đọc Sách 2026</span>
         </div>
+
     </div>
 
 </body>
