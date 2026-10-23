@@ -15,7 +15,7 @@
             padding: 0;
         }
 
-        /* THANH CÔNG CỤ CỐ ĐỊNH (STICKY) LUÔN HIỆN TRÊN CÙNG KHI CUỘN */
+        /* THANH CÔNG CỤ CỐ ĐỊNH (STICKY) LUÔN HIỆN TRÊN CÙNG */
         .sticky-toolbar {
             position: sticky;
             top: 0;
@@ -86,7 +86,7 @@
 </head>
 <body>
 
-    <!-- THANH CÔNG CỤ CỐ ĐỊNH LUÔN HIỆN DIỆN MỌI LÚC MỌI NƠI -->
+    <!-- THANH CÔNG CỤ CỐ ĐỊNH TRÊN ĐẦU -->
     <div class="sticky-toolbar">
         <div style="max-width: 900px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
             <div style="display: flex; align-items: center; gap: 12px;">
@@ -102,7 +102,7 @@
             <div style="display: flex; align-items: center; gap: 6px;">
                 <span style="font-size: 12px; color: #71717a; font-weight: bold;">Chương:</span>
                 <select id="chapter-select" onchange="jumpToChapter(this.value)" class="bg-white border border-zinc-300 rounded px-2 py-1 text-xs font-bold text-emerald-800 outline-none max-w-[220px]">
-                    <option value="0">Đang tải...</option>
+                    <option value="0">Đang quét chương...</option>
                 </select>
             </div>
 
@@ -111,7 +111,6 @@
                     Chương tiếp ❯
                 </button>
 
-                <!-- Cỡ chữ & Phông chữ thu gọn -->
                 <div style="display: flex; align-items: center; gap: 4px;">
                     <button onclick="changeFontSize(-1)" class="tool-btn">-</button>
                     <span id="font-size-num" style="font-size: 12px; font-weight: bold; width: 28px; text-align: center;">16px</span>
@@ -132,10 +131,12 @@
                 <p style="font-size: 12px; color: #a1a1aa; margin: 0;">Tông Môn Đọc Truyện • Chế độ tập trung</p>
             </div>
 
-            <!-- NỘI DUNG VĂN BẢN (ẨN ĐỂ XỬ LÝ) -->
+            <!-- DỮ LIỆU GỐC (ẨN) -->
             <div id="raw-hidden-content" style="display: none;">{{ chapter_content | safe }}</div>
+            
+            <!-- NỘI DUNG VĂN BẢN HIỂN THỊ CHUẨN XÁC -->
             <div id="story-content-body" class="story-content-text">
-                Đang xử lý và định dạng văn bản...
+                Đang nạp và bóc tách dữ liệu chương...
             </div>
 
             <!-- CHÂN TRANG ĐIỀU HƯỚNG -->
@@ -165,7 +166,7 @@
             document.getElementById('story-content-body').style.fontSize = currentFontSize + 'px';
         }
 
-        // Tự động tách dòng, làm sạch và chia chương chuẩn xác
+        // Thuật toán tách chương chính xác: Từ chữ "Chương X" cho đến trước chương tiếp theo
         window.addEventListener('DOMContentLoaded', () => {
             let rawHTML = document.getElementById('raw-hidden-content').innerHTML;
             let tempDiv = document.createElement('div');
@@ -174,29 +175,45 @@
             tempDiv.querySelectorAll('style, script').forEach(el => el.remove());
             let cleanText = tempDiv.textContent || tempDiv.innerText || "";
 
-            // Xóa CSS rác nếu có ở đầu file
+            // Xóa đoạn CSS rác ở đầu file nếu có
             if (cleanText.includes("{") && cleanText.includes("}")) {
                 let lastBraceIdx = cleanText.lastIndexOf("}");
-                if (lastBraceIdx !== -1 && lastBraceIdx < 1200) {
+                if (lastBraceIdx !== -1 && lastBraceIdx < 1500) {
                     cleanText = cleanText.substring(lastBraceIdx + 1).trim();
                 }
             }
 
-            // Tự động ngắt dòng nếu các chương bị dính liền nhau (VD: tócChương 2 -> tóc\nChương 2)
-            cleanText = cleanText.replace(/([^\n])(Chương\s+\d+[:\s])/gi, '$1\n\n$2');
+            // Tách các chương dựa trên biểu thức khớp đúng từ khóa "Chương [số]"
+            const chapterRegex = /Chương\s+\d+[:\s]*/gi;
+            let matches = [...cleanText.matchAll(chapterRegex)];
 
-            // Cắt chuỗi thành các chương dựa theo từ khóa "Chương X"
-            const regex = /(?=Chương\s+\d+)/gi;
-            let parts = cleanText.split(regex);
+            if (matches.length > 0) {
+                parsedChapters = [];
+                for (let i = 0; i < matches.length; i++) {
+                    let startIdx = matches[i].index;
+                    let endIdx = (i < matches.length - 1) ? matches[i + 1].index : cleanText.length;
+                    
+                    let fullChunk = cleanText.substring(startIdx, endIdx).trim();
+                    let firstNewline = fullChunk.indexOf('\n');
+                    
+                    let title = "";
+                    let content = "";
 
-            if (parts.length > 1) {
-                parsedChapters = parts.filter(p => p.trim().length > 0).map(p => {
-                    const lines = p.trim().split('\n').filter(l => l.trim().length > 0);
-                    return {
-                        title: lines[0] || "Chương truyện",
-                        content: lines.slice(1).join('\n').trim() || p
-                    };
-                });
+                    if (firstNewline !== -1 && firstNewline < 100) {
+                        title = fullChunk.substring(0, firstNewline).trim();
+                        content = fullChunk.substring(firstNewline).trim();
+                    } else {
+                        // Trường hợp dòng bị dính liền chữ
+                        let splitSpace = fullChunk.split(/(?=Chương\s+\d+)/i);
+                        title = splitSpace[0].substring(0, 50);
+                        content = fullChunk;
+                    }
+
+                    parsedChapters.push({
+                        title: title || `Chương ${i + 1}`,
+                        content: content || fullChunk
+                    });
+                }
             } else {
                 parsedChapters = [{
                     title: "{{ chapter_title }}",
@@ -210,7 +227,7 @@
             parsedChapters.forEach((chap, idx) => {
                 const opt = document.createElement('option');
                 opt.value = idx;
-                opt.innerText = chap.title.length > 35 ? chap.title.substring(0, 35) + '...' : chap.title;
+                opt.innerText = chap.title.length > 40 ? chap.title.substring(0, 40) + '...' : chap.title;
                 selectEl.appendChild(opt);
             });
 
