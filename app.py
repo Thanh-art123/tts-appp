@@ -24,6 +24,18 @@ TEN_CANH_GIOI = [
 
 TEN_TIEU_CANH = ["Nhập Môn", "Tiểu Thành", "Đại Thành", "Viên Mãn"]
 
+# Kho lưu trữ truyện server-side (Đã có sẵn dữ liệu mẫu Lá Xanh)
+truyen_database = [
+    {
+        "id": 1,
+        "category": "truyen-dich",
+        "element": "Kim",
+        "author": "Bán Tiệt Bạch Thái",
+        "title": "Lá Xanh",
+        "content": "Đêm nhận được giấy báo nhập học, Hạ Diệp chạy tót lên sân thượng ngồi thẫn thờ..."
+    }
+]
+
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -57,6 +69,46 @@ def doc_truyen():
     title = request.form.get('title', 'Chương Truyện')
     content = request.form.get('content', 'Không có nội dung.')
     return render_template('doc_truyen.html', chapter_title=title, chapter_content=content)
+
+# API LẤY DANH SÁCH TRUYỆN THEO CHUYÊN MỤC VÀ THUỘC TÍNH
+@app.route('/api/get-books', methods=['GET'])
+def get_books():
+    cat = request.args.get('category', 'truyen-dich')
+    elem = request.args.get('element', 'Kim')
+    
+    filtered_books = [
+        b for b in truyen_database 
+        if b['category'] == cat and b['element'] == elem
+    ]
+    return jsonify({"success": True, "books": filtered_books})
+
+# API TẢI TRUYỆN LÊN SERVER (SẼ LƯU VĨNH VIỄN)
+@app.route('/api/upload-book', methods=['POST'])
+def upload_book():
+    data = request.json or {}
+    title = data.get('title')
+    content = data.get('content')
+    author = data.get('author', 'Vô Danh')
+    cat = data.get('category', 'truyen-dich')
+    elem = data.get('element', 'Kim')
+
+    if not title or not content:
+        return jsonify({"success": False, "message": "Thiếu thông tin bộ truyện!"})
+
+    new_book = {
+        "id": len(truyen_database) + 1,
+        "category": cat,
+        "element": elem,
+        "author": author,
+        "title": title,
+        "content": content
+    }
+    truyen_database.append(new_book)
+    
+    # Cộng điểm tu luyện cho tác giả khi đăng bài
+    tu_luyen_data["diem_tich_tuyem"] += 50
+
+    return jsonify({"success": True, "message": f"Truyện [{title}] đã được truyền thừa thành công!", "book": new_book})
 
 @app.route('/api/hanh-dong', methods=['POST'])
 def hanh_dong():
