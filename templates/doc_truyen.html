@@ -66,24 +66,6 @@
             color: #047857;
         }
 
-        .action-btn {
-            background: #047857;
-            color: #ffffff;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .action-btn:hover {
-            background: #065f46;
-        }
-
         .chapter-anchor {
             scroll-margin-top: 80px;
         }
@@ -132,15 +114,15 @@
             <!-- DỮ LIỆU GỐC (ẨN) -->
             <div id="raw-hidden-content" style="display: none;">{{ chapter_content | safe }}</div>
             
-            <!-- NỘI DUNG HIỂN THỊ TỪ CHƯƠNG 1 TRỞ ĐI (ĐÃ LỌC BỎ MỤC LỤC THỪA) -->
+            <!-- NỘI DUNG CHÍNH (ĐÃ LỌC BỎ HOÀN TOÀN MỤC LỤC RÁC Ở ĐẦU) -->
             <div id="story-content-body" class="story-content-text">
-                Đang nạp toàn bộ nội dung...
+                Đang xử lý và làm sạch văn bản...
             </div>
 
             <!-- CHÂN TRANG ĐIỀU HƯỚNG -->
             <div style="border-top: 1px solid #e4e4e7; margin-top: 35px; padding-top: 20px; text-align: center;">
                 <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 12px;">
-                    <a href="/tang-kinh-cac" class="action-btn">📋 Trở Về Tàng Kinh Các</a>
+                    <a href="/tang-kinh-cac" class="action-btn" style="background: #047857; color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: bold; text-decoration: none;">📋 Trở Về Tàng Kinh Các</a>
                 </div>
                 <p style="font-size: 12px; color: #a1a1aa; margin: 0;">--- Hết Toàn Bộ Kho Tàng ---</p>
             </div>
@@ -176,10 +158,24 @@
                 }
             }
 
-            // Tự động ngắt dòng trước từ "Chương 1" đầu tiên để loại bỏ hoàn toàn phần mục lục rác ở đầu file
-            let firstChapIdx = cleanText.search(/Chương\s+1\b/i);
-            if (firstChapIdx !== -1) {
-                cleanText = cleanText.substring(firstChapIdx);
+            // THUẬT TOÁN THÔNG MINH LOẠI BỎ MỤC LỤC RÁC Ở ĐẦU:
+            // Tìm tất cả các vị trí xuất hiện của từ "Chương"
+            let matches = [...cleanText.matchAll(/Chương\s+\d+/gi)];
+            if (matches.length > 5) {
+                // Kiểm tra xem đoạn đầu có phải là mục lục không (nếu các từ "Chương" xuất hiện liên tục dày đặc ở đầu)
+                // Ta tìm vị trí mà khoảng cách giữa các từ "Chương" bắt đầu thưa ra (bắt đầu vào nội dung thực tế của truyện)
+                let contentStartIndex = 0;
+                for (let i = 0; i < matches.length - 1; i++) {
+                    let distance = matches[i + 1].index - matches[i].index;
+                    // Nếu khoảng cách giữa 2 chữ "Chương" lớn hơn 500 ký tự, chứng minh đây là nội dung chương thật chứ không phải mục lục ngắn
+                    if (distance > 500) {
+                        contentStartIndex = matches[i].index;
+                        break;
+                    }
+                }
+                if (contentStartIndex > 0) {
+                    cleanText = cleanText.substring(contentStartIndex);
+                }
             }
 
             cleanText = cleanText.replace(/([^\n])(Chương\s+\d+[:\s])/gi, '$1\n\n$2');
@@ -198,6 +194,7 @@
                 p.style.margin = "8px 0";
                 p.innerText = line;
 
+                // Nhận diện tiêu đề chương chính thức để làm mốc cuộn
                 if (/^Chương\s+\d+/i.test(line.trim())) {
                     chapterCount++;
                     let targetId = `chap-pos-${chapterCount}`;
