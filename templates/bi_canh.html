@@ -1,64 +1,90 @@
 {% extends "base.html" %}
-{% block title %}Bí Cảnh Thử Thách - Tu Luyện & Đột Phá{% endblock %}
+{% block title %}Bí Cảnh Tu Luyện{% endblock %}
+
 {% block content %}
 <div class="panel-3d rounded-2xl p-6 space-y-6">
-    <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
-        <i class="fa-solid fa-gem text-amber-500"></i>
-        <span>Bí Cảnh Thử Thách - Thâm Sơn Cổ Trận</span>
-    </h2>
-
-    <!-- Thông tin cảnh giới & sức mạnh -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-black/60 p-4 rounded-xl border border-amber-600/40 text-center">
-            <p class="text-xs text-amber-400 font-bold">Đại Cảnh Giới</p>
-            <p class="text-lg font-black text-amber-200 mt-1" id="h-canh-gioi">{{ ten_canh }}</p>
-            <p class="text-[10px] text-amber-300/70 mt-1">Cấp {{ data.cap_hien_tai }} / 12</p>
-        </div>
-        <div class="bg-black/60 p-4 rounded-xl border border-amber-600/40 text-center">
-            <p class="text-xs text-amber-400 font-bold">Tiểu Cảnh Giới</p>
-            <p class="text-lg font-black text-emerald-400 mt-1" id="h-tieu-canh">{{ ten_tieu_canh }}</p>
-            <p class="text-[10px] text-amber-300/70 mt-1">Nhập Môn → Viên Mãn</p>
-        </div>
-        <div class="bg-black/60 p-4 rounded-xl border border-amber-600/40 text-center">
-            <p class="text-xs text-amber-400 font-bold">Điểm Tích Tụ</p>
-            <p class="text-lg font-black text-amber-400 mt-1"><span id="h-diem">{{ data.diem_tich_tuyem }}</span> / <span id="h-diem-max">{{ diem_max }}</span></p>
-            <div class="w-full bg-slate-800 h-2 rounded-full mt-2 overflow-hidden">
-                <div id="progress-bar" class="bg-amber-500 h-full transition-all duration-500" style="width: {{ (data.diem_tich_tuyem / diem_max) * 100 if data.diem_tich_tuyem < diem_max else 100 }}%"></div>
-            </div>
-        </div>
+    <div class="flex justify-between items-center border-b border-amber-600/40 pb-3">
+        <h2 class="text-lg font-bold text-amber-400 flex items-center space-x-2">
+            <i class="fa-solid fa-mountain-sun text-amber-500"></i>
+            <span>Bí Cảnh Tu Luyện - Linh Khí Đồng Bộ Cloud</span>
+        </h2>
+        <span id="bi-canh-user-name" class="text-xs font-bold text-amber-300 bg-black/60 px-3 py-1 rounded-xl border border-amber-500/50">Chưa Đăng Nhập</span>
     </div>
 
-    <!-- Kho vật phẩm đột phá -->
-    <div class="bg-amber-950/40 p-4 rounded-xl border border-amber-600/40 flex flex-wrap justify-between items-center">
-        <div class="flex items-center space-x-4">
-            <span class="text-xs font-bold text-amber-300"><i class="fa-solid fa-box-archive mr-1"></i> Kho Vật Phẩm:</span>
-            <div class="flex space-x-3 text-xs">
-                <span class="bg-black/60 px-2.5 py-1 rounded-lg border border-amber-500/50">🌸 Hoa: <strong id="item-hoa" class="text-amber-400">{{ data.vat_pham.hoa }}</strong></span>
-                <span class="bg-black/60 px-2.5 py-1 rounded-lg border border-amber-500/50">🔥 Lửa: <strong id="item-lua" class="text-amber-400">{{ data.vat_pham.lua }}</strong></span>
-                <span class="bg-black/60 px-2.5 py-1 rounded-lg border border-amber-500/50">🌿 Cây: <strong id="item-cay" class="text-amber-400">{{ data.vat_pham.cay }}</strong></span>
-            </div>
-        </div>
-        <button onclick="thucHienDotPha()" class="mt-2 sm:mt-0 bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-4 py-2 rounded-xl text-xs shadow transition cursor-pointer">
-            <i class="fa-solid fa-bolt mr-1"></i> Đột Phá Cảnh Giới
-        </button>
+    <!-- Thông báo chưa đăng nhập -->
+    <div id="unauth-notice" class="bg-black/80 border border-red-500/60 p-6 rounded-2xl text-center space-y-3 hidden">
+        <i class="fa-solid fa-lock text-red-400 text-3xl"></i>
+        <p class="text-xs text-amber-200 font-bold">Đạo hữu chưa đăng nhập tài khoản Cloud Tông Môn!</p>
+        <p class="text-[11px] text-amber-400/70">Hãy sang <a href="/tang-kinh-cac" class="text-amber-300 underline font-bold">Tàng Kinh Các</a> để đăng nhập hoặc tạo tài khoản mới.</p>
     </div>
 
-    <!-- Các hành động tích điểm -->
-    <div class="space-y-3">
-        <h3 class="text-sm font-bold text-amber-300">Hoạt Động Tích Điểm Tu Luyện:</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <button onclick="thucHienHanhDong('dang_bai')" class="bg-black/70 hover:bg-amber-950/60 border border-amber-600/50 p-3 rounded-xl text-left transition cursor-pointer">
-                <p class="text-xs font-extrabold text-amber-300"><i class="fa-solid fa-feather mr-1"></i> Đăng Bài Kinh Văn</p>
-                <p class="text-[10px] text-amber-400/70 mt-1">+50 Điểm tu luyện</p>
+    <!-- Nội dung Tu Luyện Cá Nhân -->
+    <div id="tu-luyen-content" class="space-y-6">
+        <!-- Thông tin Cảnh Giới -->
+        <div class="bg-black/60 border border-amber-600/40 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="space-y-1 text-center md:text-left">
+                <p class="text-xs text-amber-400/80 uppercase font-bold">Cảnh Giới Hiện Tại</p>
+                <p class="text-2xl font-extrabold text-amber-300 tracking-wide" id="txt-canh-gioi">Đang tải...</p>
+                <p class="text-xs text-emerald-400 font-bold" id="txt-tieu-canh">---</p>
+            </div>
+
+            <!-- Thanh Tiến Trình Linh Khí -->
+            <div class="w-full md:w-1/2 space-y-2">
+                <div class="flex justify-between text-xs font-bold text-amber-300">
+                    <span>Linh Khí Tích Lũy</span>
+                    <span id="txt-diem-progress">0 / 0</span>
+                </div>
+                <div class="w-full bg-black/80 rounded-full h-3 border border-amber-600/50 overflow-hidden">
+                    <div id="progress-bar" class="bg-gradient-to-r from-amber-600 to-yellow-400 h-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <button onclick="dotPha()" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black font-extrabold px-6 py-3 rounded-xl text-xs shadow-lg transition cursor-pointer flex items-center space-x-2">
+                <i class="fa-solid fa-bolt-lightning"></i>
+                <span>Đột Phá Cảnh Giới</span>
             </button>
-            <button onclick="thucHienHanhDong('nghe_truyen')" class="bg-black/70 hover:bg-amber-950/60 border border-amber-600/50 p-3 rounded-xl text-left transition cursor-pointer">
-                <p class="text-xs font-extrabold text-amber-300"><i class="fa-solid fa-headphones mr-1"></i> Nghe Hết 1 Chương</p>
-                <p class="text-[10px] text-amber-400/70 mt-1">+30 Điểm tu luyện</p>
-            </button>
-            <button onclick="thucHienHanhDong('nhat_vat_pham')" class="bg-black/70 hover:bg-amber-950/60 border border-amber-600/50 p-3 rounded-xl text-left transition cursor-pointer">
-                <p class="text-xs font-extrabold text-amber-300"><i class="fa-solid fa-hand-sparkles mr-1"></i> Nhặt Vật Phẩm</p>
-                <p class="text-[10px] text-amber-400/70 mt-1">+20 Điểm + Ngẫu nhiên Hoa/Lửa/Cây</p>
-            </button>
+        </div>
+
+        <!-- Kho Vật Phẩm Thần Thông Cá Nhân -->
+        <div class="bg-black/60 border border-amber-600/40 rounded-2xl p-5 space-y-3">
+            <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2">
+                📦 Pháp Bảo & Vật Phẩm Tích Lũy (Đám Mây)
+            </h3>
+            <div class="grid grid-cols-3 gap-3 text-center text-xs">
+                <div class="bg-amber-950/40 border border-amber-600/30 p-3 rounded-xl">
+                    <span class="block text-xl mb-1">🌸</span>
+                    <span class="text-amber-200 font-bold">Thần Hoa: <span id="num-hoa" class="text-amber-400">0</span></span>
+                </div>
+                <div class="bg-amber-950/40 border border-amber-600/30 p-3 rounded-xl">
+                    <span class="block text-xl mb-1">🔥</span>
+                    <span class="text-amber-200 font-bold">Thánh Lửa: <span id="num-lua" class="text-amber-400">0</span></span>
+                </div>
+                <div class="bg-amber-950/40 border border-amber-600/30 p-3 rounded-xl">
+                    <span class="block text-xl mb-1">🪴</span>
+                    <span class="text-amber-200 font-bold">Linh Cây: <span id="num-cay" class="text-amber-400">0</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Các Hành Động Ngộ Đạo -->
+        <div class="bg-black/60 border border-amber-600/40 rounded-2xl p-5 space-y-3">
+            <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2">
+                ⚡ Hành Động Ngộ Đạo Tăng Linh Khí
+            </h3>
+            <div class="flex flex-wrap gap-3">
+                <button onclick="hanhDong('dang_bai')" class="bg-amber-900/60 hover:bg-amber-800/80 border border-amber-600/50 text-amber-200 font-bold px-4 py-2 rounded-xl text-xs transition cursor-pointer flex items-center space-x-2">
+                    <i class="fa-solid fa-pen-nib text-amber-400"></i>
+                    <span>Truyền Thừa Kinh Điển (+50 Điểm)</span>
+                </button>
+                <button onclick="hanhDong('nghe_truyen')" class="bg-amber-900/60 hover:bg-amber-800/80 border border-amber-600/50 text-amber-200 font-bold px-4 py-2 rounded-xl text-xs transition cursor-pointer flex items-center space-x-2">
+                    <i class="fa-solid fa-headphones text-amber-400"></i>
+                    <span>Tọa Thiền Lắng Nghe (+30 Điểm)</span>
+                </button>
+                <button onclick="hanhDong('nhat_vat_pham')" class="bg-amber-900/60 hover:bg-amber-800/80 border border-amber-600/50 text-amber-200 font-bold px-4 py-2 rounded-xl text-xs transition cursor-pointer flex items-center space-x-2">
+                    <i class="fa-solid fa-gem text-amber-400"></i>
+                    <span>Duyên Khởi Nhặt Vật Phẩm (+20 Điểm)</span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -68,58 +94,70 @@
 <script>
     document.getElementById('nav-bi')?.classList.add('active');
 
-    const tenCanhGioiList = [
-        "Phàm Nhân", "Luyện Khí", "Trúc Cơ", "Kim Đan", 
-        "Nguyên Anh", "Hóa Thần", "Luyện Hư", "Hợp Thể", 
-        "Độ Kiếp", "Chân Tiên", "Tiên Vương", "Hỗn Độn Chúa Tể"
-    ];
-    const tenTieuCanhList = ["Nhập Môn", "Tiểu Thành", "Đại Thành", "Viên Mãn"];
+    const currentUser = JSON.parse(localStorage.getItem('tongan_current_user')) || null;
 
-    function capNhatGiaoDien(data) {
-        document.getElementById('h-canh-gioi').innerText = tenCanhGioiList[data.cap_hien_tai - 1];
-        document.getElementById('h-tieu-canh').innerText = tenTieuCanhList[data.tieu_canh];
-        document.getElementById('h-diem').innerText = data.diem_tich_tuyem;
+    function renderTuLuyenUI(res) {
+        if(!res.success) return;
+        const data = res.data;
+        document.getElementById('txt-canh-gioi').innerText = res.ten_canh;
+        document.getElementById('txt-tieu-canh').innerText = `[${res.ten_tieu_canh}]`;
+        document.getElementById('txt-diem-progress').innerText = `${data.diem_tich_tuyem} / ${res.diem_max}`;
         
-        document.getElementById('item-hoa').innerText = data.vat_pham.hoa;
-        document.getElementById('item-lua').innerText = data.vat_pham.lua;
-        document.getElementById('item-cay').innerText = data.vat_pham.cay;
+        let pct = Math.min(100, Math.round((data.diem_tich_tuyem / res.diem_max) * 100));
+        document.getElementById('progress-bar').style.width = pct + '%';
 
-        let n = data.cap_hien_tai;
-        let tieuCanhIdx = data.tieu_canh;
-        let diemMax = 100 * n + (tieuCanhIdx + 1) * 50 + (n ** 2) * 10;
-        document.getElementById('h-diem-max').innerText = diemMax;
-
-        let percent = (data.diem_tich_tuyem / diemMax) * 100;
-        if(percent > 100) percent = 100;
-        document.getElementById('progress-bar').style.width = percent + '%';
+        document.getElementById('num-hoa').innerText = data.vat_pham.hoa;
+        document.getElementById('num-lua').innerText = data.vat_pham.lua;
+        document.getElementById('num-cay').innerText = data.vat_pham.cay;
     }
 
-    function thucHienHanhDong(loai) {
-        fetch('/api/hanh-dong', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({loai: loai})
-        })
+    function loadTuLuyenData() {
+        if(!currentUser) {
+            document.getElementById('unauth-notice').classList.remove('hidden');
+            document.getElementById('tu-luyen-content').classList.add('hidden');
+            return;
+        }
+
+        document.getElementById('bi-canh-user-name').innerText = `Đạo Hào: ${currentUser.author_name}`;
+
+        fetch(`/api/get-tu-luyen?username=${encodeURIComponent(currentUser.username)}`)
         .then(res => res.json())
         .then(res => {
             if(res.success) {
-                capNhatGiaoDien(res.data);
+                renderTuLuyenUI(res);
+            } else {
+                alert(res.message);
             }
         });
     }
 
-    function thucHienDotPha() {
+    function hanhDong(loai) {
+        if(!currentUser) return;
+        fetch('/api/hanh-dong', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ username: currentUser.username, loai: loai })
+        })
+        .then(res => res.json())
+        .then(res => {
+            if(res.success) renderTuLuyenUI(res);
+        });
+    }
+
+    function dotPha() {
+        if(!currentUser) return;
         fetch('/api/dot-pha', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'}
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ username: currentUser.username })
         })
         .then(res => res.json())
         .then(res => {
             alert(res.message);
-            if(res.success) {
-                capNhatGiaoDien(res.data);
-            }
+            if(res.success) renderTuLuyenUI(res);
         });
     }
+
+    document.addEventListener('DOMContentLoaded', loadTuLuyenData);
 </script>
 {% endblock %}
