@@ -81,7 +81,7 @@
             <!-- THANH CÔNG CỤ & ĐIỀU HƯỚNG CHƯƠNG ĐẶT NGAY TRÊN ĐẦU -->
             <div style="background: #fafafa; border: 1px solid #e4e4e7; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px;">
                 
-                <!-- Dòng 1: Trở về Tàng Kinh Các & Tùy chỉnh hiển thị -->
+                <!-- Dòng 1: Tàng Kinh Các & Cài đặt hiển thị -->
                 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; border-bottom: 1px solid #f4f4f5; pb-2; margin-bottom: 10px; padding-bottom: 8px;">
                     <a href="/tang-kinh-cac" style="font-weight: bold; color: #047857; text-decoration: none; font-size: 13px;">
                         ⬅ Tàng Kinh Các
@@ -143,9 +143,10 @@
                 <p style="font-size: 12px; color: #a1a1aa; margin: 0;">Tông Môn Đọc Truyện • Chế độ tập trung</p>
             </div>
 
-            <!-- NỘI DUNG VĂN BẢN CHƯƠNG -->
+            <!-- NỘI DUNG VĂN BẢN CHƯƠNG (GIỮ LẠI DỮ LIỆU GỐC ĐỂ KHÔNG BỊ MẤT) -->
+            <div id="raw-hidden-content" style="display: none;">{{ chapter_content | safe }}</div>
             <div id="story-content-body" class="story-content-text">
-                {{ chapter_content | safe }}
+                Đang tải nội dung chương...
             </div>
 
             <!-- CHÂN TRANG ĐIỀU HƯỚNG CUỐI CHƯƠNG -->
@@ -183,49 +184,51 @@
             document.getElementById('main-reader-box').style.maxWidth = widthStr;
         }
 
-        // Tự động bóc tách các chương từ văn bản lớn
+        // Tự động phân tách chương chuẩn xác không làm mất nội dung văn bản
         function initChapterParser() {
-            const rawElement = document.getElementById('story-content-body');
-            const rawText = rawElement.innerText;
+            const rawText = document.getElementById('raw-hidden-content').innerText;
             
-            // Tìm kiếm các từ khóa nhận diện chương như "Chương 1", "Chương 2",...
-            const regex = /(?=Chương\s+\d+[:\s])/gi;
-            const parts = rawText.split(regex);
+            // Chia nhỏ văn bản dựa theo các dòng bắt đầu bằng chữ "Chương"
+            const regex = /(?=Chương\s+\d+)/gi;
+            let parts = rawText.split(regex);
 
             if (parts.length > 1) {
-                parsedChapters = parts.filter(p => p.trim().length > 0);
-                
-                const selectEl = document.getElementById('chapter-select');
-                selectEl.innerHTML = '';
-
-                parsedChapters.forEach((chap, idx) => {
-                    const firstLine = chap.trim().split('\n')[0] || `Chương ${idx + 1}`;
-                    const opt = document.createElement('option');
-                    opt.value = idx;
-                    opt.innerText = firstLine.length > 40 ? firstLine.substring(0, 40) + '...' : firstLine;
-                    selectEl.appendChild(opt);
+                parsedChapters = parts.filter(p => p.trim().length > 0).map(p => {
+                    const lines = p.trim().split('\n');
+                    return {
+                        title: lines[0] || "Chương truyện",
+                        content: lines.slice(1).join('\n').trim() || p // Đảm bảo giữ trọn nội dung phía dưới
+                    };
                 });
-
-                // Mở mặc định chương đầu tiên
-                renderChapter(0);
             } else {
-                // Nếu file không chia chương rõ ràng thì hiển thị toàn văn bình thường
-                parsedChapters = [rawText];
-                document.getElementById('chapter-select').innerHTML = '<option value="0">Toàn bộ văn bản</option>';
+                // Nếu văn bản không chia chương theo cú pháp, hiển thị toàn văn
+                parsedChapters = [{
+                    title: document.title.split(' - ')[0] || "Nội dung truyện",
+                    content: rawText
+                }];
             }
+
+            // Đổ dữ liệu vào khung chọn chương (Dropdown)
+            const selectEl = document.getElementById('chapter-select');
+            selectEl.innerHTML = '';
+            parsedChapters.forEach((chap, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.innerText = chap.title.length > 45 ? chap.title.substring(0, 45) + '...' : chap.title;
+                selectEl.appendChild(opt);
+            });
+
+            // Hiển thị chương đầu tiên mặc định
+            renderChapter(0);
         }
 
         function renderChapter(index) {
             if (index < 0 || index >= parsedChapters.length) return;
             currentChapterIdx = index;
 
-            const fullChapterText = parsedChapters[index].trim();
-            const lines = fullChapterText.split('\n');
-            const title = lines[0] || `Chương ${index + 1}`;
-            const content = lines.slice(1).join('\n');
-
-            document.getElementById('chapter-title-display').innerText = title;
-            document.getElementById('story-content-body').innerText = content.trim() || fullChapterText;
+            const chap = parsedChapters[index];
+            document.getElementById('chapter-title-display').innerText = chap.title;
+            document.getElementById('story-content-body').innerText = chap.content;
             document.getElementById('chapter-select').value = index;
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
