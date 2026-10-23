@@ -13,7 +13,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .reader-container {
-            max-width: 850px;
+            max-width: 900px;
             margin: 40px auto;
             background: rgba(15, 32, 51, 0.95);
             border: 1px solid rgba(245, 158, 11, 0.4);
@@ -25,30 +25,30 @@
 </head>
 <body class="min-h-screen py-10 px-4">
 
-    <!-- Thanh điều hướng trên cùng của trang đọc -->
-    <div class="max-w-[850px] mx-auto mb-6 flex justify-between items-center bg-black/60 px-5 py-3 rounded-xl border border-amber-600/30">
+    <!-- Thanh điều hướng trên cùng -->
+    <div class="max-w-[900px] mx-auto mb-6 flex justify-between items-center bg-black/60 px-5 py-3 rounded-xl border border-amber-600/30 shadow-xl">
         <a href="/tang-kinh-cac" class="text-xs font-bold text-amber-400 hover:text-white flex items-center space-x-2 transition">
             <i class="fa-solid fa-arrow-left"></i>
             <span>Trở về Tàng Kinh Các</span>
         </a>
-        <h1 class="text-xs font-extrabold text-amber-200 uppercase tracking-widest">Tông Môn Tịnh Thất • Đọc Sách</h1>
+        <h1 class="text-xs font-extrabold text-amber-200 uppercase tracking-widest">Tông Môn Tịnh Thất • Đọc Sách Thuần Túy</h1>
     </div>
 
-    <!-- Khung nội dung đọc truyện chính -->
+    <!-- Khung nội dung đọc truyện -->
     <div class="reader-container space-y-6">
-        <div class="border-b border-amber-600/40 pb-4">
-            <h2 class="text-2xl font-black text-amber-400 text-center">{{ chapter_title }}</h2>
+        <div class="border-b border-amber-600/40 pb-4 text-center">
+            <h2 class="text-2xl font-black text-amber-400">{{ chapter_title }}</h2>
         </div>
 
-        <div class="text-base text-amber-100/95 leading-loose space-y-4 text-justify font-normal">
+        <div class="text-base text-amber-100/95 leading-loose space-y-4 text-justify font-normal whitespace-pre-line">
             {{ chapter_content | safe }}
         </div>
 
         <div class="border-t border-amber-600/40 pt-6 flex justify-between items-center text-xs">
-            <a href="/tang-kinh-cac" class="bg-amber-950/80 hover:bg-amber-900 text-amber-300 font-bold px-4 py-2.5 rounded-xl border border-amber-600/50 transition">
-                <i class="fa-solid fa-list mr-1"></i> Mục Lục Chương
+            <a href="/tang-kinh-cac" class="bg-amber-950/80 hover:bg-amber-900 text-amber-300 font-bold px-4 py-2.5 rounded-xl border border-amber-600/50 transition inline-flex items-center space-x-1">
+                <i class="fa-solid fa-list mr-1"></i> <span>Quay Lại Tàng Kinh Các</span>
             </a>
-            <span class="text-amber-400/60">Hoàn thành chương</span>
+            <span class="text-amber-400/60 font-semibold">Tông Môn Đọc Sách 2026</span>
         </div>
     </div>
 
