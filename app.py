@@ -1,8 +1,38 @@
 import os
+import json
 import random
 from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
+
+# Tên file lưu trữ vĩnh viễn trên server
+DB_FILE = "truyen_data.json"
+
+# Hàm đọc dữ liệu từ file JSON (nếu chưa có thì tạo file mặc định)
+def load_database():
+    if not os.path.exists(DB_FILE):
+        initial_data = [
+            {
+                "id": 1,
+                "category": "truyen-dich",
+                "element": "Kim",
+                "author": "Bán Tiệt Bạch Thái",
+                "title": "Lá Xanh",
+                "content": "Đêm nhận được giấy báo nhập học, Hạ Diệp chạy tót lên sân thượng ngồi thẫn thờ..."
+            }
+        ]
+        save_database(initial_data)
+        return initial_data
+    try:
+        with open(DB_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+# Hàm ghi dữ liệu vĩnh viễn vào file JSON
+def save_database(data):
+    with open(DB_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
 
 # Lưu trữ dữ liệu tu luyện giả lập
 tu_luyen_data = {
@@ -23,18 +53,6 @@ TEN_CANH_GIOI = [
 ]
 
 TEN_TIEU_CANH = ["Nhập Môn", "Tiểu Thành", "Đại Thành", "Viên Mãn"]
-
-# Kho lưu trữ truyện server-side (Đã có sẵn dữ liệu mẫu Lá Xanh)
-truyen_database = [
-    {
-        "id": 1,
-        "category": "truyen-dich",
-        "element": "Kim",
-        "author": "Bán Tiệt Bạch Thái",
-        "title": "Lá Xanh",
-        "content": "Đêm nhận được giấy báo nhập học, Hạ Diệp chạy tót lên sân thượng ngồi thẫn thờ..."
-    }
-]
 
 @app.route('/')
 def home():
@@ -76,18 +94,20 @@ def get_books():
     cat = request.args.get('category', 'truyen-dich')
     elem = request.args.get('element', 'Kim')
     
+    database = load_database()
     filtered_books = [
-        b for b in truyen_database 
-        if b['category'] == cat and b['element'] == elem
+        b for b in database 
+        if b.get('category') == cat and b.get('element') == elem
     ]
     return jsonify({"success": True, "books": filtered_books})
 
 # API LẤY TOÀN BỘ TÀI NGUYÊN CHO TRANG ĐỘNG PHỦ
 @app.route('/api/get-all-books', methods=['GET'])
 def get_all_books():
-    return jsonify({"success": True, "books": truyen_database})
+    database = load_database()
+    return jsonify({"success": True, "books": database})
 
-# API TẢI TRUYỆN LÊN SERVER (LƯU VĨNH VIỄN)
+# API TẢI TRUYỆN LÊN SERVER (LƯU VĨNH VIỄN VÀO FILE JSON)
 @app.route('/api/upload-book', methods=['POST'])
 def upload_book():
     data = request.json or {}
@@ -100,20 +120,24 @@ def upload_book():
     if not title or not content:
         return jsonify({"success": False, "message": "Thiếu thông tin bộ truyện!"})
 
+    database = load_database()
+    
     new_book = {
-        "id": len(truyen_database) + 1,
+        "id": len(database) + 1,
         "category": cat,
         "element": elem,
         "author": author,
         "title": title,
         "content": content
     }
-    truyen_database.append(new_book)
+    
+    database.append(new_book)
+    save_database(database) # Lưu thẳng vào ổ cứng vĩnh viễn
     
     # Cộng điểm tu luyện cho tác giả khi đăng bài
     tu_luyen_data["diem_tich_tuyem"] += 50
 
-    return jsonify({"success": True, "message": f"Truyện [{title}] đã được truyền thừa thành công!", "book": new_book})
+    return jsonify({"success": True, "message": f"Truyện [{title}] đã được truyền thừa và lưu vĩnh viễn thành công!", "book": new_book})
 
 @app.route('/api/hanh-dong', methods=['POST'])
 def hanh_dong():
