@@ -23,8 +23,7 @@ def get_default_tu_luyen():
         "vat_pham": { "hoa": 2, "lua": 1, "cay": 3 }
     }
 
-# Khởi tạo cơ sở dữ liệu mặc định nếu chưa có
-# Khởi tạo cơ sở dữ liệu an toàn - Không bao giờ ghi đè dữ liệu cũ khi khởi động lại
+# Khởi tạo & nạp cơ sở dữ liệu BẢO VỆ VĨNH VIỄN - Không bao giờ ghi đè file cũ
 def load_database():
     initial_data = {
         "users": [
@@ -47,12 +46,15 @@ def load_database():
                 "category": "truyen-dich",
                 "element": "Kim",
                 "author": "Chưởng Môn Nhân",
+                "username": "admin",
+                "icon": "📜",
                 "title": "Lá Xanh (Kinh Điển Tông Môn)",
-                "content": "Đêm nhận được giấy báo nhập học, Hạ Diệp chạy tót lên sân thượng ngồi thẫn thờ..."
+                "content": "Chương 1: Khai văn đại cát\nĐêm nhận được giấy báo nhập học, Hạ Diệp chạy tót lên sân thượng ngồi thẫn thờ..."
             }
         ]
     }
 
+    # Nếu file chưa tồn tại lần đầu tiên mới khởi tạo
     if not os.path.exists(DB_FILE):
         save_database(initial_data)
         return initial_data
@@ -60,20 +62,13 @@ def load_database():
     try:
         with open(DB_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
-            # Kiểm tra nếu file JSON trống hoặc lỗi cấu trúc thì phục hồi an toàn
             if not isinstance(data, dict) or "books" not in data or "users" not in data:
-                save_database(initial_data)
                 return initial_data
             
-            # Đảm bảo người dùng có đủ cấu trúc tu luyện
+            # Đảm bảo cấu trúc tài khoản tu luyện không bị thiếu
             for user in data.get("users", []):
                 if "tu_luyen" not in user:
-                    user["tu_luyen"] = {
-                        "diem_tich_tuyem": 120,
-                        "cap_hien_tai": 1, 
-                        "tieu_canh": 0,    
-                        "vat_pham": { "hoa": 2, "lua": 1, "cay": 3 }
-                    }
+                    user["tu_luyen"] = get_default_tu_luyen()
             return data
     except Exception:
         return initial_data
@@ -264,7 +259,7 @@ def dot_pha():
         "diem_max": new_diem_max
     })
 
-# --- API QUẢN LÝ KHO TÀNG ---
+# --- API QUẢN LÝ KHO TÀNG & TÀI NGUYÊN ĐỘNG PHỦ ---
 @app.route('/api/get-books', methods=['GET'])
 def get_books():
     cat = request.args.get('category', 'truyen-dich')
@@ -277,6 +272,28 @@ def get_books():
 def get_all_books():
     db = load_database()
     return jsonify({"success": True, "books": db['books']})
+
+# API lấy danh sách tài nguyên do chính đạo hữu đã cống hiến (Hiển thị tại Động Phủ)
+@app.route('/api/get-user-contributions', methods=['GET'])
+def get_user_contributions():
+    username = request.args.get('username', '').strip()
+    db = load_database()
+    user = next((u for u in db['users'] if u['username'] == username), None)
+    
+    if not user:
+        return jsonify({"success": False, "message": "Vui lòng đăng nhập!"})
+    
+    # Lọc sách theo username hoặc author_name của tài khoản
+    user_books = [
+        b for b in db['books'] 
+        if b.get('username') == username or b.get('author') == user.get('author_name')
+    ]
+    
+    return jsonify({
+        "success": True, 
+        "books": user_books,
+        "author_name": user.get('author_name')
+    })
 
 @app.route('/api/upload-book', methods=['POST'])
 def upload_book():
@@ -292,24 +309,30 @@ def upload_book():
         return jsonify({"success": False, "message": "Thiếu thông tin bộ truyện!"})
 
     db = load_database()
+    
+    # Tạo ID duy nhất
+    new_id = max([b.get('id', 0) for b in db['books']], default=0) + 1
+    
     new_book = {
-        "id": len(db['books']) + 1,
+        "id": new_id,
         "category": cat,
         "element": elem,
         "author": author,
+        "username": username,
+        "icon": "📜" if cat == "truyen-dich" else "📖",
         "title": title,
         "content": content
     }
     db['books'].append(new_book)
 
-    # Tăng điểm tu luyện cho chính tài khoản đăng bài
+    # Tăng điểm tu luyện cho tài khoản đăng bài
     user = next((u for u in db['users'] if u['username'] == username), None)
     if user:
         user.setdefault('tu_luyen', get_default_tu_luyen())["diem_tich_tuyem"] += 50
 
     save_database(db)
 
-    return jsonify({"success": True, "message": f"Truyện [{title}] đã được truyền thừa vĩnh viễn trên Cloud!", "book": new_book})
+    return jsonify({"success": True, "message": f"Truyện [{title}] đã được cống hiến vĩnh viễn vào Tàng Kinh Các & Động Phủ!", "book": new_book})
 
 @app.route('/api/delete-book', methods=['POST'])
 def delete_book():
