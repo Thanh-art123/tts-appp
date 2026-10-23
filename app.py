@@ -7,12 +7,12 @@ app = Flask(__name__)
 # Lưu trữ dữ liệu tu luyện giả lập
 tu_luyen_data = {
     "diem_tich_tuyem": 120,
-    "cap_hien_tai": 1, # 1 đến 12 (Phàm Nhân -> Hỗn Độn Chúa Tể)
-    "tieu_canh": 0,    # 0: Nhập Môn, 1: Tiểu Thành, 2: Đại Thành, 3: Viên Mãn
+    "cap_hien_tai": 1, 
+    "tieu_canh": 0,    
     "vat_pham": {
-        "hoa": 2,      # Hoa tăng cấp
-        "lua": 1,      # Lửa tăng cấp
-        "cay": 3       # Cây tăng cấp
+        "hoa": 2,      
+        "lua": 1,      
+        "cay": 3       
     }
 }
 
@@ -44,8 +44,6 @@ def dong_phu():
 def bi_canh():
     n = tu_luyen_data["cap_hien_tai"]
     tieu_canh_idx = tu_luyen_data["tieu_canh"]
-    
-    # Công thức tính điểm cần thiết cho tiểu cảnh/đại cảnh giới
     diem_can_thiet = 100 * n + (tieu_canh_idx + 1) * 50 + (n ** 2) * 10
     
     return render_template('bi_canh.html', 
@@ -54,7 +52,6 @@ def bi_canh():
                            ten_tieu_canh=TEN_TIEU_CANH[tieu_canh_idx],
                            diem_max=diem_can_thiet)
 
-# ĐƯỜNG DẪN CHUYỂN SANG TRANG ĐỌC TRUYỆN RIÊNG BIỆT
 @app.route('/doc-truyen', methods=['POST'])
 def doc_truyen():
     title = request.form.get('title', 'Chương Truyện')
@@ -64,7 +61,7 @@ def doc_truyen():
 @app.route('/api/hanh-dong', methods=['POST'])
 def hanh_dong():
     req = request.json or {}
-    loai = req.get('loai') # 'dang_bai', 'nghe_truyen', 'nhat_vat_pham'
+    loai = req.get('loai')
     
     if loai == 'dang_bai':
         tu_luyen_data["diem_tich_tuyem"] += 50
@@ -82,7 +79,6 @@ def dot_pha():
     n = tu_luyen_data["cap_hien_tai"]
     tieu_canh_idx = tu_luyen_data["tieu_canh"]
     diem_hien_tai = tu_luyen_data["diem_tich_tuyem"]
-    
     diem_can_thiet = 100 * n + (tieu_canh_idx + 1) * 50 + (n ** 2) * 10
     
     if diem_hien_tai < diem_can_thiet:
