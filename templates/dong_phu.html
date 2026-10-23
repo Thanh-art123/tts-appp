@@ -35,44 +35,48 @@
     document.getElementById('nav-dong').classList.add('active');
 
     const currentUser = JSON.parse(localStorage.getItem('tongan_current_user')) || null;
-    const currentUsername = currentUser ? currentUser.username : "";
-    const currentAuthor = currentUser ? currentUser.author_name : "Chưa đăng nhập";
 
     function loadDongPhuData() {
+        const contributedContainer = document.getElementById('contributed-books-list');
+        const allContainer = document.getElementById('all-books-list');
+
+        if (!currentUser) {
+            contributedContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Đạo hữu chưa đăng nhập. Hãy đăng nhập ở Tàng Kinh Các để xem cống hiến cá nhân.</p>`;
+        } else {
+            // Gọi API lấy tài nguyên riêng của tài khoản đang đăng nhập
+            fetch(`/api/get-user-contributions?username=${currentUser.username}`)
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    if (res.books.length === 0) {
+                        contributedContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Đạo hữu [${currentUser.author_name}] chưa cống hiến bộ công pháp nào.</p>`;
+                    } else {
+                        contributedContainer.innerHTML = '';
+                        res.books.forEach(book => {
+                            let icon = book.icon || '📖';
+                            contributedContainer.innerHTML += `
+                                <div class="bg-amber-950/40 border border-amber-600/30 p-3 rounded-xl flex justify-between items-center text-xs">
+                                    <span class="font-bold text-amber-200">${icon} ${book.title} <span class="text-[10px] text-amber-400/70">(Hệ: ${book.element})</span></span>
+                                    <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu trên Cloud vĩnh viễn</span>
+                                </div>
+                            `;
+                        });
+                    }
+                }
+            });
+        }
+
+        // Lấy toàn bộ kho tàng chung của Tông Môn
         fetch('/api/get-all-books')
         .then(res => res.json())
         .then(res => {
-            if(res.success) {
-                const contributedContainer = document.getElementById('contributed-books-list');
-                const allContainer = document.getElementById('all-books-list');
-
-                // Khớp chính xác tài nguyên cá nhân dựa trên username hoặc tên tác giả
-                const myBooks = currentUser ? res.books.filter(b => b.username === currentUsername || b.author === currentAuthor) : [];
-                const allBooks = res.books;
-
-                if(!currentUser) {
-                    contributedContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Đạo hữu chưa đăng nhập. Hãy đăng nhập ở Tàng Kinh Các để xem cống hiến cá nhân.</p>`;
-                } else if(myBooks.length === 0) {
-                    contributedContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Đạo hữu [${currentAuthor}] chưa cống hiến bộ công pháp nào.</p>`;
-                } else {
-                    contributedContainer.innerHTML = '';
-                    myBooks.forEach(book => {
-                        let icon = book.icon || (book.category === 'truyen-dich' ? '📜' : '📖');
-                        contributedContainer.innerHTML += `
-                            <div class="bg-amber-950/40 border border-amber-600/30 p-3 rounded-xl flex justify-between items-center text-xs">
-                                <span class="font-bold text-amber-200">${icon} ${book.title} <span class="text-[10px] text-amber-400/70">(Hệ: ${book.element})</span></span>
-                                <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu trên Cloud vĩnh viễn</span>
-                            </div>
-                        `;
-                    });
-                }
-
-                if(allBooks.length === 0) {
+            if (res.success) {
+                if (res.books.length === 0) {
                     allContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Kho tàng tông môn hiện đang trống.</p>`;
                 } else {
                     allContainer.innerHTML = '';
-                    allBooks.forEach(book => {
-                        let icon = book.icon || (book.category === 'truyen-dich' ? '📜' : '📖');
+                    res.books.forEach(book => {
+                        let icon = book.icon || '📖';
                         allContainer.innerHTML += `
                             <div class="bg-black/80 border border-amber-600/30 p-3 rounded-xl flex justify-between items-center text-xs">
                                 <div>
