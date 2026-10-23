@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Tàng Kinh Các - Kho Bí Kíp{% endblock %}
+{% block title %}Tàng Kinh Các - Kho Bí Kíp & Đọc Truyện{% endblock %}
 
 {% block content %}
 <div class="panel-3d rounded-2xl p-6 space-y-6">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-amber-600/40 pb-3 gap-4">
         <h2 class="text-lg font-bold text-amber-400 flex items-center space-x-2">
             <i class="fa-solid fa-book-bookmark text-amber-500"></i>
-            <span>Tàng Kinh Các - Kho Bí Kíp Tông Môn</span>
+            <span>Tàng Kinh Các - Kho Bí Kíp & Đọc Truyện Tông Môn</span>
         </h2>
 
         <!-- Nút Đăng Ký / Đăng Nhập Tác Giả -->
@@ -16,6 +16,7 @@
         </button>
     </div>
 
+    <!-- Phân loại chuyên mục -->
     <div class="flex space-x-2 border-b border-amber-600/40 pb-3 mb-4">
         <button onclick="switchCategory('truyen-dich')" id="btn-truyen-dich" class="sub-btn active-sub text-xs font-bold px-4 py-2 rounded-lg bg-black/60 border border-amber-600/50 text-amber-300 transition cursor-pointer">
             📜 Truyện Dịch
@@ -39,19 +40,72 @@
         <button onclick="selectElement('Thời Gian')" id="elem-Thời Gian" class="elem-btn text-xs py-2 px-2 bg-rose-950/80 border border-rose-500/70 rounded-lg font-bold text-rose-300 cursor-pointer">⏳ Thời Gian</button>
     </div>
 
-    <div class="text-center py-10 border-2 border-dashed border-amber-600/40 rounded-2xl bg-black/60 space-y-3">
-        <i class="fa-solid fa-scroll text-4xl text-amber-500/60 mb-2"></i>
-        <p class="text-amber-200 font-bold text-sm">Thư mục công pháp: Hệ <span id="current-elem-title" class="text-amber-400 font-extrabold">Kim</span></p>
-        <p class="text-amber-200/60 text-xs mt-1">Mục này hiện đang trống, chưa có truyện được tải lên.</p>
+    <!-- KHU VỰC GIAO DIỆN THƯ MỤC TRUYỆN VÀ ĐỌC SÁCH -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <div class="flex flex-col sm:flex-row justify-center gap-2 pt-2">
-            <button onclick="checkUploadPermission()" class="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold text-xs py-2.5 px-5 rounded-xl shadow-lg transition cursor-pointer">
-                <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Tải công pháp thuộc tính này lên
-            </button>
-            <a href="/che-tap-cac" class="bg-amber-950/80 hover:bg-amber-900 border border-amber-500/60 text-amber-200 font-bold text-xs py-2.5 px-4 rounded-xl transition inline-flex items-center justify-center">
-                <i class="fa-solid fa-hammer mr-1"></i> Sang Chế Tạp Các
-            </a>
+        <!-- CỘT BÊN TRÁI: THƯ MỤC CHỨA TRUYỆN -->
+        <div class="lg:col-span-1 bg-black/60 border border-amber-600/40 rounded-2xl p-4 space-y-3 max-h-[600px] overflow-y-auto">
+            <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2">
+                📁 Thư Mục Công Pháp (<span id="current-elem-title" class="text-amber-400">Kim</span>)
+            </h3>
+
+            <!-- Thư mục mẫu: Truyện Lá Xanh -->
+            <div class="space-y-2">
+                <div onclick="toggleFolder('folder-laxanh')" class="bg-amber-950/60 hover:bg-amber-900/60 border border-amber-500/60 p-2.5 rounded-xl cursor-pointer flex items-center justify-between transition">
+                    <span class="text-xs font-bold text-amber-200 flex items-center space-x-2">
+                        <i class="fa-solid fa-folder-open text-amber-400"></i>
+                        <span>Lá Xanh (Bán Tiệt Bạch Thái)</span>
+                    </span>
+                    <i class="fa-solid fa-chevron-down text-[10px] text-amber-400"></i>
+                </div>
+
+                <!-- Danh sách chương bên trong thư mục Lá Xanh -->
+                <ul id="folder-laxanh" class="space-y-1 pl-4 border-l border-amber-600/30 ml-2">
+                    <li onclick="loadChapter('Lá Xanh - Chương 01', 'Đây là nội dung văn bản chi tiết của Chương 01: Khởi đầu trong bộ truyện Lá Xanh. Bạn đọc có thể thoải mái thưởng thức cốt truyện mạch lạc tại đây.')" class="text-xs text-amber-300/80 hover:text-amber-200 hover:bg-amber-950/40 p-2 rounded-lg cursor-pointer transition flex items-center space-x-2">
+                        <i class="fa-regular fa-file-lines text-amber-500 text-[10px]"></i>
+                        <span>Chương 01: Khởi đầu</span>
+                    </li>
+                    <li onclick="loadChapter('Lá Xanh - Chương 02', 'Đây là nội dung văn bản chi tiết của Chương 02: Gặp gỡ trong bộ truyện Lá Xanh. Mạch truyện tiếp tục diễn biến lôi cuốn.')" class="text-xs text-amber-300/80 hover:text-amber-200 hover:bg-amber-950/40 p-2 rounded-lg cursor-pointer transition flex items-center space-x-2">
+                        <i class="fa-regular fa-file-lines text-amber-500 text-[10px]"></i>
+                        <span>Chương 02: Gặp gỡ</span>
+                    </li>
+                    <li onclick="loadChapter('Lá Xanh - Chương 03', 'Đây là nội dung văn bản chi tiết của Chương 03: Biến cố trong bộ truyện Lá Xanh. Những tình tiết bất ngờ dần hé lộ.')" class="text-xs text-amber-300/80 hover:text-amber-200 hover:bg-amber-950/40 p-2 rounded-lg cursor-pointer transition flex items-center space-x-2">
+                        <i class="fa-regular fa-file-lines text-amber-500 text-[10px]"></i>
+                        <span>Chương 03: Biến cố</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Nút tải thêm truyện -->
+            <div class="pt-4 border-t border-amber-600/30 text-center">
+                <button onclick="checkUploadPermission()" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold text-xs py-2.5 px-3 rounded-xl shadow transition cursor-pointer flex items-center justify-center space-x-1">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Tải Thêm Truyện Mới</span>
+                </button>
+            </div>
         </div>
+
+        <!-- CỘT BÊN PHẢI: KHUNG ĐỌC TRUYỆN THUẦN TÚY -->
+        <div class="lg:col-span-2 bg-black/70 border border-amber-600/40 rounded-2xl p-6 flex flex-col justify-between min-h-[500px]">
+            <div>
+                <div class="border-b border-amber-600/40 pb-3 mb-4 flex items-center justify-between">
+                    <h3 id="reader-title" class="text-base font-extrabold text-amber-400">📜 Vui lòng chọn chương bên trái để đọc</h3>
+                    <span class="text-[10px] text-amber-500/80 bg-amber-950/80 px-2.5 py-1 rounded-full border border-amber-600/40">Chế Độ Đọc Thuần Túy</span>
+                </div>
+                
+                <div id="reader-content" class="text-sm text-amber-100/90 leading-relaxed space-y-4 text-justify font-normal">
+                    <p class="text-amber-300/60 italic text-center py-20">
+                        <i class="fa-solid fa-book-open text-4xl mb-3 block text-amber-500/40"></i>
+                        Hệ thống đã lưu trữ sẵn các chương truyện theo dạng thư mục. Đạo hữu hãy bấm mở thư mục bên trái và nhấp vào tên chương tương ứng để hiển thị văn bản tại đây.
+                    </p>
+                </div>
+            </div>
+
+            <div class="border-t border-amber-600/30 pt-3 text-right text-[11px] text-amber-400/60">
+                Tông Môn Đọc Truyện Trực Tuyến • Không gian tịnh tâm ngộ đạo
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -95,11 +149,11 @@
 
         <div class="space-y-3 text-xs">
             <div>
-                <label class="block font-bold text-amber-300 mb-1">Tên Kinh Văn / Truyện:</label>
+                <label class="block font-bold text-amber-300 mb-1">Tên Thư Mục / Bộ Truyện:</label>
                 <input type="text" id="book-title" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-400" placeholder="Nhập tên bộ truyện...">
             </div>
             <div>
-                <label class="block font-bold text-amber-300 mb-1">Nội Dung / Chương Truyện:</label>
+                <label class="block font-bold text-amber-300 mb-1">Nội Dung Chương Truyện:</label>
                 <textarea id="book-content" rows="4" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl p-3 focus:outline-none resize-none" placeholder="Dán nội dung chương truyện vào đây..."></textarea>
             </div>
         </div>
@@ -131,6 +185,20 @@
         document.querySelectorAll('.elem-btn').forEach(btn => btn.classList.remove('active-elem'));
         document.getElementById('elem-' + elemName).classList.add('active-elem');
         document.getElementById('current-elem-title').innerText = elemName;
+    }
+
+    // Đóng/mở thư mục danh sách chương
+    function toggleFolder(folderId) {
+        const folder = document.getElementById(folderId);
+        if (folder) {
+            folder.classList.toggle('hidden');
+        }
+    }
+
+    // Hàm load nội dung chương truyện vào khung đọc bên phải
+    function loadChapter(title, content) {
+        document.getElementById('reader-title').innerText = `📖 ${title}`;
+        document.getElementById('reader-content').innerHTML = `<p>${content}</p>`;
     }
 
     function openAuthorModal() {
