@@ -30,7 +30,7 @@ def home():
 
 @app.route('/tang-kinh-cac')
 def tang_kinh_cac():
-    return "Test Tàng Kinh Các đang hoạt động"
+    return render_template('tang_kinh_cac.html')
 
 @app.route('/che-tap-cac')
 def che_tap_cac():
