@@ -24,41 +24,59 @@ def get_default_tu_luyen():
     }
 
 # Khởi tạo cơ sở dữ liệu mặc định nếu chưa có
+# Khởi tạo cơ sở dữ liệu an toàn - Không bao giờ ghi đè dữ liệu cũ khi khởi động lại
 def load_database():
+    initial_data = {
+        "users": [
+            {
+                "username": "admin",
+                "password": "123",
+                "role": "admin",
+                "author_name": "Chưởng Môn Nhân",
+                "tu_luyen": {
+                    "diem_tich_tuyem": 120,
+                    "cap_hien_tai": 1, 
+                    "tieu_canh": 0,    
+                    "vat_pham": { "hoa": 2, "lua": 1, "cay": 3 }
+                }
+            }
+        ],
+        "books": [
+            {
+                "id": 1,
+                "category": "truyen-dich",
+                "element": "Kim",
+                "author": "Chưởng Môn Nhân",
+                "title": "Lá Xanh (Kinh Điển Tông Môn)",
+                "content": "Đêm nhận được giấy báo nhập học, Hạ Diệp chạy tót lên sân thượng ngồi thẫn thờ..."
+            }
+        ]
+    }
+
     if not os.path.exists(DB_FILE):
-        initial_data = {
-            "users": [
-                {
-                    "username": "admin",
-                    "password": "123",
-                    "role": "admin",
-                    "author_name": "Chưởng Môn Nhân",
-                    "tu_luyen": get_default_tu_luyen()
-                }
-            ],
-            "books": [
-                {
-                    "id": 1,
-                    "category": "truyen-dich",
-                    "element": "Kim",
-                    "author": "Chưởng Môn Nhân",
-                    "title": "Lá Xanh (Kinh Điển Tông Môn)",
-                    "content": "Đêm nhận được giấy báo nhập học, Hạ Diệp chạy tót lên sân thượng ngồi thẫn thờ..."
-                }
-            ]
-        }
         save_database(initial_data)
         return initial_data
+    
     try:
         with open(DB_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
-            # Đảm bảo người dùng cũ có cấu trúc tu luyện
+            # Kiểm tra nếu file JSON trống hoặc lỗi cấu trúc thì phục hồi an toàn
+            if not isinstance(data, dict) or "books" not in data or "users" not in data:
+                save_database(initial_data)
+                return initial_data
+            
+            # Đảm bảo người dùng có đủ cấu trúc tu luyện
             for user in data.get("users", []):
                 if "tu_luyen" not in user:
-                    user["tu_luyen"] = get_default_tu_luyen()
+                    user["tu_luyen"] = {
+                        "diem_tich_tuyem": 120,
+                        "cap_hien_tai": 1, 
+                        "tieu_canh": 0,    
+                        "vat_pham": { "hoa": 2, "lua": 1, "cay": 3 }
+                    }
             return data
     except Exception:
-        return {"users": [], "books": []}
+        return initial_data
 
 def save_database(data):
     with open(DB_FILE, "w", encoding="utf-8") as f:
