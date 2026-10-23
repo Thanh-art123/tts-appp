@@ -35,6 +35,7 @@
     document.getElementById('nav-dong').classList.add('active');
 
     const currentUser = JSON.parse(localStorage.getItem('tongan_current_user')) || null;
+    const currentUsername = currentUser ? currentUser.username : "";
     const currentAuthor = currentUser ? currentUser.author_name : "Chưa đăng nhập";
 
     function loadDongPhuData() {
@@ -45,7 +46,8 @@
                 const contributedContainer = document.getElementById('contributed-books-list');
                 const allContainer = document.getElementById('all-books-list');
 
-                const myBooks = currentUser ? res.books.filter(b => b.author === currentAuthor) : [];
+                // Khớp chính xác tài nguyên cá nhân dựa trên username hoặc tên tác giả
+                const myBooks = currentUser ? res.books.filter(b => b.username === currentUsername || b.author === currentAuthor) : [];
                 const allBooks = res.books;
 
                 if(!currentUser) {
@@ -55,9 +57,10 @@
                 } else {
                     contributedContainer.innerHTML = '';
                     myBooks.forEach(book => {
+                        let icon = book.icon || (book.category === 'truyen-dich' ? '📜' : '📖');
                         contributedContainer.innerHTML += `
                             <div class="bg-amber-950/40 border border-amber-600/30 p-3 rounded-xl flex justify-between items-center text-xs">
-                                <span class="font-bold text-amber-200">📜 ${book.title} <span class="text-[10px] text-amber-400/70">(Hệ: ${book.element})</span></span>
+                                <span class="font-bold text-amber-200">${icon} ${book.title} <span class="text-[10px] text-amber-400/70">(Hệ: ${book.element})</span></span>
                                 <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu trên Cloud vĩnh viễn</span>
                             </div>
                         `;
@@ -69,10 +72,11 @@
                 } else {
                     allContainer.innerHTML = '';
                     allBooks.forEach(book => {
+                        let icon = book.icon || (book.category === 'truyen-dich' ? '📜' : '📖');
                         allContainer.innerHTML += `
                             <div class="bg-black/80 border border-amber-600/30 p-3 rounded-xl flex justify-between items-center text-xs">
                                 <div>
-                                    <span class="font-bold text-amber-300">📖 ${book.title}</span>
+                                    <span class="font-bold text-amber-300">${icon} ${book.title}</span>
                                     <span class="text-[10px] text-amber-400/60 block">Tác giả: ${book.author} | Thể loại: ${book.category} (${book.element})</span>
                                 </div>
                                 <span class="text-amber-500 font-bold bg-amber-950/80 px-2 py-1 rounded border border-amber-600/40">Đang lưu hành</span>
