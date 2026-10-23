@@ -8,121 +8,163 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f8fafc;
-            color: #1e293b;
-            font-family: 'Georgia', serif;
-            transition: all 0.3s ease;
+            background-color: #f4f4f5;
+            color: #18181b;
+            font-family: Arial, 'Times New Roman', Times, serif, sans-serif;
+            margin: 0;
+            padding: 0;
         }
-        .reader-wrapper {
-            width: 100%;
-            max-width: 1100px;
+        
+        /* Khung chứa nội dung được đưa vào CHÍNH GIỮA màn hình */
+        .reader-main-container {
+            max-width: 850px;
             margin: 30px auto;
             background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 50px 80px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e4e4e7;
+            border-radius: 12px;
+            padding: 40px 50px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Phông chữ & Cỡ chữ đọc truyện tối ưu, không lỗi tiếng Việt */
+        .story-text {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #27272a;
+            text-align: justify;
+            word-wrap: break-word;
+            white-space: pre-line;
         }
     </style>
 </head>
 <body class="min-h-screen py-6 px-4">
 
-    <!-- THANH CÔNG CỤ TÙY CHỈNH (Cỡ chữ, Loại chữ) -->
-    <div class="max-w-[1100px] mx-auto mb-4 flex flex-wrap justify-between items-center bg-white px-5 py-3 rounded-xl border border-slate-200 shadow-sm text-xs gap-3">
+    <!-- Thanh Công Cụ Trên Cùng (Canh giữa) -->
+    <div class="max-w-[850px] mx-auto mb-4 flex justify-between items-center bg-white px-5 py-3 rounded-xl border border-zinc-200 shadow-sm text-xs">
         <a href="/tang-kinh-cac" class="font-bold text-emerald-700 hover:text-emerald-800 flex items-center space-x-1">
             <i class="fa-solid fa-arrow-left"></i>
-            <span>Về Tàng Kinh Các</span>
+            <span>Trở về Tàng Kinh Các</span>
         </a>
 
-        <div class="flex items-center space-x-4">
-            <!-- Đổi Font Chữ -->
-            <div class="flex items-center space-x-1.5">
-                <span class="font-semibold text-slate-500">Phông chữ:</span>
-                <select id="font-family-select" onchange="changeFontFamily(this.value)" class="bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 outline-none font-medium text-slate-700">
-                    <option value="'Georgia', serif">Georgia (Cổ điển)</option>
-                    <option value="'Times New Roman', Times, serif">Times New Roman</option>
-                    <option value="'Arial', sans-serif">Arial (Hiện đại)</option>
-                    <option value="'Courier New', monospace">Courier (Mộc mạc)</option>
-                </select>
-            </div>
-
-            <!-- Tăng/Giảm Cỡ Chữ -->
-            <div class="flex items-center space-x-1.5">
-                <span class="font-semibold text-slate-500">Cỡ chữ:</span>
-                <button onclick="adjustFontSize(-2)" class="bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-md font-bold text-slate-700">-</button>
-                <span id="font-size-display" class="font-bold text-slate-700 w-8 text-center">18px</span>
-                <button onclick="adjustFontSize(2)" class="bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-md font-bold text-slate-700">+</button>
-            </div>
+        <!-- Nút tăng giảm cỡ chữ nhanh -->
+        <div class="flex items-center space-x-2">
+            <span class="text-zinc-500 font-semibold">Cỡ chữ:</span>
+            <button onclick="changeFontSize(-1)" class="bg-zinc-100 hover:bg-zinc-200 px-2.5 py-1 rounded font-bold text-zinc-700 cursor-pointer">-</button>
+            <span id="font-size-num" class="font-bold text-zinc-800 w-8 text-center">16px</span>
+            <button onclick="changeFontSize(1)" class="bg-zinc-100 hover:bg-zinc-200 px-2.5 py-1 rounded font-bold text-zinc-700 cursor-pointer">+</button>
         </div>
     </div>
 
-    <!-- KHUNG ĐỌC TRUYỆN CHÍNH (CANH GIỮA, RỘNG RÃI) -->
-    <div class="reader-wrapper space-y-8">
+    <!-- KHUNG ĐỌC TRUYỆN CHÍNH (CANH CHÍNH GIỮA MÀN HÌNH) -->
+    <div class="reader-main-container space-y-6">
         
-        <!-- Tiêu đề truyện -->
-        <div class="text-center space-y-2 border-b border-slate-200 pb-6">
-            <h1 class="text-2xl font-black text-emerald-700 tracking-wide uppercase">Lá Xanh - Bán Tiệt Bạch Thái</h1>
-            <p id="chapter-title-el" class="text-base font-bold text-slate-600">{{ chapter_title }}</p>
-            
-            <div class="flex justify-center items-center space-x-2 pt-2 text-slate-400">
-                <span class="h-[1px] w-12 bg-slate-300"></span>
-                <i class="fa-solid fa-feather text-xs"></i>
-                <span class="h-[1px] w-12 bg-slate-300"></span>
-            </div>
+        <!-- Tiêu đề chương -->
+        <div class="text-center border-b border-zinc-200 pb-5 space-y-2">
+            <h1 id="chapter-head-title" class="text-xl font-bold text-emerald-800 tracking-tight">
+                {{ chapter_title }}
+            </h1>
+            <p class="text-xs text-zinc-400">Tông Môn Đọc Truyện • Chế độ tập trung</p>
         </div>
 
-        <!-- Các nút điều hướng chuyển chương -->
-        <div class="flex justify-center items-center space-x-3">
-            <button onclick="navigateChapter(-1)" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-4 py-2 rounded-xl text-xs transition flex items-center space-x-1 cursor-pointer shadow-sm">
+        <!-- Điều hướng Chuyển Chương (Đưa vào giữa) -->
+        <div class="flex justify-center items-center space-x-3 py-1">
+            <button onclick="prevChapter()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-4 py-2 rounded-lg text-xs transition cursor-pointer flex items-center space-x-1">
                 <i class="fa-solid fa-chevron-left text-[10px]"></i>
                 <span>Chương trước</span>
             </button>
-            <a href="/tang-kinh-cac" class="bg-emerald-600 hover:bg-emerald-500 text-white p-2.5 px-4 rounded-xl text-xs transition shadow flex items-center space-x-1 cursor-pointer font-bold">
-                <i class="fa-solid fa-list mr-1"></i> Mục Lục
+
+            <a href="/tang-kinh-cac" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-4 py-2 rounded-lg text-xs transition cursor-pointer flex items-center space-x-1 shadow-sm">
+                <i class="fa-solid fa-list"></i>
+                <span>Mục Lục</span>
             </a>
-            <button onclick="navigateChapter(1)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition flex items-center space-x-1 shadow cursor-pointer">
+
+            <button onclick="nextChapter()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-4 py-2 rounded-lg text-xs transition cursor-pointer flex items-center space-x-1 shadow-sm">
                 <span>Chương tiếp</span>
                 <i class="fa-solid fa-chevron-right text-[10px]"></i>
             </button>
         </div>
 
-        <!-- Nội dung văn bản chương truyện -->
-        <div id="chapter-content-box" class="text-lg text-slate-800 leading-relaxed space-y-6 text-justify font-normal whitespace-pre-line" style="font-size: 18px;">
+        <!-- NỘI DUNG VĂN BẢN ĐỌC NGAY (ĐÃ LỌC BỎ MỤC LỤC TRÊN ĐẦU) -->
+        <div id="story-content-body" class="story-text">
             {{ chapter_content | safe }}
         </div>
 
-        <!-- Chân trang điều hướng phía dưới -->
-        <div class="border-t border-slate-200 pt-6 flex justify-between items-center text-xs">
-            <a href="/tang-kinh-cac" class="text-emerald-700 hover:underline font-bold">
-                <i class="fa-solid fa-arrow-left mr-1"></i> Quay lại Tàng Kinh Các
-            </a>
-            <span class="text-slate-400 font-semibold">Tông Môn Đọc Sách</span>
+        <!-- Chân trang -->
+        <div class="border-t border-zinc-200 pt-6 text-center text-xs text-zinc-500 space-y-3">
+            <div class="flex justify-center space-x-3">
+                <button onclick="prevChapter()" class="text-emerald-700 hover:underline font-bold">← Chương trước</button>
+                <span>•</span>
+                <button onclick="nextChapter()" class="text-emerald-700 hover:underline font-bold">Chương tiếp →</button>
+            </div>
+            <p class="text-zinc-400">--- Hết Chương ---</p>
         </div>
 
     </div>
 
     <script>
-        // Xử lý logic thay đổi cỡ chữ và font chữ mượt mà
-        let currentFontSize = 18;
+        // Tự động cuộn lên đỉnh màn hình ngay khi mở trang
+        window.scrollTo(0, 0);
 
-        function adjustFontSize(step) {
-            currentFontSize += step;
-            if (currentFontSize < 14) currentFontSize = 14;
-            if (currentFontSize > 32) currentFontSize = 32;
+        // Biến lưu danh sách các chương được tự động tách từ văn bản
+        let chaptersList = [];
+        let currentChapterIndex = 0;
+        let currentFontSize = 16;
 
-            document.getElementById('font-size-display').innerText = currentFontSize + 'px';
-            document.getElementById('chapter-content-box').style.fontSize = currentFontSize + 'px';
+        function changeFontSize(delta) {
+            currentFontSize += delta;
+            if (currentFontSize < 12) currentFontSize = 12;
+            if (currentFontSize > 28) currentFontSize = 28;
+            
+            document.getElementById('font-size-num').innerText = currentFontSize + 'px';
+            document.getElementById('story-content-body').style.fontSize = currentFontSize + 'px';
         }
 
-        function changeFontFamily(font) {
-            document.getElementById('chapter-content-box').style.fontFamily = font;
+        // Tự động phân tách nội dung file nếu phát hiện có từ "Chương"
+        function parseChapters() {
+            const rawContent = document.getElementById('story-content-body').innerText;
+            // Tách theo từ khóa "Chương "
+            const rawParts = rawContent.split(/(?=Chương\s+\d+[:\s])/g);
+
+            if (rawParts.length > 1) {
+                chaptersList = rawParts.filter(part => part.trim().length > 0);
+                showChapter(0);
+            }
         }
 
-        // Tách file văn bản thành các chương độc lập (nếu file chứa nhiều chương)
-        // Khi người dùng bấm chuyển chương, hệ thống sẽ tự nhận diện và load đúng chương đó
-        function navigateChapter(direction) {
-            alert("Đang chuyển chương... (Tính năng phân tách chương đang được đồng bộ theo tệp tải lên của bạn)");
+        function showChapter(index) {
+            if (index < 0 || index >= chaptersList.length) return;
+            currentChapterIndex = index;
+
+            const text = chaptersList[index];
+            const lines = text.trim().split('\n');
+            const title = lines[0] || `Chương ${index + 1}`;
+            const body = lines.slice(1).join('\n');
+
+            document.getElementById('chapter-head-title').innerText = title;
+            document.getElementById('story-content-body').innerText = body.trim() || text;
+
+            // Kéo lên đỉnh trang ngay lập tức
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+
+        function prevChapter() {
+            if (currentChapterIndex > 0) {
+                showChapter(currentChapterIndex - 1);
+            } else {
+                alert("Đang ở chương đầu tiên!");
+            }
+        }
+
+        function nextChapter() {
+            if (currentChapterIndex < chaptersList.length - 1) {
+                showChapter(currentChapterIndex + 1);
+            } else {
+                alert("Đã đến chương cuối cùng!");
+            }
+        }
+
+        // Chạy kiểm tra tách chương sau khi tải xong
+        document.addEventListener('DOMContentLoaded', parseChapters);
     </script>
 </body>
 </html>
