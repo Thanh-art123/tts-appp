@@ -54,6 +54,13 @@ def bi_canh():
                            ten_tieu_canh=TEN_TIEU_CANH[tieu_canh_idx],
                            diem_max=diem_can_thiet)
 
+# ĐƯỜNG DẪN CHUYỂN SANG TRANG ĐỌC TRUYỆN RIÊNG BIỆT
+@app.route('/doc-truyen', methods=['POST'])
+def doc_truyen():
+    title = request.form.get('title', 'Chương Truyện')
+    content = request.form.get('content', 'Không có nội dung.')
+    return render_template('doc_truyen.html', chapter_title=title, chapter_content=content)
+
 @app.route('/api/hanh-dong', methods=['POST'])
 def hanh_dong():
     req = request.json or {}
@@ -81,7 +88,6 @@ def dot_pha():
     if diem_hien_tai < diem_can_thiet:
         return jsonify({"success": False, "message": "Không đủ điểm tu luyện để đột phá!"})
         
-    # Nếu đang ở cảnh giới Viên Mãn (index 3) thì cần vật phẩm Hoa và Lửa để lên Đại Cảnh Giới mới
     if tieu_canh_idx == 3:
         if tu_luyen_data["vat_pham"]["hoa"] < 1 or tu_luyen_data["vat_pham"]["lua"] < 1:
             return jsonify({"success": False, "message": "Đột phá Đại Cảnh Giới yêu cầu phải có ít nhất 1 Hoa và 1 Lửa thần!"})
