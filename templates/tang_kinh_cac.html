@@ -40,19 +40,18 @@
         <button onclick="selectElement('Thời Gian')" id="elem-Thời Gian" class="elem-btn text-xs py-2 px-2 bg-rose-950/80 border border-rose-500/70 rounded-lg font-bold text-rose-300 cursor-pointer">⏳ Thời Gian</button>
     </div>
 
-    <!-- KHU VỰC GIAO DIỆN THƯ MỤC TRUYỆN VÀ ĐỌC SÁCH -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- CỘT BÊN TRÁI: THƯ MỤC CHỨA TRUYỆN -->
-        <div class="lg:col-span-1 bg-black/60 border border-amber-600/40 rounded-2xl p-4 space-y-3 max-h-[600px] overflow-y-auto">
+    <!-- KHU VỰC QUẢN LÝ THƯ MỤC TRUYỆN -->
+    <div class="grid grid-cols-1 gap-6">
+        <div class="bg-black/60 border border-amber-600/40 rounded-2xl p-4 space-y-3">
             <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2">
-                📁 Thư Mục Công Pháp (<span id="current-elem-title" class="text-amber-400">Kim</span>)
+                📁 Thư Mục Công Pháp Hệ <span id="current-elem-title" class="text-amber-400">Kim</span>
             </h3>
 
-            <!-- Thư mục chứa danh sách chương động -->
-            <div id="dynamic-folder-container" class="space-y-2">
-                <div class="space-y-2">
-                    <div onclick="toggleFolder('folder-laxanh')" class="bg-amber-950/60 hover:bg-amber-900/60 border border-amber-500/60 p-2.5 rounded-xl cursor-pointer flex items-center justify-between transition">
+            <!-- Danh sách thư mục truyện động -->
+            <div id="dynamic-folder-container" class="space-y-3">
+                <!-- Thư mục mẫu: Lá Xanh -->
+                <div class="space-y-2 bg-amber-950/30 border border-amber-600/30 p-3 rounded-xl">
+                    <div onclick="toggleFolder('folder-laxanh')" class="cursor-pointer flex items-center justify-between">
                         <span class="text-xs font-bold text-amber-200 flex items-center space-x-2">
                             <i class="fa-solid fa-folder-open text-amber-400"></i>
                             <span>Lá Xanh (Bán Tiệt Bạch Thái)</span>
@@ -60,47 +59,31 @@
                         <i class="fa-solid fa-chevron-down text-[10px] text-amber-400"></i>
                     </div>
 
-                    <ul id="folder-laxanh" class="space-y-1 pl-4 border-l border-amber-600/30 ml-2">
-                        <li onclick="loadChapter('Lá Xanh - Chương 01', 'Đây là nội dung văn bản chi tiết của Chương 01 trong bộ truyện Lá Xanh.')" class="text-xs text-amber-300/80 hover:text-amber-200 hover:bg-amber-950/40 p-2 rounded-lg cursor-pointer transition flex items-center space-x-2">
+                    <ul id="folder-laxanh" class="space-y-1 pl-4 border-l border-amber-600/30 ml-2 mt-2">
+                        <li onclick="openReaderPage('Lá Xanh - Chương 01: Khởi Đầu', 'Đêm nhận được giấy báo nhập học, Hạ Diệp chạy tót lên sân thượng ngồi thẩn thờ...')" class="text-xs text-amber-300/80 hover:text-white hover:bg-amber-950/60 p-2 rounded-lg cursor-pointer transition flex items-center space-x-2">
                             <i class="fa-regular fa-file-lines text-amber-500 text-[10px]"></i>
-                            <span>Chương 01: Khởi đầu</span>
+                            <span>Chương 01: Khởi Đầu</span>
                         </li>
                     </ul>
                 </div>
             </div>
 
-            <!-- Nút tải lên file truyện mới -->
-            <div class="pt-4 border-t border-amber-600/30 text-center">
-                <button onclick="checkUploadPermission()" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold text-xs py-2.5 px-3 rounded-xl shadow transition cursor-pointer flex items-center justify-center space-x-1">
+            <!-- Nút tải file truyện mới -->
+            <div class="pt-3 border-t border-amber-600/30 text-center">
+                <button onclick="checkUploadPermission()" class="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold text-xs py-2.5 px-5 rounded-xl shadow transition cursor-pointer inline-flex items-center space-x-1">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <span>Tải File Truyện Lên Tông Môn</span>
+                    <span>Tải Lên File Truyện (Tạo Thư Mục)</span>
                 </button>
             </div>
         </div>
-
-        <!-- CỘT BÊN PHẢI: KHUNG ĐỌC TRUYỆN THUẦN TÚY -->
-        <div class="lg:col-span-2 bg-black/70 border border-amber-600/40 rounded-2xl p-6 flex flex-col justify-between min-h-[500px]">
-            <div>
-                <div class="border-b border-amber-600/40 pb-3 mb-4 flex items-center justify-between">
-                    <h3 id="reader-title" class="text-base font-extrabold text-amber-400">📜 Vui lòng chọn chương bên trái để đọc</h3>
-                    <span class="text-[10px] text-amber-500/80 bg-amber-950/80 px-2.5 py-1 rounded-full border border-amber-600/40">Chế Độ Đọc Thuần Túy</span>
-                </div>
-                
-                <div id="reader-content" class="text-sm text-amber-100/90 leading-relaxed space-y-4 text-justify font-normal">
-                    <p class="text-amber-300/60 italic text-center py-20">
-                        <i class="fa-solid fa-book-open text-4xl mb-3 block text-amber-500/40"></i>
-                        Hệ thống đã sẵn sàng. Hãy bấm vào thư mục bên trái và nhấp vào tên chương để đọc.
-                    </p>
-                </div>
-            </div>
-
-            <div class="border-t border-amber-600/30 pt-3 text-right text-[11px] text-amber-400/60">
-                Tông Môn Đọc Truyện Trực Tuyến • Không gian tịnh tâm ngộ đạo
-            </div>
-        </div>
-
     </div>
 </div>
+
+<!-- FORM ẨN ĐỂ CHUYỂN DỮ LIỆU SANG TRANG ĐỌC RIÊNG BIỆT -->
+<form action="/doc-truyen" method="POST" target="_blank" id="read-form">
+    <input type="hidden" name="title" id="form-title">
+    <input type="hidden" name="content" id="form-content">
+</form>
 
 <!-- Modal Đăng Ký Đạo Tịch Tác Giả -->
 <div id="author-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
@@ -128,7 +111,7 @@
     </div>
 </div>
 
-<!-- Modal Tải Lên Bằng File -->
+<!-- Modal Tải Lên File Truyện -->
 <div id="upload-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
     <div class="panel-3d rounded-2xl max-w-lg w-full mx-4 p-6 relative border border-amber-500/80 shadow-2xl space-y-4">
         <button onclick="closeUploadModal()" class="absolute top-4 right-4 text-amber-400 hover:text-white text-lg cursor-pointer">
@@ -177,112 +160,4 @@
         currentElement = elemName;
         document.querySelectorAll('.elem-btn').forEach(btn => btn.classList.remove('active-elem'));
         document.getElementById('elem-' + elemName).classList.add('active-elem');
-        document.getElementById('current-elem-title').innerText = elemName;
-    }
-
-    function toggleFolder(folderId) {
-        const folder = document.getElementById(folderId);
-        if (folder) {
-            folder.classList.toggle('hidden');
-        }
-    }
-
-    function loadChapter(title, content) {
-        document.getElementById('reader-title').innerText = `📖 ${title}`;
-        document.getElementById('reader-content').innerHTML = `<p>${content}</p>`;
-    }
-
-    function openAuthorModal() {
-        document.getElementById('author-modal').classList.remove('hidden');
-    }
-
-    function closeAuthorModal() {
-        document.getElementById('author-modal').classList.add('hidden');
-    }
-
-    function registerAuthor() {
-        const name = document.getElementById('author-name-input').value.trim();
-        if(!name) {
-            alert("Xin hãy nhập đạo hào của ngài!");
-            return;
-        }
-        localStorage.setItem('tongan_author', name);
-        registeredAuthor = name;
-        document.getElementById('author-btn-text').innerText = `Đạo Hào: ${name}`;
-        closeAuthorModal();
-        alert(`Chúc mừng đạo hữu [${name}] đã đăng ký đạo tịch tác giả thành công!`);
-    }
-
-    if(registeredAuthor) {
-        document.getElementById('author-btn-text').innerText = `Đạo Hào: ${registeredAuthor}`;
-    }
-
-    function checkUploadPermission() {
-        if(!registeredAuthor) {
-            alert("Đạo hữu chưa đăng ký đạo tịch tác giả! Hãy bấm 'Đăng Ký Đạo Tịch Tác Giả' ở góc trên trước khi tải truyện.");
-            openAuthorModal();
-            return;
-        }
-        document.getElementById('upload-modal').classList.remove('hidden');
-    }
-
-    function closeUploadModal() {
-        document.getElementById('upload-modal').classList.add('hidden');
-    }
-
-    // Xử lý khi tải file lên để tự tạo thư mục và nội dung đọc
-    function submitBookFile() {
-        const title = document.getElementById('book-title').value.trim();
-        const fileInput = document.getElementById('book-file');
-        
-        if(!title) {
-            alert("Xin hãy nhập tên thư mục / bộ truyện!");
-            return;
-        }
-        if(fileInput.files.length === 0) {
-            alert("Xin hãy chọn tệp truyện (.txt hoặc .html) để tải lên!");
-            return;
-        }
-
-        const file = fileInput.files[0];
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-            const fileContent = e.target.result;
-            const folderId = 'folder-' + Date.now();
-
-            // Tạo thư mục mới trên danh sách bên trái
-            const container = document.getElementById('dynamic-folder-container');
-            const newFolderHTML = `
-                <div class="space-y-2 mt-3">
-                    <div onclick="toggleFolder('${folderId}')" class="bg-amber-950/60 hover:bg-amber-900/60 border border-amber-500/60 p-2.5 rounded-xl cursor-pointer flex items-center justify-between transition">
-                        <span class="text-xs font-bold text-amber-200 flex items-center space-x-2">
-                            <i class="fa-solid fa-folder-open text-amber-400"></i>
-                            <span>${title}</span>
-                        </span>
-                        <i class="fa-solid fa-chevron-down text-[10px] text-amber-400"></i>
-                    </div>
-                    <ul id="${folderId}" class="space-y-1 pl-4 border-l border-amber-600/30 ml-2">
-                        <li onclick="loadChapter('${title} - Chương Trọn Vẹn', ${JSON.stringify(fileContent).replace(/"/g, '&quot;')})" class="text-xs text-amber-300/80 hover:text-amber-200 hover:bg-amber-950/40 p-2 rounded-lg cursor-pointer transition flex items-center space-x-2">
-                            <i class="fa-regular fa-file-lines text-amber-500 text-[10px]"></i>
-                            <span>Nội dung tệp: ${file.name}</span>
-                        </li>
-                    </ul>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', newFolderHTML);
-
-            alert(`Truyện [${title}] đã được tải lên dưới dạng thư mục thành công!`);
-            closeUploadModal();
-            document.getElementById('book-title').value = '';
-            fileInput.value = '';
-        };
-
-        reader.readAsText(file);
-    }
-</script>
-<style>
-    .elem-btn.active-elem { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); transform: scale(1.05); border-width: 2px; }
-    .sub-btn.active-sub { background-color: #b45309; color: #fff; border-color: #fef3c7; }
-</style>
-{% endblock %}
+        document.getElementById('current
