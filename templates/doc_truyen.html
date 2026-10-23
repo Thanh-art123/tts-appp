@@ -15,7 +15,6 @@
             padding: 20px 10px;
         }
 
-        /* Khung đọc truyện chính canh giữa */
         .reader-container-box {
             width: 100%;
             max-width: 850px;
@@ -76,15 +75,16 @@
 <body>
 
     <center>
-        <!-- KHUNG ĐỌC TRUYỆN CHÍNH (BAO GỒM THANH CÔNG CỤ TRÊN ĐẦU CHƯƠNG) -->
+        <!-- KHUNG ĐỌC TRUYỆN CHÍNH -->
         <div class="reader-container-box" id="main-reader-box" style="text-align: left;">
             
-            <!-- THANH CÔNG CỤ ĐA NĂNG ĐẶT NGAY TRÊN ĐẦU CHƯƠNG -->
+            <!-- THANH CÔNG CỤ & ĐIỀU HƯỚNG CHƯƠNG ĐẶT NGAY TRÊN ĐẦU -->
             <div style="background: #fafafa; border: 1px solid #e4e4e7; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px;">
-                <!-- Dòng 1: Điều hướng & Cài đặt hiển thị -->
-                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
+                
+                <!-- Dòng 1: Trở về Tàng Kinh Các & Tùy chỉnh hiển thị -->
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; border-bottom: 1px solid #f4f4f5; pb-2; margin-bottom: 10px; padding-bottom: 8px;">
                     <a href="/tang-kinh-cac" style="font-weight: bold; color: #047857; text-decoration: none; font-size: 13px;">
-                        ⬅ Trở Về Tàng Kinh Các
+                        ⬅ Tàng Kinh Các
                     </a>
 
                     <!-- Phông chữ -->
@@ -114,17 +114,36 @@
                         <button onclick="changeContainerWidth('100%')" class="tool-btn">100%</button>
                     </div>
                 </div>
+
+                <!-- Dòng 2: Nút Chuyển Chương / Chọn Chương -->
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
+                    <button onclick="prevChapter()" class="tool-btn" style="background: #ecfdf5; color: #047857; border-color: #a7f3d0; padding: 6px 12px;">
+                        ❮ Chương trước
+                    </button>
+
+                    <!-- Chọn chương trực tiếp qua Dropdown -->
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 12px; color: #71717a; font-weight: bold;">Chọn chương:</span>
+                        <select id="chapter-select" onchange="jumpToChapter(this.value)" class="bg-white border border-zinc-300 rounded px-2 py-1 text-xs font-bold text-emerald-800 outline-none max-w-[240px]">
+                            <option value="0">Đang quét danh sách chương...</option>
+                        </select>
+                    </div>
+
+                    <button onclick="nextChapter()" class="action-btn">
+                        Chương tiếp ❯
+                    </button>
+                </div>
             </div>
 
-            <!-- TIÊU ĐỀ BỘ TRUYỆN -->
+            <!-- TIÊU ĐỀ CHƯƠNG HIỆN TẠI -->
             <div style="text-align: center; border-bottom: 1px solid #e4e4e7; padding-bottom: 16px; margin-bottom: 24px;">
-                <h1 style="font-size: 20px; font-weight: bold; color: #065f46; margin: 0 0 6px 0;">
+                <h1 id="chapter-title-display" style="font-size: 20px; font-weight: bold; color: #065f46; margin: 0 0 6px 0;">
                     {{ chapter_title }}
                 </h1>
                 <p style="font-size: 12px; color: #a1a1aa; margin: 0;">Tông Môn Đọc Truyện • Chế độ tập trung</p>
             </div>
 
-            <!-- NỘI DUNG VĂN BẢN HIỂN THỊ ĐẦY ĐỦ 100% -->
+            <!-- NỘI DUNG VĂN BẢN CHƯƠNG -->
             <div id="story-content-body" class="story-content-text">
                 {{ chapter_content | safe }}
             </div>
@@ -132,9 +151,11 @@
             <!-- CHÂN TRANG ĐIỀU HƯỚNG CUỐI CHƯƠNG -->
             <div style="border-top: 1px solid #e4e4e7; margin-top: 35px; padding-top: 20px; text-align: center;">
                 <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 12px;">
-                    <a href="/tang-kinh-cac" class="action-btn">📋 Trở Về Tàng Kinh Các</a>
+                    <button onclick="prevChapter()" class="tool-btn" style="padding: 6px 14px;">❮ Chương trước</button>
+                    <a href="/tang-kinh-cac" class="action-btn">📋 Mục Lục Tàng Kinh Các</a>
+                    <button onclick="nextChapter()" class="action-btn">Chương tiếp ❯</button>
                 </div>
-                <p style="font-size: 12px; color: #a1a1aa; margin: 0;">--- Hết Nội Dung ---</p>
+                <p style="font-size: 12px; color: #a1a1aa; margin: 0;">--- Hết Chương ---</p>
             </div>
 
         </div>
@@ -142,6 +163,8 @@
 
     <script>
         let currentFontSize = 16;
+        let parsedChapters = [];
+        let currentChapterIdx = 0;
 
         function changeFontSize(delta) {
             currentFontSize += delta;
@@ -160,8 +183,75 @@
             document.getElementById('main-reader-box').style.maxWidth = widthStr;
         }
 
-        // Đảm bảo cuộn lên đầu trang khi vừa nạp xong
-        window.scrollTo(0, 0);
+        // Tự động bóc tách các chương từ văn bản lớn
+        function initChapterParser() {
+            const rawElement = document.getElementById('story-content-body');
+            const rawText = rawElement.innerText;
+            
+            // Tìm kiếm các từ khóa nhận diện chương như "Chương 1", "Chương 2",...
+            const regex = /(?=Chương\s+\d+[:\s])/gi;
+            const parts = rawText.split(regex);
+
+            if (parts.length > 1) {
+                parsedChapters = parts.filter(p => p.trim().length > 0);
+                
+                const selectEl = document.getElementById('chapter-select');
+                selectEl.innerHTML = '';
+
+                parsedChapters.forEach((chap, idx) => {
+                    const firstLine = chap.trim().split('\n')[0] || `Chương ${idx + 1}`;
+                    const opt = document.createElement('option');
+                    opt.value = idx;
+                    opt.innerText = firstLine.length > 40 ? firstLine.substring(0, 40) + '...' : firstLine;
+                    selectEl.appendChild(opt);
+                });
+
+                // Mở mặc định chương đầu tiên
+                renderChapter(0);
+            } else {
+                // Nếu file không chia chương rõ ràng thì hiển thị toàn văn bình thường
+                parsedChapters = [rawText];
+                document.getElementById('chapter-select').innerHTML = '<option value="0">Toàn bộ văn bản</option>';
+            }
+        }
+
+        function renderChapter(index) {
+            if (index < 0 || index >= parsedChapters.length) return;
+            currentChapterIdx = index;
+
+            const fullChapterText = parsedChapters[index].trim();
+            const lines = fullChapterText.split('\n');
+            const title = lines[0] || `Chương ${index + 1}`;
+            const content = lines.slice(1).join('\n');
+
+            document.getElementById('chapter-title-display').innerText = title;
+            document.getElementById('story-content-body').innerText = content.trim() || fullChapterText;
+            document.getElementById('chapter-select').value = index;
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function prevChapter() {
+            if (currentChapterIdx > 0) {
+                renderChapter(currentChapterIdx - 1);
+            } else {
+                alert("Đạo hữu đang ở chương đầu tiên!");
+            }
+        }
+
+        function nextChapter() {
+            if (currentChapterIdx < parsedChapters.length - 1) {
+                renderChapter(currentChapterIdx + 1);
+            } else {
+                alert("Đã đến chương cuối cùng!");
+            }
+        }
+
+        function jumpToChapter(idx) {
+            renderChapter(parseInt(idx));
+        }
+
+        document.addEventListener('DOMContentLoaded', initChapterParser);
     </script>
 </body>
 </html>
