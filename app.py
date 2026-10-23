@@ -1,12 +1,27 @@
 import os
 import json
 import random
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 app.secret_key = "tong_mon_secret_key_chuong_mon_toi_cao"
 
 DB_FILE = "tong_mon_data.json"
+
+TEN_CANH_GIOI = [
+    "Phàm Nhân", "Luyện Khí", "Trúc Cơ", "Kim Đan", 
+    "Nguyên Anh", "Hóa Thần", "Luyện Hư", "Hợp Thể", 
+    "Độ Kiếp", "Chân Tiên", "Tiên Vương", "Hỗn Độn Chúa Tể"
+]
+TEN_TIEU_CANH = ["Nhập Môn", "Tiểu Thành", "Đại Thành", "Viên Mãn"]
+
+def get_default_tu_luyen():
+    return {
+        "diem_tich_tuyem": 120,
+        "cap_hien_tai": 1, 
+        "tieu_canh": 0,    
+        "vat_pham": { "hoa": 2, "lua": 1, "cay": 3 }
+    }
 
 # Khởi tạo cơ sở dữ liệu mặc định nếu chưa có
 def load_database():
@@ -15,9 +30,10 @@ def load_database():
             "users": [
                 {
                     "username": "admin",
-                    "password": "123", # Mật khẩu mặc định của Chưởng Môn, có thể đổi
-                    "role": "admin",    # Chưởng Môn tối cao
-                    "author_name": "Chưởng Môn Nhân"
+                    "password": "123",
+                    "role": "admin",
+                    "author_name": "Chưởng Môn Nhân",
+                    "tu_luyen": get_default_tu_luyen()
                 }
             ],
             "books": [
@@ -35,28 +51,18 @@ def load_database():
         return initial_data
     try:
         with open(DB_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
+            # Đảm bảo người dùng cũ có cấu trúc tu luyện
+            for user in data.get("users", []):
+                if "tu_luyen" not in user:
+                    user["tu_luyen"] = get_default_tu_luyen()
+            return data
     except Exception:
         return {"users": [], "books": []}
 
 def save_database(data):
     with open(DB_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
-
-# Lưu trữ dữ liệu tu luyện giả lập
-tu_luyen_data = {
-    "diem_tich_tuyem": 120,
-    "cap_hien_tai": 1, 
-    "tieu_canh": 0,    
-    "vat_pham": { "hoa": 2, "lua": 1, "cay": 3 }
-}
-
-TEN_CANH_GIOI = [
-    "Phàm Nhân", "Luyện Khí", "Trúc Cơ", "Kim Đan", 
-    "Nguyên Anh", "Hóa Thần", "Luyện Hư", "Hợp Thể", 
-    "Độ Kiếp", "Chân Tiên", "Tiên Vương", "Hỗn Độn Chúa Tể"
-]
-TEN_TIEU_CANH = ["Nhập Môn", "Tiểu Thành", "Đại Thành", "Viên Mãn"]
 
 @app.route('/')
 def home():
@@ -76,10 +82,7 @@ def dong_phu():
 
 @app.route('/bi-canh')
 def bi_canh():
-    n = tu_luyen_data["cap_hien_tai"]
-    tieu_canh_idx = tu_luyen_data["tieu_canh"]
-    diem_can_thiet = 100 * n + (tieu_canh_idx + 1) * 50 + (n ** 2) * 10
-    return render_template('bi_canh.html', data=tu_luyen_data, ten_canh=TEN_CANH_GIOI[n-1], ten_tieu_canh=TEN_TIEU_CANH[tieu_canh_idx], diem_max=diem_can_thiet)
+    return render_template('bi_canh.html')
 
 @app.route('/doc-truyen', methods=['POST'])
 def doc_truyen():
@@ -119,13 +122,129 @@ def api_register():
     new_user = {
         "username": username,
         "password": password,
-        "role": "member", # Đệ tử thông thường
-        "author_name": author_name
+        "role": "member",
+        "author_name": author_name,
+        "tu_luyen": get_default_tu_luyen()
     }
     db['users'].append(new_user)
     save_database(db)
 
     return jsonify({"success": True, "message": "Đăng ký thành công!", "user": new_user})
+
+# --- API QUẢN LÝ BÍ CẢNH & TU LUYỆN CÁ NHÂN ---
+@app.route('/api/get-tu-luyen', methods=['GET'])
+def get_tu_luyen():
+    username = request.args.get('username', '').strip()
+    db = load_database()
+    user = next((u for u in db['users'] if u['username'] == username), None)
+
+    if not user:
+        return jsonify({"success": False, "message": "Cần đăng nhập để xem tiến trình tu luyện!"})
+
+    tl = user.get('tu_luyen', get_default_tu_luyen())
+    n = tl["cap_hien_tai"]
+    tieu_canh_idx = tl["tieu_canh"]
+    diem_can_thiet = 100 * n + (tieu_canh_idx + 1) * 50 + (n ** 2) * 10
+
+    return jsonify({
+        "success": True,
+        "data": tl,
+        "ten_canh": TEN_CANH_GIOI[n-1],
+        "ten_tieu_canh": TEN_TIEU_CANH[tieu_canh_idx],
+        "diem_max": diem_can_thiet,
+        "author_name": user["author_name"]
+    })
+
+@app.route('/api/hanh-dong', methods=['POST'])
+def hanh_dong():
+    req = request.json or {}
+    username = req.get('username', '').strip()
+    loai = req.get('loai')
+
+    db = load_database()
+    user = next((u for u in db['users'] if u['username'] == username), None)
+
+    if not user:
+        return jsonify({"success": False, "message": "Vui lòng đăng nhập tài khoản trước!"})
+
+    tl = user.get('tu_luyen', get_default_tu_luyen())
+
+    if loai == 'dang_bai':
+        tl["diem_tich_tuyem"] += 50
+    elif loai == 'nghe_truyen':
+        tl["diem_tich_tuyem"] += 30
+    elif loai == 'nhat_vat_pham':
+        tl["diem_tich_tuyem"] += 20
+        vp = random.choice(['hoa', 'lua', 'cay'])
+        tl["vat_pham"][vp] += 1
+
+    user['tu_luyen'] = tl
+    save_database(db)
+
+    n = tl["cap_hien_tai"]
+    tieu_canh_idx = tl["tieu_canh"]
+    diem_can_thiet = 100 * n + (tieu_canh_idx + 1) * 50 + (n ** 2) * 10
+
+    return jsonify({
+        "success": True,
+        "data": tl,
+        "ten_canh": TEN_CANH_GIOI[n-1],
+        "ten_tieu_canh": TEN_TIEU_CANH[tieu_canh_idx],
+        "diem_max": diem_can_thiet
+    })
+
+@app.route('/api/dot-pha', methods=['POST'])
+def dot_pha():
+    req = request.json or {}
+    username = req.get('username', '').strip()
+
+    db = load_database()
+    user = next((u for u in db['users'] if u['username'] == username), None)
+
+    if not user:
+        return jsonify({"success": False, "message": "Vui lòng đăng nhập trước khi đột phá!"})
+
+    tl = user.get('tu_luyen', get_default_tu_luyen())
+    n = tl["cap_hien_tai"]
+    tieu_canh_idx = tl["tieu_canh"]
+    diem_hien_tai = tl["diem_tich_tuyem"]
+    diem_can_thiet = 100 * n + (tieu_canh_idx + 1) * 50 + (n ** 2) * 10
+
+    if diem_hien_tai < diem_can_thiet:
+        return jsonify({"success": False, "message": "Không đủ điểm tu luyện để đột phá!"})
+
+    if tieu_canh_idx == 3:
+        if tl["vat_pham"]["hoa"] < 1 or tl["vat_pham"]["lua"] < 1:
+            return jsonify({"success": False, "message": "Đột phá Đại Cảnh Giới yêu cầu phải có ít nhất 1 Hoa và 1 Lửa thần!"})
+        
+        tl["vat_pham"]["hoa"] -= 1
+        tl["vat_pham"]["lua"] -= 1
+        
+        if n < 12:
+            tl["cap_hien_tai"] += 1
+            tl["tieu_canh"] = 0
+            tl["diem_tich_tuyem"] -= diem_can_thiet
+        else:
+            return jsonify({"success": False, "message": "Đạo hữu đã đạt đến đỉnh phong Hỗn Độn Chúa Tể, vô địch thiên địa rồi!"})
+    else:
+        tl["tieu_canh"] += 1
+        tl["diem_tich_tuyem"] -= diem_can_thiet
+
+    user['tu_luyen'] = tl
+    save_database(db)
+
+    new_n = tl["cap_hien_tai"]
+    new_tieu_idx = tl["tieu_canh"]
+    new_diem_max = 100 * new_n + (new_tieu_idx + 1) * 50 + (new_n ** 2) * 10
+
+    return jsonify({
+        "success": True,
+        "message": "Đột phá thành công!",
+        "data": tl,
+        "ten_canh": TEN_CANH_GIOI[new_n-1],
+        "ten_tieu_canh": TEN_TIEU_CANH[new_tieu_idx],
+        "diem_max": new_diem_max
+    })
 
 # --- API QUẢN LÝ KHO TÀNG ---
 @app.route('/api/get-books', methods=['GET'])
@@ -147,6 +266,7 @@ def upload_book():
     title = data.get('title')
     content = data.get('content')
     author = data.get('author', 'Vô Danh')
+    username = data.get('username', '').strip()
     cat = data.get('category', 'truyen-dich')
     elem = data.get('element', 'Kim')
 
@@ -163,12 +283,16 @@ def upload_book():
         "content": content
     }
     db['books'].append(new_book)
+
+    # Tăng điểm tu luyện cho chính tài khoản đăng bài
+    user = next((u for u in db['users'] if u['username'] == username), None)
+    if user:
+        user.setdefault('tu_luyen', get_default_tu_luyen())["diem_tich_tuyem"] += 50
+
     save_database(db)
 
-    tu_luyen_data["diem_tich_tuyem"] += 50
     return jsonify({"success": True, "message": f"Truyện [{title}] đã được truyền thừa vĩnh viễn trên Cloud!", "book": new_book})
 
-# API CHƯỞNG MÔN XÓA TÀI NGUYÊN (QUYỀN TỐI CAO)
 @app.route('/api/delete-book', methods=['POST'])
 def delete_book():
     data = request.json or {}
@@ -178,7 +302,6 @@ def delete_book():
     db = load_database()
     user = next((u for u in db['users'] if u['username'] == username), None)
 
-    # Kiểm tra xem có phải Admin (Chưởng Môn) không
     if not user or user.get('role') != 'admin':
         return jsonify({"success": False, "message": "Chỉ có Chưởng Môn Nhân mới có quyền xóa tài nguyên tông môn!"})
 
