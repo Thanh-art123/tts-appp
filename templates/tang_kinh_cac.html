@@ -9,14 +9,12 @@
             <span>Tàng Kinh Các - Kho Bí Kíp & Đọc Truyện Tông Môn</span>
         </h2>
 
-        <!-- Nút Đăng Ký / Đăng Nhập Tác Giả -->
         <button onclick="openAuthorModal()" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-4 py-2 rounded-xl text-xs shadow transition flex items-center space-x-2 cursor-pointer">
             <i class="fa-solid fa-user-pen"></i>
             <span id="author-btn-text">Đăng Ký Đạo Tịch Tác Giả</span>
         </button>
     </div>
 
-    <!-- Phân loại chuyên mục -->
     <div class="flex space-x-2 border-b border-amber-600/40 pb-3 mb-4">
         <button onclick="switchCategory('truyen-dich')" id="btn-truyen-dich" class="sub-btn active-sub text-xs font-bold px-4 py-2 rounded-lg bg-black/60 border border-amber-600/50 text-amber-300 transition cursor-pointer">
             📜 Truyện Dịch
@@ -47,9 +45,7 @@
                 📁 Thư Mục Công Pháp Hệ <span id="current-elem-title" class="text-amber-400">Kim</span>
             </h3>
 
-            <!-- Danh sách thư mục truyện động -->
             <div id="dynamic-folder-container" class="space-y-3">
-                <!-- Thư mục mẫu: Lá Xanh -->
                 <div class="space-y-2 bg-amber-950/30 border border-amber-600/30 p-3 rounded-xl">
                     <div onclick="toggleFolder('folder-laxanh')" class="cursor-pointer flex items-center justify-between">
                         <span class="text-xs font-bold text-amber-200 flex items-center space-x-2">
@@ -68,7 +64,6 @@
                 </div>
             </div>
 
-            <!-- Nút tải file truyện mới -->
             <div class="pt-3 border-t border-amber-600/30 text-center">
                 <button onclick="checkUploadPermission()" class="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold text-xs py-2.5 px-5 rounded-xl shadow transition cursor-pointer inline-flex items-center space-x-1">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
@@ -79,7 +74,6 @@
     </div>
 </div>
 
-<!-- FORM ẨN ĐỂ CHUYỂN DỮ LIỆU SANG TRANG ĐỌC RIÊNG BIỆT -->
 <form action="/doc-truyen" method="POST" target="_blank" id="read-form">
     <input type="hidden" name="title" id="form-title">
     <input type="hidden" name="content" id="form-content">
@@ -160,4 +154,111 @@
         currentElement = elemName;
         document.querySelectorAll('.elem-btn').forEach(btn => btn.classList.remove('active-elem'));
         document.getElementById('elem-' + elemName).classList.add('active-elem');
-        document.getElementById('current
+        document.getElementById('current-elem-title').innerText = elemName;
+    }
+
+    function toggleFolder(folderId) {
+        const folder = document.getElementById(folderId);
+        if (folder) {
+            folder.classList.toggle('hidden');
+        }
+    }
+
+    function openReaderPage(title, content) {
+        document.getElementById('form-title').value = title;
+        document.getElementById('form-content').value = content;
+        document.getElementById('read-form').submit();
+    }
+
+    function openAuthorModal() {
+        document.getElementById('author-modal').classList.remove('hidden');
+    }
+
+    function closeAuthorModal() {
+        document.getElementById('author-modal').classList.add('hidden');
+    }
+
+    function registerAuthor() {
+        const name = document.getElementById('author-name-input').value.trim();
+        if(!name) {
+            alert("Xin hãy nhập đạo hào của ngài!");
+            return;
+        }
+        localStorage.setItem('tongan_author', name);
+        registeredAuthor = name;
+        document.getElementById('author-btn-text').innerText = `Đạo Hào: ${name}`;
+        closeAuthorModal();
+        alert(`Chúc mừng đạo hữu [${name}] đã đăng ký đạo tịch tác giả thành công!`);
+    }
+
+    if(registeredAuthor) {
+        document.getElementById('author-btn-text').innerText = `Đạo Hào: ${registeredAuthor}`;
+    }
+
+    function checkUploadPermission() {
+        if(!registeredAuthor) {
+            alert("Đạo hữu chưa đăng ký đạo tịch tác giả! Hãy bấm 'Đăng Ký Đạo Tịch Tác Giả' ở góc trên trước khi tải truyện.");
+            openAuthorModal();
+            return;
+        }
+        document.getElementById('upload-modal').classList.remove('hidden');
+    }
+
+    function closeUploadModal() {
+        document.getElementById('upload-modal').classList.add('hidden');
+    }
+
+    function submitBookFile() {
+        const title = document.getElementById('book-title').value.trim();
+        const fileInput = document.getElementById('book-file');
+        
+        if(!title) {
+            alert("Xin hãy nhập tên thư mục / bộ truyện!");
+            return;
+        }
+        if(fileInput.files.length === 0) {
+            alert("Xin hãy chọn tệp truyện (.txt hoặc .html) để tải lên!");
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const fileContent = e.target.result;
+            const folderId = 'folder-' + Date.now();
+
+            const container = document.getElementById('dynamic-folder-container');
+            const newFolderHTML = `
+                <div class="space-y-2 bg-amber-950/30 border border-amber-600/30 p-3 rounded-xl mt-3">
+                    <div onclick="toggleFolder('${folderId}')" class="cursor-pointer flex items-center justify-between">
+                        <span class="text-xs font-bold text-amber-200 flex items-center space-x-2">
+                            <i class="fa-solid fa-folder-open text-amber-400"></i>
+                            <span>${title}</span>
+                        </span>
+                        <i class="fa-solid fa-chevron-down text-[10px] text-amber-400"></i>
+                    </div>
+                    <ul id="${folderId}" class="space-y-1 pl-4 border-l border-amber-600/30 ml-2 mt-2">
+                        <li onclick="openReaderPage('${title} - Toàn Văn', ${JSON.stringify(fileContent).replace(/"/g, '&quot;')})" class="text-xs text-amber-300/80 hover:text-white hover:bg-amber-950/60 p-2 rounded-lg cursor-pointer transition flex items-center space-x-2">
+                            <i class="fa-regular fa-file-lines text-amber-500 text-[10px]"></i>
+                            <span>Đọc tệp: ${file.name}</span>
+                        </li>
+                    </ul>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', newFolderHTML);
+
+            alert(`Truyện [${title}] đã được tải lên dưới dạng thư mục thành công!`);
+            closeUploadModal();
+            document.getElementById('book-title').value = '';
+            fileInput.value = '';
+        };
+
+        reader.readAsText(file);
+    }
+</script>
+<style>
+    .elem-btn.active-elem { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); transform: scale(1.05); border-width: 2px; }
+    .sub-btn.active-sub { background-color: #b45309; color: #fff; border-color: #fef3c7; }
+</style>
+{% endblock %}
