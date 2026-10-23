@@ -1,1 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ chapter_title }} - Tông Môn Đọc Truyện</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #070e17;
+            color: #fef3c7;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .reader-container {
+            max-width: 850px;
+            margin: 40px auto;
+            background: rgba(15, 32, 51, 0.95);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+        }
+    </style>
+</head>
+<body class="min-h-screen py-10 px-4">
 
+    <!-- Thanh điều hướng trên cùng của trang đọc -->
+    <div class="max-w-[850px] mx-auto mb-6 flex justify-between items-center bg-black/60 px-5 py-3 rounded-xl border border-amber-600/30">
+        <a href="/tang-kinh-cac" class="text-xs font-bold text-amber-400 hover:text-white flex items-center space-x-2 transition">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Trở về Tàng Kinh Các</span>
+        </a>
+        <h1 class="text-xs font-extrabold text-amber-200 uppercase tracking-widest">Tông Môn Tịnh Thất • Đọc Sách</h1>
+    </div>
+
+    <!-- Khung nội dung đọc truyện chính -->
+    <div class="reader-container space-y-6">
+        <div class="border-b border-amber-600/40 pb-4">
+            <h2 class="text-2xl font-black text-amber-400 text-center">{{ chapter_title }}</h2>
+        </div>
+
+        <div class="text-base text-amber-100/95 leading-loose space-y-4 text-justify font-normal">
+            {{ chapter_content | safe }}
+        </div>
+
+        <div class="border-t border-amber-600/40 pt-6 flex justify-between items-center text-xs">
+            <a href="/tang-kinh-cac" class="bg-amber-950/80 hover:bg-amber-900 text-amber-300 font-bold px-4 py-2.5 rounded-xl border border-amber-600/50 transition">
+                <i class="fa-solid fa-list mr-1"></i> Mục Lục Chương
+            </a>
+            <span class="text-amber-400/60">Hoàn thành chương</span>
+        </div>
+    </div>
+
+</body>
+</html>
