@@ -82,7 +82,12 @@ def get_books():
     ]
     return jsonify({"success": True, "books": filtered_books})
 
-# API TẢI TRUYỆN LÊN SERVER (SẼ LƯU VĨNH VIỄN)
+# API LẤY TOÀN BỘ TÀI NGUYÊN CHO TRANG ĐỘNG PHỦ
+@app.route('/api/get-all-books', methods=['GET'])
+def get_all_books():
+    return jsonify({"success": True, "books": truyen_database})
+
+# API TẢI TRUYỆN LÊN SERVER (LƯU VĨNH VIỄN)
 @app.route('/api/upload-book', methods=['POST'])
 def upload_book():
     data = request.json or {}
