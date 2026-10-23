@@ -15,7 +15,7 @@
             padding: 0;
         }
         
-        /* Khung chứa nội dung được đưa vào CHÍNH GIỮA màn hình */
+        /* Khung chứa nội dung chính được canh giữa hoàn hảo */
         .reader-main-container {
             max-width: 850px;
             margin: 30px auto;
@@ -26,7 +26,7 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
         }
 
-        /* Phông chữ & Cỡ chữ đọc truyện tối ưu, không lỗi tiếng Việt */
+        /* Văn bản đọc truyện chuẩn, không lỗi font, thụt dòng thoáng đãng */
         .story-text {
             font-size: 16px;
             line-height: 1.8;
@@ -39,14 +39,14 @@
 </head>
 <body class="min-h-screen py-6 px-4">
 
-    <!-- Thanh Công Cụ Trên Cùng (Canh giữa) -->
+    <!-- Thanh công cụ trên cùng -->
     <div class="max-w-[850px] mx-auto mb-4 flex justify-between items-center bg-white px-5 py-3 rounded-xl border border-zinc-200 shadow-sm text-xs">
         <a href="/tang-kinh-cac" class="font-bold text-emerald-700 hover:text-emerald-800 flex items-center space-x-1">
             <i class="fa-solid fa-arrow-left"></i>
             <span>Trở về Tàng Kinh Các</span>
         </a>
 
-        <!-- Nút tăng giảm cỡ chữ nhanh -->
+        <!-- Nút tùy chỉnh cỡ chữ nhanh -->
         <div class="flex items-center space-x-2">
             <span class="text-zinc-500 font-semibold">Cỡ chữ:</span>
             <button onclick="changeFontSize(-1)" class="bg-zinc-100 hover:bg-zinc-200 px-2.5 py-1 rounded font-bold text-zinc-700 cursor-pointer">-</button>
@@ -55,59 +55,42 @@
         </div>
     </div>
 
-    <!-- KHUNG ĐỌC TRUYỆN CHÍNH (CANH CHÍNH GIỮA MÀN HÌNH) -->
+    <!-- KHUNG ĐỌC TRUYỆN CHÍNH (CANH GIỮA MÀN HÌNH) -->
     <div class="reader-main-container space-y-6">
         
         <!-- Tiêu đề chương -->
         <div class="text-center border-b border-zinc-200 pb-5 space-y-2">
-            <h1 id="chapter-head-title" class="text-xl font-bold text-emerald-800 tracking-tight">
+            <h1 class="text-xl font-bold text-emerald-800 tracking-tight">
                 {{ chapter_title }}
             </h1>
             <p class="text-xs text-zinc-400">Tông Môn Đọc Truyện • Chế độ tập trung</p>
         </div>
 
-        <!-- Điều hướng Chuyển Chương (Đưa vào giữa) -->
+        <!-- Thanh điều hướng -->
         <div class="flex justify-center items-center space-x-3 py-1">
-            <button onclick="prevChapter()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-4 py-2 rounded-lg text-xs transition cursor-pointer flex items-center space-x-1">
-                <i class="fa-solid fa-chevron-left text-[10px]"></i>
-                <span>Chương trước</span>
-            </button>
-
             <a href="/tang-kinh-cac" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-4 py-2 rounded-lg text-xs transition cursor-pointer flex items-center space-x-1 shadow-sm">
                 <i class="fa-solid fa-list"></i>
-                <span>Mục Lục</span>
+                <span>Trở Về Mục Lục Tàng Kinh Các</span>
             </a>
-
-            <button onclick="nextChapter()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-4 py-2 rounded-lg text-xs transition cursor-pointer flex items-center space-x-1 shadow-sm">
-                <span>Chương tiếp</span>
-                <i class="fa-solid fa-chevron-right text-[10px]"></i>
-            </button>
         </div>
 
-        <!-- NỘI DUNG VĂN BẢN ĐỌC NGAY (ĐÃ LỌC BỎ MỤC LỤC TRÊN ĐẦU) -->
+        <!-- NỘI DUNG TOÀN BỘ VĂN BẢN (HIỂN THỊ ĐẦY ĐỦ TRỌN VẸN) -->
         <div id="story-content-body" class="story-text">
             {{ chapter_content | safe }}
         </div>
 
         <!-- Chân trang -->
         <div class="border-t border-zinc-200 pt-6 text-center text-xs text-zinc-500 space-y-3">
-            <div class="flex justify-center space-x-3">
-                <button onclick="prevChapter()" class="text-emerald-700 hover:underline font-bold">← Chương trước</button>
-                <span>•</span>
-                <button onclick="nextChapter()" class="text-emerald-700 hover:underline font-bold">Chương tiếp →</button>
-            </div>
-            <p class="text-zinc-400">--- Hết Chương ---</p>
+            <a href="/tang-kinh-cac" class="text-emerald-700 hover:underline font-bold">← Quay lại danh sách Tàng Kinh Các</a>
+            <p class="text-zinc-400">--- Hết Nội Dung ---</p>
         </div>
 
     </div>
 
     <script>
-        // Tự động cuộn lên đỉnh màn hình ngay khi mở trang
+        // Tự động cuộn lên đầu trang khi mở
         window.scrollTo(0, 0);
 
-        // Biến lưu danh sách các chương được tự động tách từ văn bản
-        let chaptersList = [];
-        let currentChapterIndex = 0;
         let currentFontSize = 16;
 
         function changeFontSize(delta) {
@@ -118,53 +101,6 @@
             document.getElementById('font-size-num').innerText = currentFontSize + 'px';
             document.getElementById('story-content-body').style.fontSize = currentFontSize + 'px';
         }
-
-        // Tự động phân tách nội dung file nếu phát hiện có từ "Chương"
-        function parseChapters() {
-            const rawContent = document.getElementById('story-content-body').innerText;
-            // Tách theo từ khóa "Chương "
-            const rawParts = rawContent.split(/(?=Chương\s+\d+[:\s])/g);
-
-            if (rawParts.length > 1) {
-                chaptersList = rawParts.filter(part => part.trim().length > 0);
-                showChapter(0);
-            }
-        }
-
-        function showChapter(index) {
-            if (index < 0 || index >= chaptersList.length) return;
-            currentChapterIndex = index;
-
-            const text = chaptersList[index];
-            const lines = text.trim().split('\n');
-            const title = lines[0] || `Chương ${index + 1}`;
-            const body = lines.slice(1).join('\n');
-
-            document.getElementById('chapter-head-title').innerText = title;
-            document.getElementById('story-content-body').innerText = body.trim() || text;
-
-            // Kéo lên đỉnh trang ngay lập tức
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function prevChapter() {
-            if (currentChapterIndex > 0) {
-                showChapter(currentChapterIndex - 1);
-            } else {
-                alert("Đang ở chương đầu tiên!");
-            }
-        }
-
-        function nextChapter() {
-            if (currentChapterIndex < chaptersList.length - 1) {
-                showChapter(currentChapterIndex + 1);
-            } else {
-                alert("Đã đến chương cuối cùng!");
-            }
-        }
-
-        // Chạy kiểm tra tách chương sau khi tải xong
-        document.addEventListener('DOMContentLoaded', parseChapters);
     </script>
 </body>
 </html>
