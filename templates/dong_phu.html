@@ -1,15 +1,90 @@
 {% extends "base.html" %}
 {% block title %}Động Phủ Tu Luyện{% endblock %}
+
 {% block content %}
-<div class="panel-3d rounded-2xl p-6">
+<div class="panel-3d rounded-2xl p-6 space-y-6">
     <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 mb-4 flex items-center space-x-2">
         <i class="fa-solid fa-torii-gate text-amber-500"></i>
-        <span>Động Phủ Tu Luyện - Lịch Sử Ngộ Đạo</span>
+        <span>Động Phủ Tu Luyện - Kho Tàng Cá Nhân</span>
     </h2>
-    <div class="text-center py-10 text-amber-200/50 text-sm">
-        <i class="fa-solid fa-box-open text-3xl mb-2"></i>
-        <p>Chưa có thông tin lịch sử tu luyện.</p>
+
+    <!-- Mục 1: Tài nguyên đã cống hiến cho Tông Môn -->
+    <div class="bg-black/60 border border-amber-600/40 rounded-2xl p-4 space-y-3">
+        <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2 flex items-center space-x-2">
+            <i class="fa-solid fa-hand-holding-heart text-amber-400"></i>
+            <span>Tài Nguyên Đã Cống Hiến Cho Tông Môn (Bởi Đạo Hữu)</span>
+        </h3>
+        <div id="contributed-books-list" class="space-y-2">
+            <p class="text-xs text-amber-300/50 text-center py-3">Đang đồng bộ dữ liệu cống hiến...</p>
+        </div>
+    </div>
+
+    <!-- Mục 2: Tài nguyên Tông Môn đang sử dụng -->
+    <div class="bg-black/60 border border-amber-600/40 rounded-2xl p-4 space-y-3">
+        <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2 flex items-center space-x-2">
+            <i class="fa-solid fa-book-bookmark text-amber-400"></i>
+            <span>Tài Nguyên Tông Môn Đang Sử Dụng (Toàn Bộ Kho Tàng)</span>
+        </h3>
+        <div id="all-宗-books-list" class="space-y-2">
+            <p class="text-xs text-amber-300/50 text-center py-3">Đang đồng bộ kho tàng tông môn...</p>
+        </div>
     </div>
 </div>
 {% endblock %}
-{% block scripts %}<script>document.getElementById('nav-dong').classList.add('active');</script>{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('nav-dong').classList.add('active');
+
+    const currentAuthor = localStorage.getItem('tongan_author') || "Vô Danh";
+
+    function loadDongPhuData() {
+        fetch('/api/get-all-books')
+        .then(res => res.json())
+        .then(res => {
+            if(res.success) {
+                const contributedContainer = document.getElementById('contributed-books-list');
+                const allContainer = document.getElementById('all-宗-books-list');
+
+                const myBooks = res.books.filter(b => b.author === currentAuthor);
+                const allBooks = res.books;
+
+                // Hiển thị tài nguyên cống hiến
+                if(myBooks.length === 0) {
+                    contributedContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Đạo hữu [${currentAuthor}] chưa cống hiến bộ công pháp nào cho tông môn.</p>`;
+                } else {
+                    contributedContainer.innerHTML = '';
+                    myBooks.forEach(book => {
+                        contributedContainer.innerHTML += `
+                            <div class="bg-amber-950/40 border border-amber-600/30 p-3 rounded-xl flex justify-between items-center text-xs">
+                                <span class="font-bold text-amber-200">📜 ${book.title} <span class="text-[10px] text-amber-400/70">(Hệ: ${book.element})</span></span>
+                                <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-check"></i> Đã lưu vĩnh viễn</span>
+                            </div>
+                        `;
+                    });
+                }
+
+                // Hiển thị tài nguyên tông môn đang sử dụng
+                if(allBooks.length === 0) {
+                    allContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Kho tàng tông môn hiện đang trống.</p>`;
+                } else {
+                    allContainer.innerHTML = '';
+                    allBooks.forEach(book => {
+                        allContainer.innerHTML += `
+                            <div class="bg-black/80 border border-amber-600/30 p-3 rounded-xl flex justify-between items-center text-xs">
+                                <div>
+                                    <span class="font-bold text-amber-300">📖 ${book.title}</span>
+                                    <span class="text-[10px] text-amber-400/60 block">Tác giả: ${book.author} | Thể loại: ${book.category} (${book.element})</span>
+                                </div>
+                                <span class="text-amber-500 font-bold bg-amber-950/80 px-2 py-1 rounded border border-amber-600/40">Đang lưu hành</span>
+                            </div>
+                        `;
+                    });
+                }
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadDongPhuData);
+</script>
+{% endblock %}
