@@ -5,27 +5,25 @@
 <div class="panel-3d rounded-2xl p-6 space-y-6">
     <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 mb-4 flex items-center space-x-2">
         <i class="fa-solid fa-torii-gate text-amber-500"></i>
-        <span>Động Phủ Tu Luyện - Kho Tàng Cá Nhân</span>
+        <span>Động Phủ Tu Luyện - Kho Tàng Đám Mây (Cloud Storage)</span>
     </h2>
 
-    <!-- Mục 1: Tài nguyên đã cống hiến cho Tông Môn -->
     <div class="bg-black/60 border border-amber-600/40 rounded-2xl p-4 space-y-3">
         <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2 flex items-center space-x-2">
             <i class="fa-solid fa-hand-holding-heart text-amber-400"></i>
             <span>Tài Nguyên Đã Cống Hiến Cho Tông Môn (Bởi Đạo Hữu)</span>
         </h3>
         <div id="contributed-books-list" class="space-y-2">
-            <p class="text-xs text-amber-300/50 text-center py-3">Đang đồng bộ dữ liệu cống hiến...</p>
+            <p class="text-xs text-amber-300/50 text-center py-3">Đang đồng bộ dữ liệu từ Cloud...</p>
         </div>
     </div>
 
-    <!-- Mục 2: Tài nguyên Tông Môn đang sử dụng -->
     <div class="bg-black/60 border border-amber-600/40 rounded-2xl p-4 space-y-3">
         <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2 flex items-center space-x-2">
             <i class="fa-solid fa-book-bookmark text-amber-400"></i>
-            <span>Tài Nguyên Tông Môn Đang Sử Dụng (Toàn Bộ Kho Tàng)</span>
+            <span>Tài Nguyên Tông Môn Đang Sử Dụng (Toàn Bộ Kho Tàng Cloud)</span>
         </h3>
-        <div id="all-宗-books-list" class="space-y-2">
+        <div id="all-books-list" class="space-y-2">
             <p class="text-xs text-amber-300/50 text-center py-3">Đang đồng bộ kho tàng tông môn...</p>
         </div>
     </div>
@@ -36,7 +34,8 @@
 <script>
     document.getElementById('nav-dong').classList.add('active');
 
-    const currentAuthor = localStorage.getItem('tongan_author') || "Vô Danh";
+    const currentUser = JSON.parse(localStorage.getItem('tongan_current_user')) || null;
+    const currentAuthor = currentUser ? currentUser.author_name : "Chưa đăng nhập";
 
     function loadDongPhuData() {
         fetch('/api/get-all-books')
@@ -44,27 +43,27 @@
         .then(res => {
             if(res.success) {
                 const contributedContainer = document.getElementById('contributed-books-list');
-                const allContainer = document.getElementById('all-宗-books-list');
+                const allContainer = document.getElementById('all-books-list');
 
-                const myBooks = res.books.filter(b => b.author === currentAuthor);
+                const myBooks = currentUser ? res.books.filter(b => b.author === currentAuthor) : [];
                 const allBooks = res.books;
 
-                // Hiển thị tài nguyên cống hiến
-                if(myBooks.length === 0) {
-                    contributedContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Đạo hữu [${currentAuthor}] chưa cống hiến bộ công pháp nào cho tông môn.</p>`;
+                if(!currentUser) {
+                    contributedContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Đạo hữu chưa đăng nhập. Hãy đăng nhập ở Tàng Kinh Các để xem cống hiến cá nhân.</p>`;
+                } else if(myBooks.length === 0) {
+                    contributedContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Đạo hữu [${currentAuthor}] chưa cống hiến bộ công pháp nào.</p>`;
                 } else {
                     contributedContainer.innerHTML = '';
                     myBooks.forEach(book => {
                         contributedContainer.innerHTML += `
                             <div class="bg-amber-950/40 border border-amber-600/30 p-3 rounded-xl flex justify-between items-center text-xs">
                                 <span class="font-bold text-amber-200">📜 ${book.title} <span class="text-[10px] text-amber-400/70">(Hệ: ${book.element})</span></span>
-                                <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-check"></i> Đã lưu vĩnh viễn</span>
+                                <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu trên Cloud vĩnh viễn</span>
                             </div>
                         `;
                     });
                 }
 
-                // Hiển thị tài nguyên tông môn đang sử dụng
                 if(allBooks.length === 0) {
                     allContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Kho tàng tông môn hiện đang trống.</p>`;
                 } else {
