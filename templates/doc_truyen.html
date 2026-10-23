@@ -6,91 +6,61 @@
     <title>{{ chapter_title }} - Đọc Truyện</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f4f4f5;
-            color: #18181b;
-            font-family: Arial, 'Times New Roman', Times, serif, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        
-        /* Khung chứa nội dung chính được canh giữa hoàn hảo */
-        .reader-main-container {
-            max-width: 850px;
-            margin: 30px auto;
-            background: #ffffff;
-            border: 1px solid #e4e4e7;
-            border-radius: 12px;
-            padding: 40px 50px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-        }
-
-        /* Văn bản đọc truyện chuẩn, không lỗi font, thụt dòng thoáng đãng */
-        .story-text {
-            font-size: 16px;
-            line-height: 1.8;
-            color: #27272a;
-            text-align: justify;
-            word-wrap: break-word;
-            white-space: pre-line;
-        }
-    </style>
 </head>
-<body class="min-h-screen py-6 px-4">
+<body style="background-color: #f4f4f5; color: #18181b; font-family: Arial, sans-serif; margin: 0; padding: 20px;">
 
-    <!-- Thanh công cụ trên cùng -->
-    <div class="max-w-[850px] mx-auto mb-4 flex justify-between items-center bg-white px-5 py-3 rounded-xl border border-zinc-200 shadow-sm text-xs">
-        <a href="/tang-kinh-cac" class="font-bold text-emerald-700 hover:text-emerald-800 flex items-center space-x-1">
-            <i class="fa-solid fa-arrow-left"></i>
-            <span>Trở về Tàng Kinh Các</span>
-        </a>
+    <!-- KHUNG TỔNG THỂ ĐƯỢC ÉP NẰM CHÍNH GIỮA MÀN HÌNH -->
+    <div style="width: 100%; max-width: 850px; margin: 0 auto;">
 
-        <!-- Nút tùy chỉnh cỡ chữ nhanh -->
-        <div class="flex items-center space-x-2">
-            <span class="text-zinc-500 font-semibold">Cỡ chữ:</span>
-            <button onclick="changeFontSize(-1)" class="bg-zinc-100 hover:bg-zinc-200 px-2.5 py-1 rounded font-bold text-zinc-700 cursor-pointer">-</button>
-            <span id="font-size-num" class="font-bold text-zinc-800 w-8 text-center">16px</span>
-            <button onclick="changeFontSize(1)" class="bg-zinc-100 hover:bg-zinc-200 px-2.5 py-1 rounded font-bold text-zinc-700 cursor-pointer">+</button>
-        </div>
-    </div>
-
-    <!-- KHUNG ĐỌC TRUYỆN CHÍNH (CANH GIỮA MÀN HÌNH) -->
-    <div class="reader-main-container space-y-6">
-        
-        <!-- Tiêu đề chương -->
-        <div class="text-center border-b border-zinc-200 pb-5 space-y-2">
-            <h1 class="text-xl font-bold text-emerald-800 tracking-tight">
-                {{ chapter_title }}
-            </h1>
-            <p class="text-xs text-zinc-400">Tông Môn Đọc Truyện • Chế độ tập trung</p>
-        </div>
-
-        <!-- Thanh điều hướng -->
-        <div class="flex justify-center items-center space-x-3 py-1">
-            <a href="/tang-kinh-cac" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-4 py-2 rounded-lg text-xs transition cursor-pointer flex items-center space-x-1 shadow-sm">
-                <i class="fa-solid fa-list"></i>
-                <span>Trở Về Mục Lục Tàng Kinh Các</span>
+        <!-- Thanh công cụ trên cùng -->
+        <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 12px; padding: 12px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+            <a href="/tang-kinh-cac" style="font-weight: bold; color: #047857; text-decoration: none; font-size: 13px;">
+                ⬅ Trở về Tàng Kinh Các
             </a>
+
+            <div style="font-size: 13px; color: #52525b;">
+                <span>Cỡ chữ: </span>
+                <button onclick="changeFontSize(-2)" style="background: #e4e4e7; border: none; padding: 2px 8px; font-weight: bold; cursor: pointer; border-radius: 4px;">-</button>
+                <span id="font-size-num" style="font-weight: bold; margin: 0 5px;">16px</span>
+                <button onclick="changeFontSize(2)" style="background: #e4e4e7; border: none; padding: 2px 8px; font-weight: bold; cursor: pointer; border-radius: 4px;">+</button>
+            </div>
         </div>
 
-        <!-- NỘI DUNG TOÀN BỘ VĂN BẢN (HIỂN THỊ ĐẦY ĐỦ TRỌN VẸN) -->
-        <div id="story-content-body" class="story-text">
-            {{ chapter_content | safe }}
-        </div>
+        <!-- KHUNG NỘI DUNG CHÍNH -->
+        <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 12px; padding: 40px 50px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+            
+            <!-- Tiêu đề -->
+            <div style="text-align: center; border-bottom: 1px solid #e4e4e7; padding-bottom: 20px; margin-bottom: 30px;">
+                <h1 style="font-size: 20px; font-weight: bold; color: #065f46; margin: 0 0 8px 0;">
+                    {{ chapter_title }}
+                </h1>
+                <p style="font-size: 12px; color: #a1a1aa; margin: 0;">Tông Môn Đọc Truyện • Chế độ tập trung</p>
+            </div>
 
-        <!-- Chân trang -->
-        <div class="border-t border-zinc-200 pt-6 text-center text-xs text-zinc-500 space-y-3">
-            <a href="/tang-kinh-cac" class="text-emerald-700 hover:underline font-bold">← Quay lại danh sách Tàng Kinh Các</a>
-            <p class="text-zinc-400">--- Hết Nội Dung ---</p>
+            <!-- Nút điều hướng -->
+            <div style="text-align: center; margin-bottom: 30px;">
+                <a href="/tang-kinh-cac" style="background: #047857; color: #ffffff; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    📋 Trở Về Mục Lục Tàng Kinh Các
+                </a>
+            </div>
+
+            <!-- VĂN BẢN TRUYỆN CHÍNH -->
+            <div id="story-content-body" style="font-size: 16px; line-height: 1.8; color: #27272a; text-align: justify; white-space: pre-line; word-wrap: break-word;">
+                {{ chapter_content | safe }}
+            </div>
+
+            <!-- Chân trang -->
+            <div style="border-top: 1px solid #e4e4e7; margin-top: 40px; padding-top: 20px; text-align: center; font-size: 12px; color: #71717a;">
+                <a href="/tang-kinh-cac" style="color: #047857; text-decoration: none; font-weight: bold;">Quay lại danh sách Tàng Kinh Các</a>
+                <p style="margin: 10px 0 0 0; color: #a1a1aa;">--- Hết Nội Dung ---</p>
+            </div>
+
         </div>
 
     </div>
 
     <script>
-        // Tự động cuộn lên đầu trang khi mở
         window.scrollTo(0, 0);
-
         let currentFontSize = 16;
 
         function changeFontSize(delta) {
