@@ -13,10 +13,10 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            scroll-behavior: smooth; /* Hiệu ứng cuộn mượt khi chọn chương */
+            scroll-behavior: smooth;
         }
 
-        /* THANH CÔNG CỤ CỐ ĐỊNH (STICKY) LUÔN HIỆN TRÊN CÙNG */
+        /* THANH CÔNG CỤ CỐ ĐỊNH TRÊN ĐẦU */
         .sticky-toolbar {
             position: sticky;
             top: 0;
@@ -84,7 +84,6 @@
             background: #065f46;
         }
 
-        /* Định dạng điểm mốc để cuộn tới không bị che khuất bởi thanh menu */
         .chapter-anchor {
             scroll-margin-top: 80px;
         }
@@ -92,7 +91,7 @@
 </head>
 <body>
 
-    <!-- THANH CÔNG CỤ CỐ ĐỊNH TRÊN ĐẦU -->
+    <!-- THANH CÔNG CỤ CỐ ĐỊNH -->
     <div class="sticky-toolbar">
         <div style="max-width: 900px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
             <div style="display: flex; align-items: center; gap: 12px;">
@@ -123,7 +122,6 @@
     <center>
         <div class="reader-container-box" id="main-reader-box" style="text-align: left;">
             
-            <!-- TIÊU ĐỀ BỘ TRUYỆN -->
             <div style="text-align: center; border-bottom: 1px solid #e4e4e7; padding-bottom: 16px; margin-bottom: 24px;">
                 <h1 style="font-size: 20px; font-weight: bold; color: #065f46; margin: 0 0 6px 0;">
                     {{ chapter_title }}
@@ -134,7 +132,7 @@
             <!-- DỮ LIỆU GỐC (ẨN) -->
             <div id="raw-hidden-content" style="display: none;">{{ chapter_content | safe }}</div>
             
-            <!-- NỘI DUNG VĂN BẢN HIỂN THỊ TOÀN VĂN GỐC TỪ CHƯƠNG 1 ĐẾN HẾT -->
+            <!-- NỘI DUNG HIỂN THỊ TỪ CHƯƠNG 1 TRỞ ĐI (ĐÃ LỌC BỎ MỤC LỤC THỪA) -->
             <div id="story-content-body" class="story-content-text">
                 Đang nạp toàn bộ nội dung...
             </div>
@@ -162,7 +160,6 @@
             document.getElementById('story-content-body').style.fontSize = currentFontSize + 'px';
         }
 
-        // Tự động quét toàn văn, giữ nguyên bản gốc và tạo mốc cuộn đến từng chương
         window.addEventListener('DOMContentLoaded', () => {
             let rawHTML = document.getElementById('raw-hidden-content').innerHTML;
             let tempDiv = document.createElement('div');
@@ -179,11 +176,16 @@
                 }
             }
 
-            // Tự động ngắt dòng nếu các từ "Chương X" bị dính liền chữ trước đó
+            // Tự động ngắt dòng trước từ "Chương 1" đầu tiên để loại bỏ hoàn toàn phần mục lục rác ở đầu file
+            let firstChapIdx = cleanText.search(/Chương\s+1\b/i);
+            if (firstChapIdx !== -1) {
+                cleanText = cleanText.substring(firstChapIdx);
+            }
+
             cleanText = cleanText.replace(/([^\n])(Chương\s+\d+[:\s])/gi, '$1\n\n$2');
 
             const container = document.getElementById('story-content-body');
-            container.innerText = ""; // Xóa chữ đang tải
+            container.innerText = "";
 
             let lines = cleanText.split('\n');
             let selectEl = document.getElementById('chapter-jump-select');
@@ -196,7 +198,6 @@
                 p.style.margin = "8px 0";
                 p.innerText = line;
 
-                // Nếu dòng là tiêu đề chương, gán ID mốc để cuộn tới và thêm vào menu
                 if (/^Chương\s+\d+/i.test(line.trim())) {
                     chapterCount++;
                     let targetId = `chap-pos-${chapterCount}`;
@@ -220,7 +221,6 @@
             }
         });
 
-        // Hàm cuộn trang mượt mà đến vị trí chương được chọn trên thanh công cụ
         function jumpToChapter(targetId) {
             if (!targetId) return;
             let targetElement = document.getElementById(targetId);
