@@ -2,60 +2,185 @@
 {% block title %}Tàng Kinh Các - Kho Bí Kíp{% endblock %}
 
 {% block content %}
-<div class="panel-3d rounded-2xl p-6">
-    <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 mb-4 flex items-center space-x-2">
-        <i class="fa-solid fa-book-bookmark text-amber-500"></i>
-        <span>Tàng Kinh Các - Kho Bí Kíp Tông Môn</span>
-    </h2>
+<div class="panel-3d rounded-2xl p-6 space-y-6">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-amber-600/40 pb-3 gap-4">
+        <h2 class="text-lg font-bold text-amber-400 flex items-center space-x-2">
+            <i class="fa-solid fa-book-bookmark text-amber-500"></i>
+            <span>Tàng Kinh Các - Kho Bí Kíp Tông Môn</span>
+        </h2>
+
+        <!-- Nút Đăng Ký / Đăng Nhập Tác Giả -->
+        <button onclick="openAuthorModal()" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-4 py-2 rounded-xl text-xs shadow transition flex items-center space-x-2 cursor-pointer">
+            <i class="fa-solid fa-user-pen"></i>
+            <span id="author-btn-text">Đăng Ký Đạo Tịch Tác Giả</span>
+        </button>
+    </div>
 
     <div class="flex space-x-2 border-b border-amber-600/40 pb-3 mb-4">
-        <button onclick="switchCategory('truyen-dich')" id="btn-truyen-dich" class="sub-btn active-sub text-xs font-bold px-4 py-2 rounded-lg bg-black/60 border border-amber-600/50 text-amber-300 transition">
+        <button onclick="switchCategory('truyen-dich')" id="btn-truyen-dich" class="sub-btn active-sub text-xs font-bold px-4 py-2 rounded-lg bg-black/60 border border-amber-600/50 text-amber-300 transition cursor-pointer">
             📜 Truyện Dịch
         </button>
-        <button onclick="switchCategory('truyen-cover')" id="btn-truyen-cover" class="sub-btn text-xs font-bold px-4 py-2 rounded-lg bg-black/60 border border-amber-600/50 text-amber-300 transition">
+        <button onclick="switchCategory('truyen-cover')" id="btn-truyen-cover" class="sub-btn text-xs font-bold px-4 py-2 rounded-lg bg-black/60 border border-amber-600/50 text-amber-300 transition cursor-pointer">
             ✨ Truyện Cover
         </button>
     </div>
 
     <!-- 10 THUỘC TÍNH -->
     <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-6">
-        <button onclick="selectElement('Kim')" id="elem-Kim" class="elem-btn active-elem text-xs py-2 px-2 bg-amber-950/80 border border-amber-500/70 rounded-lg font-bold text-amber-300">🟡 Kim</button>
-        <button onclick="selectElement('Mộc')" id="elem-Mộc" class="elem-btn text-xs py-2 px-2 bg-emerald-950/80 border border-emerald-500/70 rounded-lg font-bold text-emerald-300">🟢 Mộc</button>
-        <button onclick="selectElement('Thủy')" id="elem-Thủy" class="elem-btn text-xs py-2 px-2 bg-blue-950/80 border border-blue-500/70 rounded-lg font-bold text-blue-300">🔵 Thủy</button>
-        <button onclick="selectElement('Hỏa')" id="elem-Hỏa" class="elem-btn text-xs py-2 px-2 bg-red-950/80 border border-red-500/70 rounded-lg font-bold text-red-300">🔴 Hỏa</button>
-        <button onclick="selectElement('Thổ')" id="elem-Thổ" class="elem-btn text-xs py-2 px-2 bg-yellow-950/80 border border-yellow-500/70 rounded-lg font-bold text-yellow-300">🟤 Thổ</button>
-        <button onclick="selectElement('Lôi')" id="elem-Lôi" class="elem-btn text-xs py-2 px-2 bg-purple-950/80 border border-purple-500/70 rounded-lg font-bold text-purple-300">⚡ Lôi</button>
-        <button onclick="selectElement('Phong')" id="elem-Phong" class="elem-btn text-xs py-2 px-2 bg-teal-950/80 border border-teal-500/70 rounded-lg font-bold text-teal-300">🌪️ Phong</button>
-        <button onclick="selectElement('Băng')" id="elem-Băng" class="elem-btn text-xs py-2 px-2 bg-cyan-950/80 border border-cyan-500/70 rounded-lg font-bold text-cyan-300">❄️ Băng</button>
-        <button onclick="selectElement('Không Gian')" id="elem-Không Gian" class="elem-btn text-xs py-2 px-2 bg-indigo-950/80 border border-indigo-500/70 rounded-lg font-bold text-indigo-300">🌌 Không Gian</button>
-        <button onclick="selectElement('Thời Gian')" id="elem-Thời Gian" class="elem-btn text-xs py-2 px-2 bg-rose-950/80 border border-rose-500/70 rounded-lg font-bold text-rose-300">⏳ Thời Gian</button>
+        <button onclick="selectElement('Kim')" id="elem-Kim" class="elem-btn active-elem text-xs py-2 px-2 bg-amber-950/80 border border-amber-500/70 rounded-lg font-bold text-amber-300 cursor-pointer">🟡 Kim</button>
+        <button onclick="selectElement('Mộc')" id="elem-Mộc" class="elem-btn text-xs py-2 px-2 bg-emerald-950/80 border border-emerald-500/70 rounded-lg font-bold text-emerald-300 cursor-pointer">🟢 Mộc</button>
+        <button onclick="selectElement('Thủy')" id="elem-Thủy" class="elem-btn text-xs py-2 px-2 bg-blue-950/80 border border-blue-500/70 rounded-lg font-bold text-blue-300 cursor-pointer">🔵 Thủy</button>
+        <button onclick="selectElement('Hỏa')" id="elem-Hỏa" class="elem-btn text-xs py-2 px-2 bg-red-950/80 border border-red-500/70 rounded-lg font-bold text-red-300 cursor-pointer">🔴 Hỏa</button>
+        <button onclick="selectElement('Thổ')" id="elem-Thổ" class="elem-btn text-xs py-2 px-2 bg-yellow-950/80 border border-yellow-500/70 rounded-lg font-bold text-yellow-300 cursor-pointer">🟤 Thổ</button>
+        <button onclick="selectElement('Lôi')" id="elem-Lôi" class="elem-btn text-xs py-2 px-2 bg-purple-950/80 border border-purple-500/70 rounded-lg font-bold text-purple-300 cursor-pointer">⚡ Lôi</button>
+        <button onclick="selectElement('Phong')" id="elem-Phong" class="elem-btn text-xs py-2 px-2 bg-teal-950/80 border border-teal-500/70 rounded-lg font-bold text-teal-300 cursor-pointer">🌪️ Phong</button>
+        <button onclick="selectElement('Băng')" id="elem-Băng" class="elem-btn text-xs py-2 px-2 bg-cyan-950/80 border border-cyan-500/70 rounded-lg font-bold text-cyan-300 cursor-pointer">❄️ Băng</button>
+        <button onclick="selectElement('Không Gian')" id="elem-Không Gian" class="elem-btn text-xs py-2 px-2 bg-indigo-950/80 border border-indigo-500/70 rounded-lg font-bold text-indigo-300 cursor-pointer">🌌 Không Gian</button>
+        <button onclick="selectElement('Thời Gian')" id="elem-Thời Gian" class="elem-btn text-xs py-2 px-2 bg-rose-950/80 border border-rose-500/70 rounded-lg font-bold text-rose-300 cursor-pointer">⏳ Thời Gian</button>
     </div>
 
-    <div class="text-center py-10 border-2 border-dashed border-amber-600/40 rounded-2xl bg-black/60">
+    <div class="text-center py-10 border-2 border-dashed border-amber-600/40 rounded-2xl bg-black/60 space-y-3">
         <i class="fa-solid fa-scroll text-4xl text-amber-500/60 mb-2"></i>
         <p class="text-amber-200 font-bold text-sm">Thư mục công pháp: Hệ <span id="current-elem-title" class="text-amber-400 font-extrabold">Kim</span></p>
         <p class="text-amber-200/60 text-xs mt-1">Mục này hiện đang trống, chưa có truyện được tải lên.</p>
         
-        <a href="/che-tap-cac" class="inline-block mt-4 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold text-xs py-2.5 px-5 rounded-xl shadow-lg transition">
-            <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Tải công pháp thuộc tính này lên (Chế Tạp Các)
-        </a>
+        <div class="flex flex-col sm:flex-row justify-center gap-2 pt-2">
+            <button onclick="checkUploadPermission()" class="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold text-xs py-2.5 px-5 rounded-xl shadow-lg transition cursor-pointer">
+                <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Tải công pháp thuộc tính này lên
+            </button>
+            <a href="/che-tap-cac" class="bg-amber-950/80 hover:bg-amber-900 border border-amber-500/60 text-amber-200 font-bold text-xs py-2.5 px-4 rounded-xl transition inline-flex items-center justify-center">
+                <i class="fa-solid fa-hammer mr-1"></i> Sang Chế Tạp Các
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Đăng Ký Đạo Tịch Tác Giả -->
+<div id="author-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="panel-3d rounded-2xl max-w-md w-full mx-4 p-6 relative border border-amber-500/80 shadow-2xl space-y-4">
+        <button onclick="closeAuthorModal()" class="absolute top-4 right-4 text-amber-400 hover:text-white text-lg cursor-pointer">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        
+        <h3 class="text-base font-extrabold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
+            <i class="fa-solid fa-id-card text-amber-500"></i>
+            <span>Đăng Ký Đạo Tịch Tác Giả</span>
+        </h3>
+
+        <div class="space-y-3 text-xs">
+            <div>
+                <label class="block font-bold text-amber-300 mb-1">Đạo Hào (Bút Danh Tác Giả):</label>
+                <input type="text" id="author-name-input" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-400" placeholder="Ví dụ: Lạc Thiên Tôn...">
+            </div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-3 border-t border-amber-800/60">
+            <button onclick="closeAuthorModal()" class="bg-slate-800 text-amber-300 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer">Hủy</button>
+            <button onclick="registerAuthor()" class="bg-amber-600 hover:bg-amber-500 text-black px-4 py-2 rounded-xl text-xs font-extrabold cursor-pointer">Xác Nhận Đăng Ký</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tải Lên Truyện -->
+<div id="upload-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="panel-3d rounded-2xl max-w-lg w-full mx-4 p-6 relative border border-amber-500/80 shadow-2xl space-y-4">
+        <button onclick="closeUploadModal()" class="absolute top-4 right-4 text-amber-400 hover:text-white text-lg cursor-pointer">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        
+        <h3 class="text-base font-extrabold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
+            <i class="fa-solid fa-cloud-arrow-up text-amber-500"></i>
+            <span>Truyền Thừa Công Pháp Lên Tàng Kinh Các</span>
+        </h3>
+
+        <div class="space-y-3 text-xs">
+            <div>
+                <label class="block font-bold text-amber-300 mb-1">Tên Kinh Văn / Truyện:</label>
+                <input type="text" id="book-title" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-400" placeholder="Nhập tên bộ truyện...">
+            </div>
+            <div>
+                <label class="block font-bold text-amber-300 mb-1">Nội Dung / Chương Truyện:</label>
+                <textarea id="book-content" rows="4" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl p-3 focus:outline-none resize-none" placeholder="Dán nội dung chương truyện vào đây..."></textarea>
+            </div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-3 border-t border-amber-800/60">
+            <button onclick="closeUploadModal()" class="bg-slate-800 text-amber-300 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer">Hủy</button>
+            <button onclick="submitBook()" class="bg-emerald-600 hover:bg-emerald-500 text-black px-4 py-2 rounded-xl text-xs font-extrabold cursor-pointer">Xác Nhận Đăng Tải</button>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    document.getElementById('nav-tang').classList.add('active');
+    document.getElementById('nav-tang')?.classList.add('active');
+
+    let currentCategory = 'truyen-dich';
+    let currentElement = 'Kim';
+    let registeredAuthor = localStorage.getItem('tongan_author') || null;
 
     function switchCategory(catName) {
+        currentCategory = catName;
         document.querySelectorAll('.sub-btn').forEach(el => el.classList.remove('active-sub'));
         document.getElementById('btn-' + catName).classList.add('active-sub');
     }
 
     function selectElement(elemName) {
+        currentElement = elemName;
         document.querySelectorAll('.elem-btn').forEach(btn => btn.classList.remove('active-elem'));
         document.getElementById('elem-' + elemName).classList.add('active-elem');
         document.getElementById('current-elem-title').innerText = elemName;
+    }
+
+    function openAuthorModal() {
+        document.getElementById('author-modal').classList.remove('hidden');
+    }
+
+    function closeAuthorModal() {
+        document.getElementById('author-modal').classList.add('hidden');
+    }
+
+    function registerAuthor() {
+        const name = document.getElementById('author-name-input').value.trim();
+        if(!name) {
+            alert("Xin hãy nhập đạo hào của ngài!");
+            return;
+        }
+        localStorage.setItem('tongan_author', name);
+        registeredAuthor = name;
+        document.getElementById('author-btn-text').innerText = `Đạo Hào: ${name}`;
+        closeAuthorModal();
+        alert(`Chúc mừng đạo hữu [${name}] đã đăng ký đạo tịch tác giả thành công!`);
+    }
+
+    if(registeredAuthor) {
+        document.getElementById('author-btn-text').innerText = `Đạo Hào: ${registeredAuthor}`;
+    }
+
+    function checkUploadPermission() {
+        if(!registeredAuthor) {
+            alert("Đạo hữu chưa đăng ký đạo tịch tác giả! Hãy bấm 'Đăng Ký Đạo Tịch Tác Giả' ở góc trên trước khi tải truyện.");
+            openAuthorModal();
+            return;
+        }
+        document.getElementById('upload-modal').classList.remove('hidden');
+    }
+
+    function closeUploadModal() {
+        document.getElementById('upload-modal').classList.add('hidden');
+    }
+
+    function submitBook() {
+        const title = document.getElementById('book-title').value.trim();
+        if(!title) {
+            alert("Xin hãy nhập tên bộ truyện!");
+            return;
+        }
+        alert(`Công pháp [${title}] thuộc ${currentCategory === 'truyen-dich' ? 'Truyện Dịch' : 'Truyện Cover'} - Hệ ${currentElement} đã được tác giả [${registeredAuthor}] truyền thừa thành công!`);
+        closeUploadModal();
+        document.getElementById('book-title').value = '';
+        document.getElementById('book-content').value = '';
     }
 </script>
 <style>
