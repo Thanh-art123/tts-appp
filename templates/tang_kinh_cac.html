@@ -1,18 +1,21 @@
 {% extends "base.html" %}
-{% block title %}Tàng Kinh Các - Kho Bí Kíp & Đọc Truyện{% endblock %}
+{% block title %}Tàng Kinh Các - Kho Bí Kíp Tông Môn{% endblock %}
 
 {% block content %}
 <div class="panel-3d rounded-2xl p-6 space-y-6">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-amber-600/40 pb-3 gap-4">
         <h2 class="text-lg font-bold text-amber-400 flex items-center space-x-2">
             <i class="fa-solid fa-book-bookmark text-amber-500"></i>
-            <span>Tàng Kinh Các - Kho Bí Kíp & Đọc Truyện Tông Môn</span>
+            <span>Tàng Kinh Các - Kho Bí Kíp Tông Môn (Cloud Sync)</span>
         </h2>
 
-        <button onclick="openAuthorModal()" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-4 py-2 rounded-xl text-xs shadow transition flex items-center space-x-2 cursor-pointer">
-            <i class="fa-solid fa-user-pen"></i>
-            <span id="author-btn-text">Đăng Ký Đạo Tịch Tác Giả</span>
-        </button>
+        <div class="flex items-center space-x-2">
+            <span id="user-badge" class="text-xs font-bold text-amber-300 bg-black/60 px-3 py-1.5 rounded-xl border border-amber-500/50">Chưa đăng nhập</span>
+            <button onclick="openAuthModal()" id="auth-btn-text" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-4 py-2 rounded-xl text-xs shadow transition cursor-pointer flex items-center space-x-2">
+                <i class="fa-solid fa-user-lock"></i>
+                <span>Đăng Nhập / Đăng Ký</span>
+            </button>
+        </div>
     </div>
 
     <!-- Phân loại Chuyên Mục -->
@@ -46,9 +49,8 @@
                 📁 Thư Mục Công Pháp Hệ <span id="current-elem-title" class="text-amber-400">Kim</span> (<span id="cat-title" class="text-amber-300">Truyện Dịch</span>)
             </h3>
 
-            <!-- Danh sách thư mục truyện nạp từ Server -->
             <div id="dynamic-folder-container" class="space-y-3">
-                <p class="text-xs text-amber-300/50 text-center py-4">Đang nạp dữ liệu thư mục...</p>
+                <p class="text-xs text-amber-300/50 text-center py-4">Đang nạp dữ liệu từ Cloud...</p>
             </div>
 
             <div class="pt-3 border-t border-amber-600/30 text-center">
@@ -66,28 +68,36 @@
     <input type="hidden" name="content" id="form-content">
 </form>
 
-<!-- Modal Đăng Ký Đạo Tịch Tác Giả -->
-<div id="author-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+<!-- Modal Đăng Nhập / Đăng Ký Hệ Thống -->
+<div id="auth-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
     <div class="panel-3d rounded-2xl max-w-md w-full mx-4 p-6 relative border border-amber-500/80 shadow-2xl space-y-4">
-        <button onclick="closeAuthorModal()" class="absolute top-4 right-4 text-amber-400 hover:text-white text-lg cursor-pointer">
+        <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-amber-400 hover:text-white text-lg cursor-pointer">
             <i class="fa-solid fa-xmark"></i>
         </button>
         
         <h3 class="text-base font-extrabold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
-            <i class="fa-solid fa-id-card text-amber-500"></i>
-            <span>Đăng Ký Đạo Tịch Tác Giả</span>
+            <i class="fa-solid fa-shield-halved text-amber-500"></i>
+            <span>Đăng Nhập Tông Môn (Chưởng Môn / Đệ Tử)</span>
         </h3>
 
         <div class="space-y-3 text-xs">
             <div>
-                <label class="block font-bold text-amber-300 mb-1">Đạo Hào (Bút Danh Tác Giả):</label>
-                <input type="text" id="author-name-input" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-400" placeholder="Ví dụ: Lạc Thiên Tôn...">
+                <label class="block font-bold text-amber-300 mb-1">Tài Khoản (Username):</label>
+                <input type="text" id="login-username" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none" placeholder="Ví dụ: admin hoặc detu01...">
+            </div>
+            <div>
+                <label class="block font-bold text-amber-300 mb-1">Mật Khẩu:</label>
+                <input type="password" id="login-password" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none" placeholder="Mật khẩu bảo mật...">
+            </div>
+            <div id="register-extra-field" class="hidden">
+                <label class="block font-bold text-amber-300 mb-1">Đạo Hào (Tên hiển thị khi đăng bài):</label>
+                <input type="text" id="register-author-name" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none" placeholder="Ví dụ: Thiên Tôn...">
             </div>
         </div>
 
-        <div class="flex justify-end space-x-2 pt-3 border-t border-amber-800/60">
-            <button onclick="closeAuthorModal()" class="bg-slate-800 text-amber-300 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer">Hủy</button>
-            <button onclick="registerAuthor()" class="bg-amber-600 hover:bg-amber-500 text-black px-4 py-2 rounded-xl text-xs font-extrabold cursor-pointer">Xác Nhận Đăng Ký</button>
+        <div class="flex flex-col space-y-2 pt-3 border-t border-amber-800/60">
+            <button onclick="submitLogin()" id="action-login-btn" class="w-full bg-amber-600 hover:bg-amber-500 text-black py-2.5 rounded-xl text-xs font-extrabold cursor-pointer">Đăng Nhập Hệ Thống</button>
+            <button onclick="toggleAuthMode()" id="toggle-mode-btn" class="text-amber-400 hover:underline text-center text-xs font-bold">Chưa có tài khoản? Đăng ký đạo tịch mới</button>
         </div>
     </div>
 </div>
@@ -101,21 +111,21 @@
         
         <h3 class="text-base font-extrabold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
             <i class="fa-solid fa-cloud-arrow-up text-amber-500"></i>
-            <span>Tải Lên Truyện (Hệ <span id="modal-elem-name" class="text-amber-300">Kim</span>)</span>
+            <span>Tải Lên Truyện Cloud (Hệ <span id="modal-elem-name" class="text-amber-300">Kim</span>)</span>
         </h3>
 
         <div class="space-y-3 text-xs">
             <div>
-                <label class="block font-bold text-amber-300 mb-1">Tên Tác Giả / Đạo Hào:</label>
+                <label class="block font-bold text-amber-300 mb-1">Tác Giả (Đạo Hào):</label>
                 <input type="text" id="book-author-display" readonly class="w-full bg-black/50 text-amber-400 font-bold border border-amber-500/40 rounded-xl px-3 py-2 outline-none">
             </div>
             <div>
                 <label class="block font-bold text-amber-300 mb-1">Tên Thư Mục / Bộ Truyện:</label>
-                <input type="text" id="book-title" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-400" placeholder="Ví dụ: Lá Xanh...">
+                <input type="text" id="book-title" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none" placeholder="Ví dụ: Tiên Nghịch...">
             </div>
             <div>
                 <label class="block font-bold text-amber-300 mb-1">Chọn Tệp Truyện (.txt hoặc .html):</label>
-                <input type="file" id="book-file" accept=".txt,.html,.htm" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl p-2.5 focus:outline-none file:mr-4 file:py-1 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-extrabold file:bg-amber-600 file:text-black hover:file:bg-amber-500 cursor-pointer">
+                <input type="file" id="book-file" accept=".txt,.html,.htm" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl p-2.5 cursor-pointer file:mr-4 file:py-1 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-extrabold file:bg-amber-600 file:text-black">
             </div>
         </div>
 
@@ -133,7 +143,83 @@
 
     let currentCategory = 'truyen-dich';
     let currentElement = 'Kim';
-    let registeredAuthor = localStorage.getItem('tongan_author') || null;
+    let currentUser = JSON.parse(localStorage.getItem('tongan_current_user')) || null;
+    let isRegisterMode = false;
+
+    function updateAuthUI() {
+        if(currentUser) {
+            let roleText = currentUser.role === 'admin' ? '⚡ Chưởng Môn Nhân' : '👤 Đệ Tử';
+            document.getElementById('user-badge').innerText = `${roleText}: ${currentUser.author_name}`;
+            document.getElementById('auth-btn-text').innerHTML = `<i class="fa-solid fa-right-from-bracket"></i><span>Đăng Xuất</span>`;
+            document.getElementById('auth-btn-text').setAttribute('onclick', 'logoutUser()');
+        } else {
+            document.getElementById('user-badge').innerText = 'Chưa đăng nhập';
+            document.getElementById('auth-btn-text').innerHTML = `<i class="fa-solid fa-user-lock"></i><span>Đăng Nhập / Đăng Ký</span>`;
+            document.getElementById('auth-btn-text').setAttribute('onclick', 'openAuthModal()');
+        }
+    }
+
+    function logoutUser() {
+        localStorage.removeItem('tongan_current_user');
+        currentUser = null;
+        updateAuthUI();
+        alert("Đã đăng xuất thành công!");
+        loadBooksFromServer();
+    }
+
+    function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
+    function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
+
+    function toggleAuthMode() {
+        isRegisterMode = !isRegisterMode;
+        if(isRegisterMode) {
+            document.getElementById('register-extra-field').classList.remove('hidden');
+            document.getElementById('action-login-btn').innerText = "Đăng Ký Đạo Tịch";
+            document.getElementById('toggle-mode-btn').innerText = "Đã có tài khoản? Quay lại đăng nhập";
+        } else {
+            document.getElementById('register-extra-field').classList.add('hidden');
+            document.getElementById('action-login-btn').innerText = "Đăng Nhập Hệ Thống";
+            document.getElementById('toggle-mode-btn').innerText = "Chưa có tài khoản? Đăng ký đạo tịch mới";
+        }
+    }
+
+    function submitLogin() {
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+        const author_name = document.getElementById('register-author-name').value.trim();
+
+        if(!username || !password) {
+            alert("Vui lòng điền tài khoản và mật khẩu!");
+            return;
+        }
+
+        if(isRegisterMode && !author_name) {
+            alert("Vui lòng nhập đạo hào (tên hiển thị)!");
+            return;
+        }
+
+        const endpoint = isRegisterMode ? '/api/register' : '/api/login';
+        const payload = isRegisterMode ? {username, password, author_name} : {username, password};
+
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(res => {
+            if(res.success) {
+                alert(res.message);
+                currentUser = res.user;
+                localStorage.setItem('tongan_current_user', JSON.stringify(currentUser));
+                closeAuthModal();
+                updateAuthUI();
+                loadBooksFromServer();
+            } else {
+                alert(res.message);
+            }
+        });
+    }
 
     function switchCategory(catName) {
         currentCategory = catName;
@@ -154,9 +240,7 @@
 
     function toggleFolder(folderId) {
         const folder = document.getElementById(folderId);
-        if (folder) {
-            folder.classList.toggle('hidden');
-        }
+        if (folder) folder.classList.toggle('hidden');
     }
 
     function openReaderPage(title, content) {
@@ -165,34 +249,38 @@
         document.getElementById('read-form').submit();
     }
 
-    // TẢI DỮ LIỆU TỪ SERVER VÀ HIỂN THỊ
     function loadBooksFromServer() {
         const container = document.getElementById('dynamic-folder-container');
-        container.innerHTML = `<p class="text-xs text-amber-300/50 text-center py-4">Đang tải công pháp hệ ${currentElement}...</p>`;
+        container.innerHTML = `<p class="text-xs text-amber-300/50 text-center py-4">Đang đồng bộ dữ liệu từ Cloud...</p>`;
 
         fetch(`/api/get-books?category=${currentCategory}&element=${currentElement}`)
         .then(res => res.json())
         .then(res => {
             if(res.success) {
                 if(res.books.length === 0) {
-                    container.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-6">Mục này hiện đang trống, chưa có truyện được tác giả truyền thừa.</p>`;
+                    container.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-6">Mục này hiện đang trống, chưa có truyện được truyền thừa.</p>`;
                     return;
                 }
 
                 container.innerHTML = '';
                 res.books.forEach(book => {
                     const folderId = 'folder-' + book.id;
+                    let deleteBtn = '';
+                    if(currentUser && currentUser.role === 'admin') {
+                        deleteBtn = `<button onclick="deleteBook(${book.id})" class="text-red-400 hover:text-red-300 text-xs px-2 py-0.5 bg-red-950/60 rounded border border-red-600/40 cursor-pointer ml-2" title="Chưởng Môn Xóa"><i class="fa-solid fa-trash"></i> Xóa</button>`;
+                    }
+
                     const folderHTML = `
                         <div class="space-y-2 bg-amber-950/30 border border-amber-600/30 p-3 rounded-xl">
-                            <div onclick="toggleFolder('${folderId}')" class="cursor-pointer flex items-center justify-between">
-                                <span class="text-xs font-bold text-amber-200 flex items-center space-x-2">
+                            <div class="flex items-center justify-between">
+                                <span onclick="toggleFolder('${folderId}')" class="cursor-pointer text-xs font-bold text-amber-200 flex items-center space-x-2 flex-grow">
                                     <i class="fa-solid fa-folder-open text-amber-400"></i>
                                     <span>${book.title}</span>
                                     <span class="text-[10px] text-amber-400/80 bg-black/60 px-2 py-0.5 rounded-full border border-amber-600/30">Tác giả: ${book.author}</span>
                                 </span>
-                                <i class="fa-solid fa-chevron-down text-[10px] text-amber-400"></i>
+                                ${deleteBtn}
                             </div>
-                            <ul id="${folderId}" class="space-y-1 pl-4 border-l border-amber-600/30 ml-2 mt-2">
+                            <ul id="${folderId}" class="space-y-1 pl-4 border-l border-amber-600/30 ml-2 mt-2 hidden">
                                 <li onclick="openReaderPage('${book.title} - Tác giả: ${book.author}', ${JSON.stringify(book.content).replace(/"/g, '&quot;')})" class="text-xs text-amber-300/80 hover:text-white hover:bg-amber-950/60 p-2 rounded-lg cursor-pointer transition flex items-center space-x-2">
                                     <i class="fa-regular fa-file-lines text-amber-500 text-[10px]"></i>
                                     <span>Nội Dung Toàn Văn</span>
@@ -206,95 +294,70 @@
         });
     }
 
-    function openAuthorModal() {
-        document.getElementById('author-modal').classList.remove('hidden');
-    }
-
-    function closeAuthorModal() {
-        document.getElementById('author-modal').classList.add('hidden');
-    }
-
-    function registerAuthor() {
-        const name = document.getElementById('author-name-input').value.trim();
-        if(!name) {
-            alert("Xin hãy nhập đạo hào của ngài!");
-            return;
-        }
-        localStorage.setItem('tongan_author', name);
-        registeredAuthor = name;
-        document.getElementById('author-btn-text').innerText = `Đạo Hào: ${name}`;
-        closeAuthorModal();
-        alert(`Chúc mừng đạo hữu [${name}] đã đăng ký đạo tịch tác giả thành công!`);
-    }
-
-    if(registeredAuthor) {
-        document.getElementById('author-btn-text').innerText = `Đạo Hào: ${registeredAuthor}`;
+    function deleteBook(bookId) {
+        if(!confirm("Chưởng Môn có chắc chắn muốn xóa vĩnh viễn tài nguyên này khỏi Cloud không?")) return;
+        fetch('/api/delete-book', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ id: bookId, username: currentUser.username })
+        })
+        .then(res => res.json())
+        .then(res => {
+            alert(res.message);
+            loadBooksFromServer();
+        });
     }
 
     function checkUploadPermission() {
-        if(!registeredAuthor) {
-            alert("Đạo hữu chưa đăng ký đạo tịch tác giả! Hãy bấm 'Đăng Ký Đạo Tịch Tác Giả' ở góc trên trước khi tải truyện.");
-            openAuthorModal();
+        if(!currentUser) {
+            alert("Đạo hữu chưa đăng nhập! Hãy đăng nhập hệ thống trước khi tải truyện lên Cloud.");
+            openAuthModal();
             return;
         }
-        document.getElementById('book-author-display').value = registeredAuthor;
+        document.getElementById('book-author-display').value = currentUser.author_name;
         document.getElementById('upload-modal').classList.remove('hidden');
     }
 
-    function closeUploadModal() {
-        document.getElementById('upload-modal').classList.add('hidden');
-    }
+    function closeUploadModal() { document.getElementById('upload-modal').classList.add('hidden'); }
 
-    // GỬI FILE VÀ THÔNG TIN TÁC GIẢ LÊN SERVER LƯU TRỮ
     function submitBookFileServer() {
         const title = document.getElementById('book-title').value.trim();
         const fileInput = document.getElementById('book-file');
         
-        if(!title) {
-            alert("Xin hãy nhập tên thư mục / bộ truyện!");
-            return;
-        }
-        if(fileInput.files.length === 0) {
-            alert("Xin hãy chọn tệp truyện (.txt hoặc .html) để tải lên!");
+        if(!title || fileInput.files.length === 0) {
+            alert("Vui lòng điền tên truyện và chọn tệp!");
             return;
         }
 
-        const file = fileInput.files[0];
         const reader = new FileReader();
-
         reader.onload = function(e) {
-            const fileContent = e.target.result;
-
             fetch('/api/upload-book', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     title: title,
-                    content: fileContent,
-                    author: registeredAuthor,
+                    content: e.target.result,
+                    author: currentUser.author_name,
                     category: currentCategory,
                     element: currentElement
                 })
             })
             .then(res => res.json())
             .then(res => {
-                if(res.success) {
-                    alert(res.message);
-                    closeUploadModal();
-                    document.getElementById('book-title').value = '';
-                    fileInput.value = '';
-                    loadBooksFromServer(); // Tải lại danh sách từ server
-                } else {
-                    alert(res.message);
-                }
+                alert(res.message);
+                closeUploadModal();
+                document.getElementById('book-title').value = '';
+                fileInput.value = '';
+                loadBooksFromServer();
             });
         };
-
-        reader.readAsText(file);
+        reader.readAsText(fileInput.files[0]);
     }
 
-    // Nạp danh sách lần đầu khi mở trang
-    document.addEventListener('DOMContentLoaded', loadBooksFromServer);
+    document.addEventListener('DOMContentLoaded', () => {
+        updateAuthUI();
+        loadBooksFromServer();
+    });
 </script>
 <style>
     .elem-btn.active-elem { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); transform: scale(1.05); border-width: 2px; }
