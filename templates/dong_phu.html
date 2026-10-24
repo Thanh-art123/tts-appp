@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Động Phủ Tu Luyện{% endblock %}
+{% block title %}Động Phủ Tu Luyện - Túi Trữ Vật{% endblock %}
 
 {% block content %}
 <div class="panel-3d rounded-2xl p-6 space-y-6">
@@ -8,6 +8,21 @@
         <span>Động Phủ Tu Luyện - Kho Tàng Đám Mây (Cloud Storage)</span>
     </h2>
 
+    <!-- KHU VỰC TÚI TRỮ VẬT CÁ NHÂN (LƯU TRỮ VĨNH VIỄN CÁC FILE ĐÃ TẢI LÊN THEO TÀI KHOẢN) -->
+    <div class="bg-black/70 border-2 border-amber-500/60 rounded-2xl p-5 space-y-4 shadow-lg shadow-amber-950/50">
+        <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2 flex items-center justify-between">
+            <span class="flex items-center space-x-2">
+                <i class="fa-solid fa-box-archive text-amber-400"></i>
+                <span id="tui-tru-vat-title">Túi Trữ Vật Của Đạo Hữu (Đang nạp...)</span>
+            </span>
+            <span class="text-[10px] text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-600/40">🔒 Bảo mật theo đạo hiệu</span>
+        </h3>
+        <div id="tui-tru-vat-list" class="space-y-2">
+            <p class="text-xs text-amber-300/50 text-center py-4">Đang mở túi trữ vật từ hư không...</p>
+        </div>
+    </div>
+
+    <!-- TÀI NGUYÊN ĐÃ CỐNG HIẾN CHO TÔNG MÔN -->
     <div class="bg-black/60 border border-amber-600/40 rounded-2xl p-4 space-y-3">
         <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2 flex items-center space-x-2">
             <i class="fa-solid fa-hand-holding-heart text-amber-400"></i>
@@ -18,6 +33,7 @@
         </div>
     </div>
 
+    <!-- TÀI NGUYÊN TÔNG MÔN ĐANG SỬ DỤNG -->
     <div class="bg-black/60 border border-amber-600/40 rounded-2xl p-4 space-y-3">
         <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2 flex items-center space-x-2">
             <i class="fa-solid fa-book-bookmark text-amber-400"></i>
@@ -37,25 +53,43 @@
     const currentUser = JSON.parse(localStorage.getItem('tongan_current_user')) || null;
 
     function loadDongPhuData() {
+        const tuiContainer = document.getElementById('tui-tru-vat-list');
         const contributedContainer = document.getElementById('contributed-books-list');
         const allContainer = document.getElementById('all-books-list');
+        const tuiTitle = document.getElementById('tui-tru-vat-title');
 
         if (!currentUser) {
-            contributedContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Đạo hữu chưa đăng nhập. Hãy đăng nhập ở Tàng Kinh Các để xem cống hiến cá nhân.</p>`;
+            tuiTitle.innerText = "Túi Trữ Vật (Chưa đăng nhập)";
+            tuiContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Đạo hữu chưa đăng nhập. Hãy đăng nhập ở Tàng Kinh Các để mở Túi Trữ Vật cá nhân.</p>`;
+            contributedContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Đạo hữu chưa đăng nhập.</p>`;
         } else {
-            // Gọi API lấy tài nguyên riêng của tài khoản đang đăng nhập
+            tuiTitle.innerText = `Túi Trữ Vật Của [${currentUser.author_name}] (${currentUser.username})`;
+
+            // Gọi API lấy tài nguyên riêng của tài khoản đang đăng nhập để cất vào Túi Trữ Vật & Cống Hiến
             fetch(`/api/get-user-contributions?username=${currentUser.username}`)
             .then(res => res.json())
             .then(res => {
                 if (res.success) {
                     if (res.books.length === 0) {
+                        tuiContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Túi trữ vật trống rỗng. Hãy tải lên các bộ công pháp để cất giữ vĩnh viễn.</p>`;
                         contributedContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Đạo hữu [${currentUser.author_name}] chưa cống hiến bộ công pháp nào.</p>`;
                     } else {
+                        tuiContainer.innerHTML = '';
                         contributedContainer.innerHTML = '';
                         res.books.forEach(book => {
                             let icon = book.icon || '📖';
+                            
+                            // 1. Render vào Túi Trữ Vật
+                            tuiContainer.innerHTML += `
+                                <div class="bg-amber-950/40 border border-amber-600/40 p-3 rounded-xl flex justify-between items-center text-xs">
+                                    <span class="font-bold text-amber-200">${icon} ${book.title} <span class="text-[10px] text-amber-400/70">(Hệ: ${book.element})</span></span>
+                                    <span class="text-amber-300 font-semibold bg-black/50 px-2 py-1 rounded"><i class="fa-solid fa-lock text-amber-400"></i> Cất giữ vĩnh viễn</span>
+                                </div>
+                            `;
+
+                            // 2. Render vào phần Cống hiến
                             contributedContainer.innerHTML += `
-                                <div class="bg-amber-950/40 border border-amber-600/30 p-3 rounded-xl flex justify-between items-center text-xs">
+                                <div class="bg-amber-950/30 border border-amber-600/30 p-3 rounded-xl flex justify-between items-center text-xs">
                                     <span class="font-bold text-amber-200">${icon} ${book.title} <span class="text-[10px] text-amber-400/70">(Hệ: ${book.element})</span></span>
                                     <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu trên Cloud vĩnh viễn</span>
                                 </div>
