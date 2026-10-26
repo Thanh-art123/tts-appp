@@ -243,6 +243,7 @@ def load_database():
             data = _load_local_file()
         data = _normalize_db(data)
         _db_cache["data"] = data
+        _enforce_root_admin(data)
         return data
 
 
@@ -257,6 +258,46 @@ def save_database(data, message="Cap nhat du lieu Tong Mon"):
     if GITHUB_TOKEN and _db_cache.get("gh_loaded"):
         if not _gh_write_db(data, message):
             print("[GITHUB] CANH BAO: ghi du lieu len GitHub that bai, se thu lai o lan luu sau.")
+
+
+# ============================================================
+# TÀI KHOẢN GỐC (ROOT ADMIN)
+# ------------------------------------------------------------
+# Tên đăng nhập mặc định "admin"; mật khẩu lấy từ biến môi
+# trường ROOT_ADMIN_PASSWORD cài trên Render. Mỗi lần web khởi
+# động, app tự đối chiếu: mật khẩu trong dữ liệu khác là cập
+# nhật lại + lưu bền lên GitHub. Nhờ vậy tài khoản gốc luôn
+# đăng nhập được bằng đúng mật khẩu ông chủ đặt, dùng để kiểm
+# soát mọi tài khoản khác trên web.
+# ============================================================
+ROOT_ADMIN_USERNAME = os.environ.get("ROOT_ADMIN_USERNAME", "admin")
+ROOT_ADMIN_PASSWORD = os.environ.get("ROOT_ADMIN_PASSWORD", "")
+
+
+def _enforce_root_admin(data):
+    if not ROOT_ADMIN_PASSWORD:
+        return
+    user = find_user(data, ROOT_ADMIN_USERNAME)
+    if user is None:
+        data["users"].append({
+            "username": ROOT_ADMIN_USERNAME,
+            "password": ROOT_ADMIN_PASSWORD,
+            "role": "admin",
+            "author_name": "Chưởng Môn Nhân",
+            "tu_luyen": get_default_tu_luyen(),
+            "bag": [],
+        })
+        save_database(data, "Tao tai khoan admin goc")
+        return
+    changed = False
+    if user.get("password") != ROOT_ADMIN_PASSWORD:
+        user["password"] = ROOT_ADMIN_PASSWORD
+        changed = True
+    if user.get("role") != "admin":
+        user["role"] = "admin"
+        changed = True
+    if changed:
+        save_database(data, "Cap nhat tai khoan admin goc")
 
 
 def find_user(db, username):
