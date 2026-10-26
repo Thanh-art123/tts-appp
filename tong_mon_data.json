@@ -347,8 +347,8 @@
       },
       "bag": [],
       "game": {
-        "diem": 120,
-        "exp": 0,
+        "diem": 122,
+        "exp": 3,
         "tu_vi": {
           "muc": 1,
           "cap": -1,
@@ -368,9 +368,12 @@
           "pha_canh_dan": 0
         },
         "stats": {
-          "total": {},
+          "total": {
+            "khai_thac": 1
+          },
           "today": {
-            "date": "2026-10-26"
+            "date": "2026-10-26",
+            "khai_thac": 1
           }
         },
         "missions": {
@@ -379,13 +382,20 @@
           "newbie_done": []
         },
         "notifications": [],
-        "history": [],
+        "history": [
+          {
+            "time": "26/10/2026 14:36",
+            "text": "Khai thác quặng ở Mỏ Quặng (+2 Điểm Cống Hiến)"
+          }
+        ],
         "streak": {
           "last": "",
           "count": 0
         },
         "nghe": {
-          "quang": {},
+          "quang": {
+            "5": 1
+          },
           "dan": {
             "hoi_linh": 0,
             "tu_linh": 0
