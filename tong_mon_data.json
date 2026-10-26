@@ -66,8 +66,8 @@
         }
       ],
       "game": {
-        "diem": 213,
-        "exp": 0,
+        "diem": 215,
+        "exp": 13,
         "tu_vi": {
           "muc": 1,
           "cap": -1,
@@ -88,11 +88,15 @@
         },
         "stats": {
           "total": {
-            "diem_danh": 1
+            "diem_danh": 1,
+            "doc_chuong": 1,
+            "khai_thac": 1
           },
           "today": {
             "date": "2026-10-26",
-            "diem_danh": 1
+            "diem_danh": 1,
+            "doc_chuong": 1,
+            "khai_thac": 1
           }
         },
         "missions": {
@@ -127,6 +131,10 @@
           {
             "time": "26/10/2026 15:11",
             "text": "Bán Nguyên Tinh ×1 ở chợ (+23 điểm)"
+          },
+          {
+            "time": "26/10/2026 15:39",
+            "text": "Khai thác quặng ở Mỏ Quặng (+2 Điểm Cống Hiến)"
           }
         ],
         "streak": {
@@ -135,7 +143,9 @@
         },
         "locked": false,
         "nghe": {
-          "quang": {},
+          "quang": {
+            "3": 1
+          },
           "dan": {
             "hoi_linh": 0,
             "tu_linh": 0
