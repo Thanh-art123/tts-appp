@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Quản Trị Tông Môn - Tài Khoản Gốc{% endblock %}
+
+{% block content %}
+<div class="space-y-5">
+    <div class="panel-3d rounded-2xl p-5 space-y-2">
+        <h2 class="text-lg font-black text-amber-400">⚡ QUẢN TRỊ TÔNG MÔN — TÀI KHOẢN GỐC</h2>
+        <p class="text-xs text-amber-200/70">Chỉ Chưởng Môn Nhân (admin) thấy được trang này. Tại đây: tạo tài khoản, khóa/mở tài khoản, đặt lại mật khẩu, cộng/trừ Điểm Cống Hiến, tặng Linh Thạch, đặt dung lượng túi.</p>
+    </div>
+
+    <div class="panel-3d rounded-2xl p-5 space-y-3">
+        <h3 class="text-sm font-extrabold text-amber-300 uppercase tracking-wider">➕ Tạo Tài Khoản Mới</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+            <input type="text" id="nu-username" placeholder="Tên đăng nhập" class="bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none">
+            <input type="text" id="nu-password" placeholder="Mật khẩu" class="bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none">
+            <input type="text" id="nu-author" placeholder="Đạo hào (tên hiển thị)" class="bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none">
+        </div>
+        <button onclick="createUser()" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold text-xs px-4 py-2.5 rounded-xl shadow transition cursor-pointer">Tạo Tài Khoản</button>
+    </div>
+
+    <div class="panel-3d rounded-2xl p-5 space-y-3">
+        <h3 class="text-sm font-extrabold text-amber-300 uppercase tracking-wider">👥 Danh Sách Tài Khoản</h3>
+        <div id="users-box" class="space-y-2 text-xs">
+            <p class="text-amber-300/50">Đang nạp danh sách...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function post(url, body) {
+        return fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body || {})}).then(r => r.json());
+    }
+
+    function stoneText(lt) {
+        lt = lt || {};
+        return `NT ${lt.nguyen||0} · VT ${lt.vien||0} · ViT ${lt.vi||0} · VĩnhT ${lt.vinh||0}`;
+    }
+
+    function loadUsers() {
+        fetch('/api/admin/users').then(r => r.json()).then(res => {
+            const box = document.getElementById('users-box');
+            if (!res.success) { box.innerHTML = `<p class="text-red-300">${res.message || 'Không có quyền truy cập!'}</p>`; return; }
+            if (!res.users.length) { box.innerHTML = '<p class="text-amber-300/50">Chưa có tài khoản nào.</p>'; return; }
+            box.innerHTML = res.users.map(u => `
+                <div class="bg-black/50 border ${u.locked ? 'border-red-700/60' : 'border-amber-700/40'} rounded-xl px-3 py-2.5 space-y-1.5">
+                    <p><b class="text-amber-200">${u.role === 'admin' ? '⚡' : '👤'} ${u.author_name}</b> <span class="text-amber-400/70">(@${u.username})</span>
+                    ${u.locked ? '<span class="text-red-400 font-bold">· ĐÃ KHÓA</span>' : ''}</p>
+                    <p class="text-amber-100/80">🌀 ${u.tu_vi} · 💠 ${fmtNum(u.diem)} điểm · ⭐ ${fmtNum(u.exp)} EXP · 🌀 ${fmtNum(u.linh_khi)} linh khí · 💎 ${stoneText(u.linh_thach)} · 🎒 ${u.bag_count}/${u.capacity === null ? '∞' : u.capacity}</p>
+                    <p class="flex flex-wrap gap-1.5">
+                        ${u.locked
+                            ? `<button onclick="userAction('${u.username}','unlock')" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-2.5 py-1 rounded-lg cursor-pointer">Mở khóa</button>`
+                            : `<button onclick="userAction('${u.username}','lock')" class="bg-red-800 hover:bg-red-700 text-white font-bold px-2.5 py-1 rounded-lg cursor-pointer">Khóa</button>`}
+                        <button onclick="resetPw('${u.username}')" class="bg-slate-700 hover:bg-slate-600 text-amber-100 font-bold px-2.5 py-1 rounded-lg cursor-pointer">Đặt lại mật khẩu</button>
+                        <button onclick="addDiem('${u.username}')" class="bg-slate-700 hover:bg-slate-600 text-amber-100 font-bold px-2.5 py-1 rounded-lg cursor-pointer">Cộng/Trừ điểm</button>
+                        <button onclick="addStone('${u.username}')" class="bg-slate-700 hover:bg-slate-600 text-amber-100 font-bold px-2.5 py-1 rounded-lg cursor-pointer">Tặng linh thạch</button>
+                        <button onclick="setCap('${u.username}')" class="bg-slate-700 hover:bg-slate-600 text-amber-100 font-bold px-2.5 py-1 rounded-lg cursor-pointer">Đặt dung lượng túi</button>
+                    </p>
+                </div>`).join('');
+        }).catch(() => { document.getElementById('users-box').innerHTML = '<p class="text-red-300">Không nạp được danh sách.</p>'; });
+    }
+
+    function userAction(username, action) {
+        if (action === 'lock' && !confirm(`Khóa tài khoản ${username}? Người này sẽ không đăng nhập được nữa.`)) return;
+        post('/api/admin/user-action', {username, action}).then(res => { alert(res.message); loadUsers(); });
+    }
+
+    function resetPw(username) {
+        const pw = prompt(`Mật khẩu mới cho ${username} (ít nhất 4 ký tự):`);
+        if (!pw) return;
+        post('/api/admin/user-action', {username, action:'reset_password', value: pw}).then(res => alert(res.message));
+    }
+
+    function addDiem(username) {
+        const v = prompt(`Số điểm cộng cho ${username} (nhập số âm để trừ, ví dụ -50):`, '100');
+        if (v === null) return;
+        post('/api/admin/user-action', {username, action:'add_diem', value: parseInt(v) || 0}).then(res => { alert(res.message); loadUsers(); });
+    }
+
+    function addStone(username) {
+        const v = prompt(`Tặng linh thạch cho ${username} — nhập dạng loai:so_luong (loại: nguyen/vien/vi/vinh), ví dụ nguyen:5 :`, 'nguyen:5');
+        if (!v) return;
+        post('/api/admin/user-action', {username, action:'add_stone', value: v}).then(res => { alert(res.message); loadUsers(); });
+    }
+
+    function setCap(username) {
+        const v = prompt(`Dung lượng túi mới cho ${username} (nhập -1 = không giới hạn):`, '10');
+        if (v === null) return;
+        post('/api/admin/user-action', {username, action:'set_capacity', value: parseInt(v)}).then(res => { alert(res.message); loadUsers(); });
+    }
+
+    function createUser() {
+        const username = document.getElementById('nu-username').value.trim();
+        const password = document.getElementById('nu-password').value.trim();
+        const author_name = document.getElementById('nu-author').value.trim();
+        if (!username || !password || !author_name) { alert('Điền đủ tên đăng nhập, mật khẩu và đạo hào!'); return; }
+        post('/api/admin/create-user', {username, password, author_name}).then(res => {
+            alert(res.message);
+            if (res.success) { document.getElementById('nu-username').value = ''; document.getElementById('nu-password').value = ''; document.getElementById('nu-author').value = ''; loadUsers(); }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadUsers);
+</script>
+{% endblock %}

@@ -111,15 +111,37 @@
                 </label>
             </div>
 
-            <!-- TÀI KHOẢN ĐANG ĐĂNG NHẬP (TOÀN WEB) -->
-            <div id="global-account" class="hidden items-center space-x-2 bg-amber-950/90 px-3 py-1.5 rounded-full border border-amber-500/60 shadow-xl">
-                <span id="global-user-badge" class="text-xs font-bold text-amber-100 whitespace-nowrap"></span>
-                <button onclick="globalLogout()" class="text-xs bg-red-700 hover:bg-red-600 text-white font-extrabold px-2.5 py-1 rounded-full transition shadow whitespace-nowrap">
-                    <i class="fa-solid fa-right-from-bracket"></i> Đăng Xuất
-                </button>
+            <!-- HỒ SƠ NGƯỜI ĐĂNG NHẬP: danh tính / Điểm Cống Hiến / Kinh Nghiệm / Tu Vi -->
+            <div class="relative">
+                <div id="profile-box" class="hidden items-center space-x-2.5 bg-amber-950/90 pl-1.5 pr-2 py-1.5 rounded-2xl border border-amber-500/60 shadow-xl">
+                    <a href="/dong-phu" title="Mở Động Phủ / Túi Trữ Vật" class="w-9 h-9 rounded-full bg-amber-600 hover:bg-amber-500 text-black flex items-center justify-center text-base shrink-0 transition">👤</a>
+                    <div class="leading-tight">
+                        <div id="pf-name" class="text-xs font-extrabold text-amber-100 whitespace-nowrap"></div>
+                        <div id="pf-stats" class="text-[10px] text-amber-300/90 whitespace-nowrap"></div>
+                    </div>
+                    <button onclick="toggleNotifs(event)" class="relative text-amber-200 hover:text-white text-base px-1 cursor-pointer" title="Thông báo Tông Môn">
+                        🔔<span id="pf-bell-count" class="hidden absolute -top-1.5 -right-2 bg-red-600 text-white text-[9px] font-bold px-1 rounded-full"></span>
+                    </button>
+                    <a id="pf-admin" href="/quan-tri" class="hidden text-[10px] bg-purple-700 hover:bg-purple-600 text-white font-extrabold px-2 py-1 rounded-full whitespace-nowrap">⚡ Quản Trị</a>
+                    <button onclick="globalLogout()" class="text-[10px] bg-red-700 hover:bg-red-600 text-white font-extrabold px-2 py-1 rounded-full whitespace-nowrap cursor-pointer">Đăng Xuất</button>
+                </div>
+                <div id="notif-panel" class="hidden absolute right-0 top-full mt-2 w-80 max-w-[85vw] bg-[#141824] border border-amber-500/60 rounded-2xl shadow-2xl z-50 p-3 space-y-2">
+                    <p class="text-xs font-extrabold text-amber-300">🔔 Thông Báo Tông Môn</p>
+                    <div id="notif-list" class="space-y-1.5 max-h-64 overflow-y-auto text-[11px] text-amber-100/90"></div>
+                </div>
             </div>
         </div>
     </header>
+
+    <!-- ĐIỀU HƯỚNG NHANH TOÀN WEB -->
+    <div class="max-w-7xl mx-auto px-4 mt-3 flex flex-wrap justify-center gap-2 text-[11px] font-bold relative z-30">
+        <a href="/" class="bg-black/60 border border-amber-600/50 text-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-900/60 transition">🏠 Trang Chủ</a>
+        <a href="/sanh-chinh" class="bg-amber-600 border border-amber-400 text-black px-3 py-1.5 rounded-full hover:bg-amber-500 transition shadow">🏛️ Sảnh Chính · Nhiệm Vụ & Đổi Điểm</a>
+        <a href="/tang-kinh-cac" class="bg-black/60 border border-amber-600/50 text-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-900/60 transition">📚 Tàng Kinh Các</a>
+        <a href="/dong-phu#tui-tru-vat" class="bg-black/60 border border-amber-600/50 text-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-900/60 transition">🎒 Túi Trữ Vật</a>
+        <a href="/che-tap-cac" class="bg-black/60 border border-amber-600/50 text-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-900/60 transition">🧪 Chế Tạp Các</a>
+        <a href="/bi-canh" class="bg-black/60 border border-amber-600/50 text-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-900/60 transition">🔮 Bí Cảnh</a>
+    </div>
 
     <!-- BẢN ĐỒ TÔNG MÔN TƯƠNG TÁC (IMAGE MAP 3D) -->
     <div class="relative z-20 max-w-7xl mx-auto px-4 mt-6 w-full">
@@ -328,7 +350,7 @@
             }
         }
     </script>
-    <!-- TÀI KHOẢN TOÀN WEB: hiển thị đạo hữu đang đăng nhập + đăng xuất -->
+    <!-- HỒ SƠ TOÀN WEB: nạp /api/me -> danh tính, điểm, EXP, tu vi + thông báo -->
     <script>
         function globalLogout() {
             fetch('/api/logout', { method: 'POST' })
@@ -338,17 +360,51 @@
             });
         }
 
-        (function showGlobalAccount() {
-            try {
-                const u = JSON.parse(localStorage.getItem('tongan_current_user') || 'null');
-                const box = document.getElementById('global-account');
-                if (u && box) {
-                    document.getElementById('global-user-badge').innerText = (u.role === 'admin' ? '⚡ ' : '👤 ') + u.author_name;
-                    box.classList.remove('hidden');
-                    box.classList.add('flex');
+        function fmtNum(n) { return (n === null || n === undefined) ? '0' : Number(n).toLocaleString('vi-VN'); }
+
+        function loadProfileBox() {
+            fetch('/api/me').then(r => r.json()).then(res => {
+                if (!res.success || !res.user) return;
+                const u = res.user, g = u.game || {};
+                const tv = g.tu_vi || {};
+                const box = document.getElementById('profile-box');
+                if (!box) return;
+                document.getElementById('pf-name').innerText = `${u.role === 'admin' ? '⚡' : '👤'} ${u.author_name} — ${tv.ten_muc || ''} · ${tv.ten_cap || ''}`;
+                document.getElementById('pf-stats').innerText = `💠 ${fmtNum(g.diem)} điểm · ⭐ Cấp ${g.cap_hoat_dong || 1} · 🌀 ${fmtNum(tv.linh_khi)} linh khí`;
+                const bell = document.getElementById('pf-bell-count');
+                if (g.unread > 0) { bell.innerText = g.unread; bell.classList.remove('hidden'); }
+                else bell.classList.add('hidden');
+                if (u.role === 'admin') document.getElementById('pf-admin').classList.remove('hidden');
+                box.classList.remove('hidden');
+                box.classList.add('flex');
+            }).catch(() => {});
+        }
+
+        function toggleNotifs(ev) {
+            if (ev) ev.stopPropagation();
+            const panel = document.getElementById('notif-panel');
+            const list = document.getElementById('notif-list');
+            if (!panel.classList.contains('hidden')) { panel.classList.add('hidden'); return; }
+            panel.classList.remove('hidden');
+            list.innerHTML = '<p class="text-amber-300/60">Đang nạp thông báo...</p>';
+            fetch('/api/notifications').then(r => r.json()).then(res => {
+                if (!res.success || !res.notifications.length) {
+                    list.innerHTML = '<p class="text-amber-300/60">Chưa có thông báo nào.</p>';
+                } else {
+                    list.innerHTML = res.notifications.map(n => `<div class="bg-black/50 border border-amber-700/40 rounded-lg px-2 py-1.5"><span class="text-amber-400/70 text-[10px]">${n.time}</span><br>${n.text}</div>`).join('');
                 }
-            } catch (e) { /* bỏ qua nếu dữ liệu local hỏng */ }
-        })();
+                fetch('/api/notifications/read', { method: 'POST' }).then(() => {
+                    const bell = document.getElementById('pf-bell-count');
+                    if (bell) bell.classList.add('hidden');
+                });
+            }).catch(() => { list.innerHTML = '<p class="text-red-300">Không nạp được thông báo.</p>'; });
+        }
+
+        document.addEventListener('click', function(e) {
+            const panel = document.getElementById('notif-panel');
+            if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target)) panel.classList.add('hidden');
+        });
+        document.addEventListener('DOMContentLoaded', loadProfileBox);
     </script>
     {% block scripts %}{% endblock %}
 </body>

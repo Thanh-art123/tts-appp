@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% block title %}Sảnh Chính - Nhiệm Vụ & Đổi Điểm Cống Hiến{% endblock %}
+
+{% block content %}
+<div class="space-y-5">
+    <div class="panel-3d rounded-2xl p-5 text-center space-y-1">
+        <h2 class="text-xl font-black text-amber-400 tracking-wide">🏛️ SẢNH CHÍNH TÔNG MÔN</h2>
+        <p class="text-xs text-amber-200/70">Nơi treo <b class="text-amber-300">Bảng Nhiệm Vụ Tông Môn</b>, đổi <b class="text-amber-300">Điểm Cống Hiến</b> và <b class="text-amber-300">Linh Thạch</b> — dòng tiền chính của toàn tông môn.</p>
+        <p class="text-xs text-amber-100">Số dư của đạo hữu: <span id="sc-diem" class="font-black text-amber-300">...</span> Điểm Cống Hiến · <span id="sc-exp" class="font-bold text-amber-300">...</span></p>
+    </div>
+
+    <!-- TU VI & LINH KHÍ -->
+    <div class="panel-3d rounded-2xl p-5 space-y-4">
+        <h3 class="text-sm font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2">🌀 Tu Vi & Linh Khí</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div class="bg-black/60 border border-amber-600/40 rounded-xl p-4 space-y-2">
+                <p class="text-base font-black text-amber-200" id="tv-realm">Đang nạp...</p>
+                <p id="tv-linh-khi" class="text-amber-100/85"></p>
+                <div class="w-full bg-black/80 rounded-full h-3 border border-amber-700/50 overflow-hidden">
+                    <div id="tv-progress" class="bg-gradient-to-r from-amber-600 to-amber-400 h-full" style="width:0%"></div>
+                </div>
+                <p id="tv-break-info" class="text-[11px] text-amber-300/80"></p>
+                <div class="flex flex-wrap gap-2 pt-1">
+                    <button id="btn-nang-cap" onclick="nangCap()" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-4 py-2 rounded-xl shadow transition cursor-pointer">⬆️ Nâng Cấp Tu Vi</button>
+                    <button id="btn-checkin" onclick="checkin()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-extrabold px-4 py-2 rounded-xl shadow transition cursor-pointer">📅 Điểm Danh Hôm Nay</button>
+                </div>
+                <p id="tv-streak" class="text-[11px] text-emerald-300/90"></p>
+            </div>
+            <div class="bg-black/60 border border-amber-600/40 rounded-xl p-4 space-y-2">
+                <p class="font-extrabold text-amber-200">💎 Linh Thạch Đang Có (bấm để đổi ra Linh Khí)</p>
+                <div id="stone-box" class="space-y-2"></div>
+                <p class="text-[11px] text-amber-300/70">Quy đổi: Nguyên Tinh = 10 · Viên Tinh = 100 · Vi Tinh = 1.000 · Vĩnh Tinh = 10.000 Linh Khí. Linh Thạch kiếm từ Nhiệm Vụ Tông Môn hoặc mua ở Quầy Linh Thạch bên dưới.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- BẢNG NHIỆM VỤ TÔNG MÔN -->
+    <div class="panel-3d rounded-2xl p-5 space-y-4">
+        <h3 class="text-sm font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2">📜 Bảng Nhiệm Vụ Tông Môn</h3>
+        <div class="space-y-4 text-xs">
+            <div>
+                <p class="font-black text-amber-200 mb-2">🌱 Chuỗi Nhiệm Vụ Tân Thủ (làm lần lượt, không cần nhận)</p>
+                <div id="ms-tan-thu" class="space-y-2"></div>
+            </div>
+            <div>
+                <p class="font-black text-amber-200 mb-2">☀️ Nhiệm Vụ Hằng Ngày (làm mới mỗi ngày — tối đa 5 nhiệm vụ cùng lúc)</p>
+                <div id="ms-hang-ngay" class="space-y-2"></div>
+            </div>
+            <div>
+                <p class="font-black text-amber-200 mb-2">⚔️ Nhiệm Vụ Tông Môn (thưởng Linh Thạch — hạng F &lt; E &lt; D &lt; C &lt; B &lt; A &lt; S &lt; SS &lt; SSS)</p>
+                <div id="ms-tong-mon" class="space-y-2"></div>
+                <p class="text-[11px] text-amber-300/60 mt-1">Hạng C trở lên sẽ mở ở các đợt nâng cấp sau. Đang ở Viên Mãn thì mỗi nhiệm vụ hoàn thành được tính vào điều kiện đột phá (cần 3 nhiệm vụ).</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CÁC QUẦY ĐỔI ĐIỂM -->
+    <div class="panel-3d rounded-2xl p-5 space-y-5">
+        <h3 class="text-sm font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2">🏪 Các Quầy Tại Sảnh Chính</h3>
+
+        <div>
+            <p class="text-xs font-black text-amber-200 mb-2">💎 Quầy Linh Thạch (mua bằng Điểm Cống Hiến)</p>
+            <div id="shop-stones" class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs"></div>
+        </div>
+
+        <div>
+            <p class="text-xs font-black text-amber-200 mb-2">🎒 Quầy Dung Lượng Túi Trữ Vật <span id="shop-capacity-now" class="text-amber-300/80 font-bold"></span></p>
+            <div id="shop-capacity" class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs"></div>
+        </div>
+
+        <div>
+            <p class="text-xs font-black text-amber-200 mb-2">🏆 Quầy Bảo Vật (cộng % Điểm Cống Hiến khi nhận thưởng nhiệm vụ)</p>
+            <div id="shop-treasures" class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs"></div>
+        </div>
+
+        <div>
+            <p class="text-xs font-black text-amber-200 mb-2">🌿 Quầy Thảo Mộc (nguyên liệu luyện đan — bán lại cho Tông Môn thu hồi 50% giá)</p>
+            <div id="shop-herbs" class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const STONES = [
+        {key:'nguyen', name:'Nguyên Tinh', lk:10, price:10},
+        {key:'vien', name:'Viên Tinh', lk:100, price:100},
+        {key:'vi', name:'Vi Tinh', lk:1000, price:1000},
+        {key:'vinh', name:'Vĩnh Tinh', lk:10000, price:10000},
+    ];
+    const TREASURES = [
+        {id:1,name:'Thanh Đồng Lệnh',price:100,bonus:5},{id:2,name:'Bạch Ngân Ấn',price:250,bonus:10},
+        {id:3,name:'Hoàng Kim Tỷ',price:600,bonus:10},{id:4,name:'Tử Ngọc Bội',price:1400,bonus:15},
+        {id:5,name:'Huyền Tinh Châu',price:3200,bonus:20},{id:6,name:'Linh Tê Giác',price:7500,bonus:25},
+        {id:7,name:'Tiên Ngọc Tỷ',price:18000,bonus:30},{id:8,name:'Hỗn Nguyên Thạch',price:45000,bonus:40},
+        {id:9,name:'Tiên Thiên Bảo Thạch',price:120000,bonus:50},
+    ];
+    const HERBS = [
+        {grade:1,name:'Tiểu Linh Thảo',price:10},{grade:2,name:'Thanh Linh Thảo',price:25},
+        {grade:3,name:'Tử Linh Chi',price:60},{grade:4,name:'Huyết Sâm',price:140},
+        {grade:5,name:'Băng Tâm Liên',price:320},{grade:6,name:'Hỏa Long Quả',price:750},
+        {grade:7,name:'Ngọc Cốt Sâm',price:1800},{grade:8,name:'Cửu Diệp Linh Chi',price:4500},
+        {grade:9,name:'Thái Thượng Tiên Thảo',price:12000},
+    ];
+    const PACKS = [
+        {add:5,price:150,name:'+5 ô truyện'},{add:10,price:300,name:'+10 ô truyện'},
+        {add:25,price:700,name:'+25 ô truyện'},{add:-1,price:2000,name:'Túi Càn Khôn (không giới hạn)'},
+    ];
+    let GAME = null;
+
+    function post(url, body) {
+        return fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body || {})})
+            .then(r => r.json());
+    }
+
+    function act(url, body) {
+        post(url, body).then(res => {
+            alert(res.message || (res.success ? 'Thành công!' : 'Có lỗi xảy ra!'));
+            if (res.game) { GAME = res.game; renderAll(); }
+            refresh();
+        }).catch(() => alert('Không kết nối được tới Tông Môn!'));
+    }
+
+    function rewardText(rw) {
+        const parts = [];
+        if (rw.diem) parts.push(`+${fmtNum(rw.diem)} điểm`);
+        if (rw.exp) parts.push(`+${rw.exp} EXP`);
+        if (rw.stones) for (const k in rw.stones) {
+            const st = STONES.find(s => s.key === k);
+            parts.push(`+${rw.stones[k]} ${st ? st.name : k}`);
+        }
+        return parts.join(' · ') || '—';
+    }
+
+    function renderAll() {
+        if (!GAME) return;
+        const tv = GAME.tu_vi;
+        document.getElementById('sc-diem').innerText = fmtNum(GAME.diem);
+        document.getElementById('sc-exp').innerText = `Cấp Hoạt Động ${GAME.cap_hoat_dong} (${fmtNum(GAME.exp)} EXP)`;
+        document.getElementById('tv-realm').innerText = `🌀 ${tv.ten_muc} · ${tv.ten_cap}`;
+        const nextTxt = tv.next_cost === null ? 'đã đạt đỉnh cao nhất' : `cần ${fmtNum(tv.next_cost)} linh khí cho cấp tiếp theo`;
+        document.getElementById('tv-linh-khi').innerHTML = `Đang có <b class="text-amber-200">${fmtNum(tv.linh_khi)} Linh Khí</b> — ${nextTxt}.`;
+        const pct = tv.next_cost ? Math.min(100, Math.floor(tv.linh_khi / tv.next_cost * 100)) : 100;
+        document.getElementById('tv-progress').style.width = pct + '%';
+        const btn = document.getElementById('btn-nang-cap');
+        if (tv.ten_cap === 'Viên Mãn' && tv.next_cost !== null) {
+            btn.innerText = '🌟 ĐỘT PHÁ CẢNH GIỚI';
+            const pill = (GAME.inventory || {}).pha_canh_dan || 0;
+            document.getElementById('tv-break-info').innerText = `Điều kiện đột phá: hoàn thành ${tv.break_missions}/3 nhiệm vụ khi ở Viên Mãn · Phá Cảnh Đan đang có: ${pill} viên (Tông Môn tự cấp khi đủ 3 nhiệm vụ).`;
+        } else {
+            btn.innerText = '⬆️ Nâng Cấp Tu Vi';
+            document.getElementById('tv-break-info').innerText = '';
+        }
+        document.getElementById('tv-streak').innerText = `🔥 Chuỗi điểm danh: ${(GAME.streak || {}).count || 0} ngày${GAME.checked_in_today ? ' — hôm nay đã điểm danh ✔' : ''}`;
+        document.getElementById('btn-checkin').disabled = !!GAME.checked_in_today;
+
+        document.getElementById('stone-box').innerHTML = STONES.map(st => `
+            <div class="flex items-center justify-between bg-black/50 border border-amber-700/40 rounded-lg px-3 py-2">
+                <span>💎 <b class="text-amber-200">${st.name}</b>: ${(GAME.linh_thach || {})[st.key] || 0} <span class="text-amber-400/70">(=${fmtNum(st.lk)} LK/viên)</span></span>
+                <span class="space-x-1">
+                    <button onclick="act('/api/shop/doi-linh-khi',{type:'${st.key}',qty:1})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-2.5 py-1 rounded-lg cursor-pointer">Đổi 1</button>
+                    <button onclick="act('/api/shop/doi-linh-khi',{type:'${st.key}',qty:'all'})" class="bg-amber-800 hover:bg-amber-700 text-amber-100 font-bold px-2.5 py-1 rounded-lg cursor-pointer">Đổi hết</button>
+                </span>
+            </div>`).join('');
+
+        document.getElementById('shop-stones').innerHTML = STONES.map(st => `
+            <div class="flex items-center justify-between bg-black/50 border border-amber-700/40 rounded-lg px-3 py-2">
+                <span>💎 <b class="text-amber-200">${st.name}</b> — ${fmtNum(st.price)} điểm/viên</span>
+                <span class="space-x-1">
+                    <button onclick="act('/api/shop/linh-thach',{type:'${st.key}',qty:1})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-2.5 py-1 rounded-lg cursor-pointer">Mua 1</button>
+                    <button onclick="act('/api/shop/linh-thach',{type:'${st.key}',qty:10})" class="bg-amber-800 hover:bg-amber-700 text-amber-100 font-bold px-2.5 py-1 rounded-lg cursor-pointer">Mua 10</button>
+                </span>
+            </div>`).join('');
+
+        document.getElementById('shop-capacity-now').innerText = `(hiện tại: ${GAME.bag_count}/${GAME.capacity === null ? '∞' : GAME.capacity} truyện)`;
+        document.getElementById('shop-capacity').innerHTML = PACKS.map((p, i) => `
+            <button onclick="act('/api/shop/dung-luong',{pack:${i}})" class="bg-black/50 border border-amber-700/40 hover:border-amber-400 rounded-xl px-3 py-2.5 text-left cursor-pointer transition">
+                <b class="text-amber-200 block">${p.name}</b><span class="text-amber-300/80">${fmtNum(p.price)} điểm</span>
+            </button>`).join('');
+
+        const ownedT = (GAME.inventory || {}).treasures || [];
+        document.getElementById('shop-treasures').innerHTML = TREASURES.map(t => `
+            <div class="bg-black/50 border ${ownedT.includes(t.id) ? 'border-emerald-600/60' : 'border-amber-700/40'} rounded-xl px-3 py-2.5 space-y-1">
+                <p><b class="text-amber-200">${t.name}</b> <span class="text-amber-300/80">+${t.bonus}% điểm nhiệm vụ</span></p>
+                ${ownedT.includes(t.id)
+                    ? '<p class="text-emerald-400 font-bold">✔ Đã sở hữu</p>'
+                    : `<button onclick="act('/api/shop/bao-vat',{id:${t.id}})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">Mua — ${fmtNum(t.price)} điểm</button>`}
+            </div>`).join('');
+
+        const herbs = (GAME.inventory || {}).herbs || {};
+        document.getElementById('shop-herbs').innerHTML = HERBS.map(h => `
+            <div class="bg-black/50 border border-amber-700/40 rounded-xl px-3 py-2.5 space-y-1">
+                <p><b class="text-amber-200">🌿 Cấp ${h.grade}: ${h.name}</b></p>
+                <p class="text-amber-300/80">${fmtNum(h.price)} điểm · đang có: ${herbs[String(h.grade)] || 0}</p>
+                <p class="space-x-1">
+                    <button onclick="act('/api/shop/thao-moc',{grade:${h.grade},qty:1})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-2.5 py-1 rounded-lg cursor-pointer">Mua 1</button>
+                    <button onclick="act('/api/shop/thu-hoi',{grade:${h.grade},qty:1})" class="bg-slate-700 hover:bg-slate-600 text-amber-100 font-bold px-2.5 py-1 rounded-lg cursor-pointer">Bán 1 (+${Math.floor(h.price/2)}đ)</button>
+                </p>
+            </div>`).join('');
+    }
+
+    function missionRow(m) {
+        let btn = '';
+        if (m.state === 'done' || m.state === 'claimed') btn = '<span class="text-emerald-400 font-bold">✔ Đã hoàn thành</span>';
+        else if (m.state === 'locked') btn = '<span class="text-amber-300/50 font-bold">🔒 Hoàn thành nhiệm vụ trước đã</span>';
+        else if (m.state === 'locked_realm') btn = '<span class="text-amber-300/50 font-bold">🔒 Tu Vi chưa đủ</span>';
+        else if (m.claimable) btn = `<button onclick="act('/api/missions/nhan-thuong',{id:'${m.id}'})" class="bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">🎁 Nhận Thưởng</button>`;
+        else if (m.state === 'active' || m.state === 'current') btn = `<span class="text-amber-300 font-bold">⏳ Đang làm: ${m.progress}/${m.target}</span>`;
+        else btn = `<button onclick="act('/api/missions/nhan',{id:'${m.id}'})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">Nhận Nhiệm Vụ</button>`;
+        return `<div class="bg-black/50 border border-amber-700/40 rounded-xl px-3 py-2.5 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+            <div><b class="text-amber-200">${m.name}</b><br><span class="text-amber-100/75">${m.desc}</span><br><span class="text-emerald-300/90">Thưởng: ${rewardText(m.reward)}</span></div>
+            <div class="shrink-0">${btn}</div></div>`;
+    }
+
+    function renderMissions(list) {
+        const by = gname => list.filter(m => m.group === gname).map(missionRow).join('') || '<p class="text-amber-300/50">Chưa có nhiệm vụ.</p>';
+        document.getElementById('ms-tan-thu').innerHTML = by('tan_thu');
+        document.getElementById('ms-hang-ngay').innerHTML = by('hang_ngay');
+        document.getElementById('ms-tong-mon').innerHTML = by('tong_mon');
+    }
+
+    function refresh() {
+        fetch('/api/me').then(r => r.json()).then(res => {
+            if (res.success) { GAME = res.user.game; renderAll(); if (typeof loadProfileBox === 'function') loadProfileBox(); }
+        });
+        fetch('/api/missions').then(r => r.json()).then(res => {
+            if (res.success) renderMissions(res.missions);
+        });
+    }
+
+    function nangCap() { act('/api/tu-vi/nang-cap', {}); }
+    function checkin() { act('/api/checkin', {}); }
+
+    document.addEventListener('DOMContentLoaded', refresh);
+</script>
+{% endblock %}

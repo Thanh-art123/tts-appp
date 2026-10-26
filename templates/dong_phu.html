@@ -18,8 +18,8 @@
     </div>
 
     <!-- KHU VỰC TÚI TRỮ VẬT CÁ NHÂN (GẮN THEO TÀI KHOẢN - ĐĂNG NHẬP ĐÚNG TÊN LÀ CÒN MÃI MÃI) -->
-    <div class="bg-black/70 border-2 border-amber-500/60 rounded-2xl p-5 space-y-4 shadow-lg shadow-amber-950/50">
-        <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2 flex items-center justify-between">
+    <div id="tui-tru-vat" class="bg-black/70 border-2 border-amber-500/70 rounded-2xl p-5 space-y-4 shadow-lg shadow-amber-950/50">
+        <h3 class="text-base font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2 flex items-center justify-between">
             <span class="flex items-center space-x-2">
                 <i class="fa-solid fa-box-archive text-amber-400"></i>
                 <span id="tui-tru-vat-title">Túi Trữ Vật Của Đạo Hữu (Đang nạp...)</span>
@@ -70,6 +70,29 @@
                 <i class="fa-solid fa-box-archive"></i>
                 <span>Cất Vào Túi Trữ Vật</span>
             </button>
+        </div>
+    </div>
+
+    <!-- HỒ SƠ GAME: TU VI & TÀI SẢN + NHẬT KÝ BIẾN ĐỘNG -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-black/60 border border-amber-600/40 rounded-2xl p-4 space-y-3">
+            <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2 flex items-center space-x-2">
+                <i class="fa-solid fa-dragon text-amber-400"></i>
+                <span>Tu Vi & Tài Sản</span>
+            </h3>
+            <div id="game-profile-box" class="text-xs text-amber-100/90 space-y-1.5">
+                <p class="text-amber-300/50">Đang nạp hồ sơ tu luyện...</p>
+            </div>
+            <a href="/sanh-chinh" class="inline-block bg-amber-600 hover:bg-amber-500 text-black font-extrabold text-xs px-4 py-2 rounded-xl shadow transition">🏛️ Tới Sảnh Chính: Nhiệm Vụ & Đổi Điểm</a>
+        </div>
+        <div class="bg-black/60 border border-amber-600/40 rounded-2xl p-4 space-y-3">
+            <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2 flex items-center space-x-2">
+                <i class="fa-solid fa-scroll text-amber-400"></i>
+                <span>Nhật Ký Biến Động (điểm / linh thạch / linh khí)</span>
+            </h3>
+            <div id="history-list" class="space-y-1.5 text-[11px] text-amber-100/85 max-h-56 overflow-y-auto">
+                <p class="text-amber-300/50">Đang nạp nhật ký...</p>
+            </div>
         </div>
     </div>
 
@@ -178,6 +201,7 @@
                 tuiContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">${res.message}</p>`;
                 return;
             }
+            tuiTitle.innerText = `🎒 Túi Trữ Vật Của [${currentUser.author_name}] — ${res.count}/${res.capacity === null ? '∞' : res.capacity} truyện`;
             if (res.items.length === 0) {
                 tuiContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Túi trữ vật trống rỗng. Hãy đọc truyện ở Tàng Kinh Các rồi bấm "Lưu Túi Trữ Vật", hoặc thêm tài nguyên mới ở form bên dưới.</p>`;
                 return;
@@ -369,6 +393,35 @@
         loadAllBooks();
     }
 
-    document.addEventListener('DOMContentLoaded', () => { updateBadge(); loadDongPhuData(); });
+    // ---------- HỒ SƠ GAME & NHẬT KÝ ----------
+    function loadGameProfile() {
+        const box = document.getElementById('game-profile-box');
+        if (!box) return;
+        fetch('/api/me').then(r => r.json()).then(res => {
+            if (!res.success) { box.innerHTML = '<p class="text-amber-300/50">Chưa đăng nhập.</p>'; return; }
+            const g = res.user.game || {};
+            const tv = g.tu_vi || {};
+            const lt = g.linh_thach || {};
+            const inv = g.inventory || {};
+            const nextTxt = tv.next_cost === null ? 'Đã đạt đỉnh cao nhất' : `Cần ${fmtNum(tv.next_cost)} linh khí để lên cấp tiếp theo`;
+            box.innerHTML = `
+                <p>🌀 <b class="text-amber-200">Tu Vi:</b> ${tv.ten_muc || ''} · ${tv.ten_cap || ''} <span class="text-amber-400/70">(${fmtNum(tv.linh_khi)} linh khí — ${nextTxt})</span></p>
+                <p>💠 <b class="text-amber-200">Điểm Cống Hiến:</b> ${fmtNum(g.diem)} · ⭐ <b class="text-amber-200">Cấp Hoạt Động:</b> ${g.cap_hoat_dong || 1} (${fmtNum(g.exp)} EXP)</p>
+                <p>💎 <b class="text-amber-200">Linh Thạch:</b> Nguyên Tinh ${lt.nguyen || 0} · Viên Tinh ${lt.vien || 0} · Vi Tinh ${lt.vi || 0} · Vĩnh Tinh ${lt.vinh || 0}</p>
+                <p>🎒 <b class="text-amber-200">Túi Trữ Vật:</b> ${g.bag_count || 0}/${g.capacity === null ? '∞' : g.capacity} truyện · 💊 <b class="text-amber-200">Phá Cảnh Đan:</b> ${(inv.pha_canh_dan || 0)} viên · 🔥 <b class="text-amber-200">Chuỗi điểm danh:</b> ${(g.streak || {}).count || 0} ngày</p>
+            `;
+        }).catch(() => { box.innerHTML = '<p class="text-red-300">Không nạp được hồ sơ.</p>'; });
+    }
+
+    function loadHistory() {
+        const box = document.getElementById('history-list');
+        if (!box) return;
+        fetch('/api/history').then(r => r.json()).then(res => {
+            if (!res.success || !res.history.length) { box.innerHTML = '<p class="text-amber-300/50">Chưa có biến động nào.</p>'; return; }
+            box.innerHTML = res.history.map(h => `<div class="bg-black/40 border border-amber-700/30 rounded-lg px-2 py-1"><span class="text-amber-400/70 text-[10px]">${h.time}</span><br>${h.text}</div>`).join('');
+        }).catch(() => { box.innerHTML = '<p class="text-red-300">Không nạp được nhật ký.</p>'; });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => { updateBadge(); loadDongPhuData(); loadGameProfile(); loadHistory(); });
 </script>
 {% endblock %}
