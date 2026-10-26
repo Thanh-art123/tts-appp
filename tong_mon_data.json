@@ -66,7 +66,7 @@
         }
       ],
       "game": {
-        "diem": 190,
+        "diem": 213,
         "exp": 0,
         "tu_vi": {
           "muc": 1,
@@ -100,7 +100,13 @@
           "claimed_today": [],
           "newbie_done": []
         },
-        "notifications": [],
+        "notifications": [
+          {
+            "time": "26/10/2026 15:11",
+            "text": "🏷️ Test Đợt 3 đã mua [Nguyên Tinh ×1] của đạo hữu ở Chợ Đấu Giá: +23 Điểm Cống Hiến (giá 25, trừ phí sàn 5%).",
+            "read": false
+          }
+        ],
         "history": [
           {
             "time": "26/10/2026 15:10",
@@ -113,6 +119,14 @@
           {
             "time": "26/10/2026 15:11",
             "text": "Rao bán Nguyên Tinh ×1 với giá 40 điểm"
+          },
+          {
+            "time": "26/10/2026 15:11",
+            "text": "Bán Nguyên Tinh ở Chợ Đấu Giá (sau phí 5%) (+23 Điểm Cống Hiến)"
+          },
+          {
+            "time": "26/10/2026 15:11",
+            "text": "Bán Nguyên Tinh ×1 ở chợ (+23 điểm)"
           }
         ],
         "streak": {
@@ -451,7 +465,7 @@
       },
       "bag": [],
       "game": {
-        "diem": 120,
+        "diem": 95,
         "exp": 0,
         "tu_vi": {
           "muc": 1,
@@ -460,7 +474,7 @@
         },
         "linh_khi": 0,
         "linh_thach": {
-          "nguyen": 0,
+          "nguyen": 1,
           "vien": 0,
           "vi": 0,
           "vinh": 0
@@ -483,7 +497,12 @@
           "newbie_done": []
         },
         "notifications": [],
-        "history": [],
+        "history": [
+          {
+            "time": "26/10/2026 15:11",
+            "text": "Mua Nguyên Tinh ở Chợ Đấu Giá (-25 Điểm Cống Hiến)"
+          }
+        ],
         "streak": {
           "last": "",
           "count": 0
@@ -538,21 +557,14 @@
   ],
   "market": {
     "seq": 1,
-    "listings": [
-      {
-        "id": "l1792995068691-admin",
-        "seller": "admin",
-        "seller_name": "Chưởng Môn Nhân",
-        "kind": "thach",
-        "key": "nguyen",
-        "label": "Nguyên Tinh",
-        "qty": 1,
-        "price": 25,
-        "created": "26/10/2026 15:11"
-      }
-    ],
+    "listings": [],
     "auctions": [],
     "barters": [],
-    "deals": []
+    "deals": [
+      {
+        "time": "26/10/2026 15:11",
+        "text": "🏷️ Test Đợt 3 mua Nguyên Tinh ×1 của Chưởng Môn Nhân với 25 điểm."
+      }
+    ]
   }
 }
