@@ -66,7 +66,7 @@
         }
       ],
       "game": {
-        "diem": 272,
+        "diem": 407,
         "exp": 36,
         "tu_vi": {
           "muc": 1,
@@ -153,6 +153,10 @@
           {
             "time": "26/10/2026 15:40",
             "text": "Bán Pháp Khí Cấp 1 (+15 Điểm Cống Hiến)"
+          },
+          {
+            "time": "26/10/2026 15:40",
+            "text": "Bán Pháp Khí Cấp 3 (+135 Điểm Cống Hiến)"
           }
         ],
         "streak": {
@@ -174,9 +178,7 @@
             "ngon": 0,
             "linh_ngu": 0
           },
-          "phap_khi": [
-            3
-          ],
+          "phap_khi": [],
           "thu": null,
           "vuon": [
             null,
