@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{% block title %}Tông Môn Tu Luyện{% endblock %}</title>
     
     <!-- Khai báo cấu hình PWA để biến Web thành App -->
@@ -97,7 +97,7 @@
                         <span>TÀI NGUYÊN:</span>
                         <i class="fa-solid fa-folder-open text-[9px]"></i>
                     </p>
-                    <p id="song-title" class="text-xs font-bold text-amber-100 w-28 truncate group-hover:text-amber-300">Trúc Lâm Thanh Âm (Sáo Trúc)</p>
+                    <p id="song-title" class="text-xs font-bold text-amber-100 w-28 truncate group-hover:text-amber-300">Burlesque</p>
                 </div>
                 
                 <div class="flex items-center space-x-1 pl-1 border-l border-amber-700/50">
@@ -227,11 +227,28 @@
 
     <!-- FOOTER -->
     <footer class="relative z-20 bg-[#070e17]/95 text-amber-200/70 text-center py-4 text-xs border-t border-amber-900/60">
+        <button id="install-app-btn" onclick="installApp()" class="hidden mb-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-extrabold px-4 py-2 rounded-full shadow">📲 CÀI APP TÔNG MÔN VỀ MÁY</button>
         <p>© 2026 Tông Môn Truyện - Tông Môn Đọc Truyện & Tu Luyện TTS.</p>
     </footer>
 
     <!-- Kích hoạt Service Worker để cho phép Cài đặt App (PWA) -->
     <script>
+        let tmInstallPrompt = null;
+        window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault();
+            tmInstallPrompt = e;
+            const btn = document.getElementById('install-app-btn');
+            if (btn && !window.matchMedia('(display-mode: standalone)').matches) btn.classList.remove('hidden');
+        });
+        function installApp() {
+            if (!tmInstallPrompt) return;
+            tmInstallPrompt.prompt();
+            tmInstallPrompt.userChoice.finally(() => {
+                tmInstallPrompt = null;
+                const btn = document.getElementById('install-app-btn');
+                if (btn) btn.classList.add('hidden');
+            });
+        }
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js');
@@ -241,10 +258,10 @@
 
     <script>
         const playlist = [
-            { title: "Trúc Lâm Thanh Âm (Sáo Trúc)", src: "/static/music/sao-truc.mp3" },
             { title: "Burlesque", src: "/static/music/Burlesque - National Sweetheart.mp3" },
             { title: "The Joint is Jumpin", src: "/static/music/The Joint is Jumpin - Joel Cummins.mp3" },
-            { title: "Videodrome", src: "/static/music/Videodrome - National Sweetheart.mp3" }
+            { title: "Videodrome", src: "/static/music/Videodrome - National Sweetheart.mp3" },
+            { title: "Trúc Lâm Thanh Âm (Sáo Trúc)", src: "/static/music/sao-truc.mp3" }
         ];
 
         // NHẠC NỀN CHỐNG TẮC: lưu vị trí phát vào localStorage mỗi giây,
