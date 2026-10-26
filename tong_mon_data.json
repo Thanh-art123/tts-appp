@@ -66,8 +66,8 @@
         }
       ],
       "game": {
-        "diem": 409,
-        "exp": 39,
+        "diem": 424,
+        "exp": 49,
         "tu_vi": {
           "muc": 1,
           "cap": -1,
@@ -92,7 +92,8 @@
             "doc_chuong": 1,
             "khai_thac": 3,
             "lk_ok": 2,
-            "ve_phu": 2
+            "ve_phu": 2,
+            "ve_phu_ok": 1
           },
           "today": {
             "date": "2026-10-26",
@@ -100,7 +101,8 @@
             "doc_chuong": 1,
             "khai_thac": 3,
             "lk_ok": 2,
-            "ve_phu": 2
+            "ve_phu": 2,
+            "ve_phu_ok": 1
           }
         },
         "missions": {
@@ -163,6 +165,10 @@
           {
             "time": "26/10/2026 15:41",
             "text": "Khai thác quặng ở Mỏ Quặng (+2 Điểm Cống Hiến)"
+          },
+          {
+            "time": "26/10/2026 15:42",
+            "text": "Hoàn thành lá phù ở Luyện Phù Các (+15 Điểm Cống Hiến)"
           }
         ],
         "streak": {
@@ -192,8 +198,8 @@
             null,
             null
           ],
-          "luot_tao_anh": 0,
-          "phu_open": true
+          "luot_tao_anh": 1,
+          "phu_open": false
         }
       }
     },
