@@ -66,7 +66,7 @@
         }
       ],
       "game": {
-        "diem": 257,
+        "diem": 272,
         "exp": 36,
         "tu_vi": {
           "muc": 1,
@@ -149,6 +149,10 @@
           {
             "time": "26/10/2026 15:40",
             "text": "Luyện khí thành công pháp khí cấp 3 (+25 Điểm Cống Hiến)"
+          },
+          {
+            "time": "26/10/2026 15:40",
+            "text": "Bán Pháp Khí Cấp 1 (+15 Điểm Cống Hiến)"
           }
         ],
         "streak": {
@@ -171,7 +175,6 @@
             "linh_ngu": 0
           },
           "phap_khi": [
-            1,
             3
           ],
           "thu": null,
