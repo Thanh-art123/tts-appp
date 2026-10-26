@@ -142,13 +142,13 @@
         <a href="/sanh-chinh" class="bg-amber-600 border border-amber-400 text-black px-3 py-1.5 rounded-full hover:bg-amber-500 transition shadow">🏛️ Sảnh Chính · Nhiệm Vụ & Đổi Điểm</a>
         <a href="/tang-kinh-cac" class="bg-black/60 border border-amber-600/50 text-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-900/60 transition">📚 Tàng Kinh Các</a>
         <a href="/dong-phu#tui-tru-vat" class="bg-black/60 border border-amber-600/50 text-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-900/60 transition">🎒 Túi Trữ Vật</a>
-        <a href="/che-tap-cac" class="bg-black/60 border border-amber-600/50 text-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-900/60 transition">🧪 Chế Tạp Các</a>
+        <a href="/che-tap-cac" class="bg-black/60 border border-amber-600/50 text-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-900/60 transition">🛠️ Nghề Phụ Trợ</a>
         <a href="/bi-canh" class="bg-black/60 border border-amber-600/50 text-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-900/60 transition">🔮 Bí Cảnh</a>
     </div>
 
     <!-- BẢN ĐỒ TÔNG MÔN TƯƠNG TÁC (IMAGE MAP 3D) -->
     <div class="relative z-20 max-w-7xl mx-auto px-4 mt-6 w-full">
-        <div class="relative w-full h-[350px] md:h-[480px] rounded-2xl overflow-hidden border-2 border-amber-600/60 shadow-2xl bg-cover bg-center" style="background-image: url('{{ url_for('static', filename='music/map.jpg') }}');">
+        <div class="relative w-full h-[350px] md:h-[480px] rounded-2xl overflow-hidden border-2 border-amber-600/60 shadow-2xl bg-cover bg-center" style="background-image: url('{{ url_for('static', filename='music/map_v2.jpg') }}');">
             
             <!-- VÙNG HOTSPOT 1: Quyển sách to -> Nghe Giảng Kinh -->
             <a href="/" class="hotspot" style="top: 48%; left: 10%; width: 26%; height: 35%;">
@@ -162,7 +162,7 @@
 
             <!-- VÙNG HOTSPOT 3: Đại sảnh -> Chế Tạp Các -->
             <a href="/che-tap-cac" class="hotspot" style="top: 15%; left: 47%; width: 18%; height: 28%;">
-                <span class="hotspot-label"><i class="fa-solid fa-hammer text-amber-400 mr-1"></i> Đại Sảnh (Chế Tạp Các)</span>
+                <span class="hotspot-label"><i class="fa-solid fa-hammer text-amber-400 mr-1"></i> Đại Sảnh (Nghề Phụ Trợ)</span>
             </a>
 
             <!-- VÙNG HOTSPOT 4: Tầng lầu -> Bí Cảnh -->
@@ -190,18 +190,13 @@
                     <i class="fa-solid fa-trophy text-amber-400 text-xl"></i>
                     <h2 class="font-black text-amber-300 text-base tracking-wider">THIÊN THƯ BẢNG</h2>
                 </div>
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between p-2.5 bg-[#0f2027]/90 border border-amber-500/70 rounded-xl">
-                        <div class="flex items-center space-x-2">
-                            <span class="w-6 h-6 rounded-full bg-amber-500 text-black flex items-center justify-center font-black text-xs">1</span>
-                            <div>
-                                <p class="text-xs font-bold text-amber-200">Đế Tôn Tông Chủ</p>
-                                <p class="text-[10px] text-amber-400">Tác giả xuất sắc</p>
-                            </div>
-                        </div>
-                        <span class="text-xs font-black text-amber-400 bg-black/70 px-2 py-0.5 rounded-full border border-amber-500/50">99,999</span>
-                    </div>
+                <div class="flex flex-wrap gap-1 mb-3 text-[10px] font-extrabold">
+                    <button onclick="lbShow('tu_vi')" class="lb-tab bg-amber-600 text-black px-2 py-1 rounded-full cursor-pointer" data-lb="tu_vi">🏔️ Tu Vi</button>
+                    <button onclick="lbShow('diem')" class="lb-tab bg-black/60 text-amber-200 border border-amber-600/50 px-2 py-1 rounded-full cursor-pointer" data-lb="diem">💠 Điểm</button>
+                    <button onclick="lbShow('dang')" class="lb-tab bg-black/60 text-amber-200 border border-amber-600/50 px-2 py-1 rounded-full cursor-pointer" data-lb="dang">📚 Đăng Truyện</button>
+                    <button onclick="lbShow('hoat_dong')" class="lb-tab bg-black/60 text-amber-200 border border-amber-600/50 px-2 py-1 rounded-full cursor-pointer" data-lb="hoat_dong">⭐ Hoạt Động</button>
                 </div>
+                <div id="lb-list" class="space-y-3"><p class="text-xs text-amber-300/60">Đang nạp Thiên Thư Bảng...</p></div>
             </div>
         </div>
     </main>
@@ -408,6 +403,39 @@
             if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target)) panel.classList.add('hidden');
         });
         document.addEventListener('DOMContentLoaded', loadProfileBox);
+
+        // THIÊN THƯ BẢNG: nạp bảng xếp hạng thật từ /api/leaderboard
+        let LB = null, LB_CUR = 'tu_vi';
+        function lbShow(board) {
+            LB_CUR = board;
+            document.querySelectorAll('.lb-tab').forEach(b => {
+                const on = b.dataset.lb === board;
+                b.className = 'lb-tab px-2 py-1 rounded-full cursor-pointer ' + (on ? 'bg-amber-600 text-black' : 'bg-black/60 text-amber-200 border border-amber-600/50');
+            });
+            const list = document.getElementById('lb-list');
+            if (!list) return;
+            if (!LB) { list.innerHTML = '<p class="text-xs text-amber-300/60">Đang nạp Thiên Thư Bảng...</p>'; return; }
+            const rows = LB[board] || [];
+            if (!rows.length) { list.innerHTML = '<p class="text-xs text-amber-300/60">Chưa có dữ liệu xếp hạng.</p>'; return; }
+            const medals = ['🥇', '🥈', '🥉'];
+            list.innerHTML = rows.map((r, i) => `
+                <div class="flex items-center justify-between p-2.5 bg-[#0f2027]/90 border ${i === 0 ? 'border-amber-400' : 'border-amber-500/40'} rounded-xl">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-6 h-6 rounded-full ${i < 3 ? 'bg-amber-500 text-black' : 'bg-black/70 text-amber-300 border border-amber-600/50'} flex items-center justify-center font-black text-xs">${medals[i] || (i + 1)}</span>
+                        <div>
+                            <p class="text-xs font-bold text-amber-200">${r.name}</p>
+                            <p class="text-[10px] text-amber-400">${board === 'tu_vi' ? 'Cảnh giới' : board === 'diem' ? 'Điểm Cống Hiến' : board === 'dang' ? 'Cống hiến truyện' : 'Cấp Hoạt Động'}</p>
+                        </div>
+                    </div>
+                    <span class="text-[11px] font-black text-amber-400 bg-black/70 px-2 py-0.5 rounded-full border border-amber-500/50 whitespace-nowrap">${r.label}</span>
+                </div>`).join('');
+        }
+        function loadLeaderboard() {
+            fetch('/api/leaderboard').then(r => r.json()).then(res => {
+                if (res.success) { LB = res.boards; lbShow(LB_CUR); }
+            }).catch(() => {});
+        }
+        document.addEventListener('DOMContentLoaded', loadLeaderboard);
     </script>
     {% block scripts %}{% endblock %}
 </body>

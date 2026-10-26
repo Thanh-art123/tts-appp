@@ -1,111 +1,373 @@
 {% extends "base.html" %}
-{% block title %}Chế Tạp Các - Tông Môn Tu Luyện{% endblock %}
+{% block title %}Nghề Phụ Trợ - Tông Môn Tu Luyện{% endblock %}
 
 {% block content %}
-<div class="panel-3d rounded-2xl p-6 relative space-y-6">
+<div class="panel-3d rounded-2xl p-6 relative space-y-5">
     <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
-        <i class="fa-solid fa-hammer text-amber-500 animate-bounce"></i>
-        <span>Chế Tạp Các - Luyện Chế Linh Cảnh Trừu Tượng (Flux.1 AI Engine)</span>
+        <i class="fa-solid fa-hammer text-amber-500"></i>
+        <span>Nghề Phụ Trợ — Đại Sảnh Hành Nghề Kiếm Điểm Cống Hiến</span>
     </h2>
-
-    <!-- Form Nhập Mô Tả Luyện Khí -->
-    <div class="space-y-4">
-        <div>
-            <label class="block text-xs font-semibold text-amber-200/90 mb-1">Khẩu quyết/Mô tả cảnh giới hoặc pháp bảo (Ví dụ: Trận pháp vô hình, kiếm ý trừu tượng...):</label>
-            <textarea id="prompt-input" rows="3" placeholder="Ví dụ: Abstract cosmic energy, glowing golden crystals, surreal ink painting, ultra sharp details, 8k resolution..." class="w-full p-3 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none bg-black/75 text-amber-100 placeholder-amber-700/70 shadow-inner" required></textarea>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-                <label class="block text-xs font-bold text-amber-300 mb-1">Phong Cách Nghệ Thuật:</label>
-                <select id="style-select" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
-                    <option value="abstract surrealism, fine art, sharp vector lines, mystical aura, masterpiece">Trừu Tượng Vô Thượng (Abstract Surreal)</option>
-                    <option value="surreal dark fantasy, intricate gold filigree, high contrast, sharp details">Huyền Ảo Tối Tân (Dark Fantasy Art)</option>
-                    <option value="traditional chinese ink wash painting mixed with neon glowing energy, sharp focus">Thủy Mặc Trừu Tượng (Surreal Ink)</option>
-                    <option value="cinematic render, crystalline structure, glowing sacred geometry, hyper-detailed">Tinh Thể Trận Pháp (Sacred Geometry)</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-amber-300 mb-1">Mô Hình AI (AI Engine):</label>
-                <select id="model-select" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
-                    <option value="flux">Flux.1 (Siêu Nét & Chi Tiết Nghệ Thuật)</option>
-                    <option value="flux-realism">Flux Realism (Chân Thực & Sắc Cạnh)</option>
-                    <option value="turbo">SDXL Turbo (Tốc Độ Nhanh)</option>
-                </select>
-            </div>
-        </div>
-
-        <button onclick="generateArtifact()" id="craft-btn" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold py-3.5 rounded-xl shadow-2xl transition flex items-center justify-center space-x-2 text-sm">
-            <i class="fa-solid fa-fire-flame-curved"></i>
-            <span>Khai Lô Luyện Khí (Tạo Ảnh Flux.1 AI)</span>
-        </button>
+    <p class="text-xs text-amber-200/80 leading-relaxed">Bảy nghề phụ của Tông Môn: khai thác quặng → luyện khí · trồng thảo → luyện đan · vẽ phù → mở lượt tạo ảnh · câu cá → nuôi linh thú. Mỗi nghề đều có <b class="text-amber-300">nhiệm vụ nghề riêng</b> trong <a href="/sanh-chinh" class="underline text-amber-300 font-bold">Bảng Nhiệm Vụ ở Sảnh Chính</a>. Linh thú cộng % điểm cho nghề &amp; nhiệm vụ và sản xuất điểm mỗi lần điểm danh.</p>
+    <div class="flex flex-wrap gap-2 text-[11px] font-bold">
+        <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">💠 Điểm: <b id="ng-diem" class="text-amber-300">…</b></span>
+        <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">💎 Nguyên Tinh: <b id="ng-nt" class="text-amber-300">…</b></span>
+        <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">🌀 Linh Khí: <b id="ng-lk" class="text-amber-300">…</b></span>
+        <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">🎨 Lượt Tạo Ảnh: <b id="ng-luotanh" class="text-amber-300">…</b></span>
+        <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">🐾 Cộng Điểm Linh Thú: <b id="ng-beast" class="text-amber-300">+0%</b></span>
     </div>
 
-    <!-- Khu vực hiển thị kết quả Linh Ảnh -->
-    <div id="result-container" class="hidden text-center space-y-4 pt-4 border-t border-amber-800/60">
-        <p class="text-xs font-bold text-amber-300 flex items-center justify-center space-x-2">
-            <i class="fa-solid fa-circle-check text-emerald-400"></i>
-            <span>Linh Cảnh Trừu Tượng Đã Luyện Thành Công!</span>
-        </p>
-        <div class="relative inline-block overflow-hidden rounded-2xl border-2 border-amber-500 shadow-2xl bg-black">
-            <img id="output-image" src="" alt="Linh Ảnh Pháp Bảo" class="max-w-full h-auto mx-auto max-h-[500px] object-contain">
-        </div>
+    <div class="flex flex-wrap gap-1.5 text-[11px] font-extrabold" id="nghe-tabs">
+        <button data-tab="mo" class="ng-tab bg-amber-600 text-black px-3 py-2 rounded-xl cursor-pointer">⛏️ Mỏ Quặng</button>
+        <button data-tab="khi" class="ng-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">🔨 Luyện Khí Các</button>
+        <button data-tab="dan" class="ng-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">⚗️ Luyện Đan Các</button>
+        <button data-tab="phu" class="ng-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">🖌️ Luyện Phù Các</button>
+        <button data-tab="duoc" class="ng-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">🌿 Linh Dược Các</button>
+        <button data-tab="thu" class="ng-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">🐾 Ngự Thú Các</button>
+        <button data-tab="cau" class="ng-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">🎣 Đầm Câu</button>
+    </div>
+
+    <!-- MỎ QUẶNG -->
+    <div id="tab-mo" class="ng-panel space-y-4">
+        <p class="text-xs text-amber-200/85">Khai thác quặng 9 cấp làm nguyên liệu cho Luyện Khí Các. Giới hạn <b>10 lượt/ngày</b> — hôm nay đã dùng: <b id="mo-used" class="text-amber-300">0</b>/10.</p>
+        <button onclick="ngAct(this,'/api/nghe/khai-thac',{})" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold py-3 rounded-xl shadow transition text-sm cursor-pointer">⛏️ Khai Thác Quặng</button>
         <div>
-            <a id="download-img-btn" href="#" download="linh-canh-tu-tien.jpg" target="_blank" class="inline-flex items-center space-x-2 bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-5 py-2.5 rounded-xl shadow transition text-xs">
-                <i class="fa-solid fa-download"></i>
-                <span>Thu Thuập Linh Ảnh Về Động Phủ</span>
-            </a>
+            <p class="text-xs font-bold text-amber-300 mb-2">Kho Quặng Của Đạo Hữu:</p>
+            <div id="mo-ores" class="grid grid-cols-3 sm:grid-cols-9 gap-2 text-center text-[11px]"></div>
         </div>
     </div>
+
+    <!-- LUYỆN KHÍ -->
+    <div id="tab-khi" class="ng-panel hidden space-y-4">
+        <p class="text-xs text-amber-200/85">Dùng <b>1 Quặng + 1 Nguyên Tinh (lõi)</b> để luyện Pháp Khí. Cấp càng cao tỉ lệ thành công càng thấp; luyện hỏng bán phế phẩm vẫn được ít điểm. Bán pháp khí: <b>cấp² × 15 điểm</b>.</p>
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+            <label class="font-bold text-amber-300">Chọn cấp quặng:</label>
+            <select id="lk-cap" onchange="lkRate()" class="p-2 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none"></select>
+            <span id="lk-rate" class="text-amber-200/80"></span>
+        </div>
+        <button onclick="ngAct(this,'/api/nghe/luyen-khi',{cap:parseInt(document.getElementById('lk-cap').value)})" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold py-3 rounded-xl shadow transition text-sm cursor-pointer">🔨 Khai Lò Luyện Khí</button>
+        <div>
+            <p class="text-xs font-bold text-amber-300 mb-2">Pháp Khí Đang Có:</p>
+            <div id="lk-list" class="space-y-2 text-xs"></div>
+        </div>
+    </div>
+
+    <!-- LUYỆN ĐAN -->
+    <div id="tab-dan" class="ng-panel hidden space-y-4">
+        <p class="text-xs text-amber-200/85">Luyện thảo mộc thành đan dược. Đan ăn vào <b>+Linh Khí trực tiếp</b> — đường tắt nối nghề phụ với Tu Vi. Linh Khí hiện có: <b id="dan-lk" class="text-amber-300">0</b>.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+            <div class="bg-black/50 border border-amber-700/40 rounded-xl p-3 space-y-2">
+                <p class="font-black text-amber-200">💊 Hồi Linh Đan <span class="text-emerald-300">(dùng: +40 Linh Khí)</span></p>
+                <p class="text-amber-100/75">Nguyên liệu: 2× Thảo Cấp 1 + 1× Thảo Cấp 2 · Tỉ lệ thành công 85%</p>
+                <p class="text-amber-100/75">Đang có: Thảo C1 ×<b id="hd-h1">0</b> · Thảo C2 ×<b id="hd-h2">0</b> · Đan ×<b id="hd-dan">0</b></p>
+                <p class="space-x-1">
+                    <button onclick="ngAct(this,'/api/nghe/luyen-dan',{loai:'hoi_linh'})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">⚗️ Luyện Đan</button>
+                    <button onclick="ngAct(this,'/api/nghe/dung-dan',{loai:'hoi_linh'})" class="bg-emerald-700 hover:bg-emerald-600 text-white font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">💊 Dùng Đan</button>
+                </p>
+            </div>
+            <div class="bg-black/50 border border-amber-700/40 rounded-xl p-3 space-y-2">
+                <p class="font-black text-amber-200">💊 Tụ Linh Đan <span class="text-emerald-300">(dùng: +200 Linh Khí)</span></p>
+                <p class="text-amber-100/75">Nguyên liệu: 2× Thảo Cấp 3 + 1× Thảo Cấp 4 · Tỉ lệ thành công 70%</p>
+                <p class="text-amber-100/75">Đang có: Thảo C3 ×<b id="td-h3">0</b> · Thảo C4 ×<b id="td-h4">0</b> · Đan ×<b id="td-dan">0</b></p>
+                <p class="space-x-1">
+                    <button onclick="ngAct(this,'/api/nghe/luyen-dan',{loai:'tu_linh'})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">⚗️ Luyện Đan</button>
+                    <button onclick="ngAct(this,'/api/nghe/dung-dan',{loai:'tu_linh'})" class="bg-emerald-700 hover:bg-emerald-600 text-white font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">💊 Dùng Đan</button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- LUYỆN PHÙ + TẠO ẢNH -->
+    <div id="tab-phu" class="ng-panel hidden space-y-4">
+        <p class="text-xs text-amber-200/85">Tự tay vẽ phù trên khung: bấm <b>Bắt Đầu Vẽ</b> (tính 1 lượt, tối đa 5 lượt/ngày — hôm nay đã dùng: <b id="phu-used" class="text-amber-300">0</b>/5), vẽ cho kín khung (ít nhất 25 nét chấm bút) rồi bấm <b>Hoàn Phù</b>: nhận điểm + <b>1 Lượt Tạo Ảnh</b>. <b class="text-red-300">Bỏ ngang giữa chừng = mất lượt</b>, không được gì.</p>
+        <div class="bg-[#171106] border-2 border-amber-700/60 rounded-2xl p-2">
+            <canvas id="phu-canvas" width="660" height="340" class="w-full rounded-xl bg-[#241a08] touch-none cursor-crosshair"></canvas>
+        </div>
+        <div class="flex flex-wrap gap-2 text-xs">
+            <button id="phu-start" onclick="phuStart(this)" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-4 py-2 rounded-xl cursor-pointer">🖌️ Bắt Đầu Vẽ Phù</button>
+            <button id="phu-done" onclick="phuDone(this)" class="bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold px-4 py-2 rounded-xl cursor-pointer">✔ Hoàn Phù (đã vẽ: <span id="phu-points">0</span> nét)</button>
+            <button onclick="phuClear()" class="bg-slate-700 hover:bg-slate-600 text-amber-100 font-bold px-4 py-2 rounded-xl cursor-pointer">🧹 Xóa Khung</button>
+        </div>
+        <div class="border-t border-amber-800/60 pt-4 space-y-4">
+            <p class="text-sm font-black text-amber-300">🎨 TẠO ẢNH LINH CẢNH (Flux.1 AI) — mỗi lần tạo tốn 1 Lượt Tạo Ảnh kiếm được từ vẽ phù</p>
+            <div>
+                <label class="block text-xs font-semibold text-amber-200/90 mb-1">Khẩu quyết/Mô tả cảnh giới hoặc pháp bảo:</label>
+                <textarea id="prompt-input" rows="3" placeholder="Ví dụ: Abstract cosmic energy, glowing golden crystals, surreal ink painting, ultra sharp details, 8k resolution..." class="w-full p-3 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none bg-black/75 text-amber-100 placeholder-amber-700/70 shadow-inner text-xs" required></textarea>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-amber-300 mb-1">Phong Cách Nghệ Thuật:</label>
+                    <select id="style-select" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
+                        <option value="abstract surrealism, fine art, sharp vector lines, mystical aura, masterpiece">Trừu Tượng Vô Thượng (Abstract Surreal)</option>
+                        <option value="surreal dark fantasy, intricate gold filigree, high contrast, sharp details">Huyền Ảo Tối Tân (Dark Fantasy Art)</option>
+                        <option value="traditional chinese ink wash painting mixed with neon glowing energy, sharp focus">Thủy Mặc Trừu Tượng (Surreal Ink)</option>
+                        <option value="cinematic render, crystalline structure, glowing sacred geometry, hyper-detailed">Tinh Thể Trận Pháp (Sacred Geometry)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-amber-300 mb-1">Mô Hình AI (AI Engine):</label>
+                    <select id="model-select" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
+                        <option value="flux">Flux.1 (Siêu Nét & Chi Tiết Nghệ Thuật)</option>
+                        <option value="flux-realism">Flux Realism (Chân Thực & Sắc Cạnh)</option>
+                        <option value="turbo">SDXL Turbo (Tốc Độ Nhanh)</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="taoAnh(this)" id="craft-btn" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold py-3.5 rounded-xl shadow-2xl transition flex items-center justify-center space-x-2 text-sm cursor-pointer">
+                <i class="fa-solid fa-fire-flame-curved"></i><span>Khai Lô Tạo Ảnh (tốn 1 lượt)</span>
+            </button>
+            <div id="result-container" class="hidden text-center space-y-4 pt-2">
+                <p class="text-xs font-bold text-amber-300">✔ Linh Cảnh Đã Luyện Thành Công!</p>
+                <div class="relative inline-block overflow-hidden rounded-2xl border-2 border-amber-500 shadow-2xl bg-black">
+                    <img id="output-image" src="" alt="Linh Ảnh Pháp Bảo" class="max-w-full h-auto mx-auto max-h-[500px] object-contain">
+                </div>
+                <div>
+                    <a id="download-img-btn" href="#" download="linh-canh-tu-tien.jpg" target="_blank" class="inline-flex items-center space-x-2 bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-5 py-2.5 rounded-xl shadow transition text-xs"><i class="fa-solid fa-download"></i><span>Thu Thập Linh Ảnh Về Động Phủ</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LINH DƯỢC -->
+    <div id="tab-duoc" class="ng-panel hidden space-y-4">
+        <p class="text-xs text-amber-200/85">Dược viên có <b>4 ô đất</b>: mua hạt giống (3 × cấp điểm), chờ cây lớn (2 phút × cấp), thu hoạch được <b>2 cây</b> thảo mộc cấp đó — nguyên liệu cho Luyện Đan hoặc bán lại ở Sảnh Chính.</p>
+        <div id="duoc-plots" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs"></div>
+    </div>
+
+    <!-- NGỰ THÚ -->
+    <div id="tab-thu" class="ng-panel hidden space-y-4">
+        <div id="thu-body" class="text-xs"></div>
+    </div>
+
+    <!-- ĐẦM CÂU -->
+    <div id="tab-cau" class="ng-panel hidden space-y-4">
+        <p class="text-xs text-amber-200/85">Thả câu ở Đầm Câu: cá thường, cá ngon, Linh Ngư hiếm... và biết đâu câu được cả <b>linh thú con</b>! Giới hạn <b>10 lượt/ngày</b> — hôm nay đã dùng: <b id="cau-used" class="text-amber-300">0</b>/10.</p>
+        <button onclick="ngAct(this,'/api/nghe/cau-ca',{})" class="w-full bg-gradient-to-r from-sky-600 to-cyan-500 hover:from-sky-500 hover:to-cyan-400 text-black font-extrabold py-3 rounded-xl shadow transition text-sm cursor-pointer">🎣 Thả Câu</button>
+        <div class="flex flex-wrap gap-2 text-[11px] font-bold">
+            <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">🐟 Cá Thường: <b id="ca-thuong" class="text-amber-300">0</b> (5đ/con)</span>
+            <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">🐠 Cá Ngon: <b id="ca-ngon" class="text-amber-300">0</b> (12đ/con)</span>
+            <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">✨ Linh Ngư: <b id="ca-linh" class="text-amber-300">0</b> (60đ/con)</span>
+        </div>
+        <button onclick="ngAct(this,'/api/nghe/ban-ca',{})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-4 py-2 rounded-xl text-xs cursor-pointer">💰 Bán Tất Cả Cá</button>
+    </div>
+
+    <div id="nghe-toast" class="hidden fixed left-1/2 bottom-6 -translate-x-1/2 z-50 bg-emerald-800 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl border border-emerald-400/60 max-w-[92vw]"></div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const navChe = document.getElementById('nav-che');
-        if(navChe) navChe.classList.add('active');
+    let NGHE = null, GAME = null, phuDrawing = false, phuPoints = 0, phuOpen = false, phuCtx = null, phuLast = null, tickBusy = false;
+
+    function fmtNum(n) { return (n === null || n === undefined) ? '0' : Number(n).toLocaleString('vi-VN'); }
+    function toast(msg, ok) {
+        const t = document.getElementById('nghe-toast');
+        t.innerText = msg;
+        t.className = 'fixed left-1/2 bottom-6 -translate-x-1/2 z-50 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl max-w-[92vw] border ' + (ok === false ? 'bg-red-900 border-red-400/60' : 'bg-emerald-800 border-emerald-400/60');
+        clearTimeout(t._h); t._h = setTimeout(() => t.classList.add('hidden'), 5000);
+    }
+
+    async function ngAct(btn, url, body) {
+        if (btn) btn.disabled = true;
+        try {
+            const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
+            const res = await r.json();
+            if (res.success) { toast(res.message, true); if (res.nghe) { NGHE = res.nghe; GAME = res.game; renderNghe(); } else loadNghe(); }
+            else { toast(res.message || 'Có lỗi xảy ra!', false); loadNghe(); }
+        } catch (e) { toast('Mất kết nối, thử lại nhé!', false); }
+        if (btn) btn.disabled = false;
+    }
+
+    function loadNghe() {
+        fetch('/api/nghe').then(r => r.json()).then(res => {
+            if (res.success) { NGHE = res.nghe; GAME = res.game; renderNghe(); }
+        }).catch(() => {});
+    }
+
+    function renderNghe() {
+        if (!NGHE || !GAME) return;
+        document.getElementById('ng-diem').innerText = fmtNum(GAME.diem);
+        document.getElementById('ng-nt').innerText = fmtNum((GAME.linh_thach || {}).nguyen || 0);
+        document.getElementById('ng-lk').innerText = fmtNum(NGHE.linh_khi);
+        document.getElementById('ng-luotanh').innerText = NGHE.luot_tao_anh;
+        document.getElementById('ng-beast').innerText = '+' + (NGHE.thu ? NGHE.thu.bonus_pct : 0) + '%';
+        document.getElementById('mo-used').innerText = NGHE.hom_nay.khai_thac;
+        document.getElementById('cau-used').innerText = NGHE.hom_nay.cau_ca;
+        document.getElementById('phu-used').innerText = NGHE.hom_nay.ve_phu;
+        document.getElementById('dan-lk').innerText = fmtNum(NGHE.linh_khi);
+        // Kho quặng
+        document.getElementById('mo-ores').innerHTML = Array.from({length: 9}, (_, i) => {
+            const n = NGHE.quang[String(i + 1)] || 0;
+            return `<div class="p-2 rounded-xl border ${n > 0 ? 'bg-amber-900/60 border-amber-500/70' : 'bg-black/50 border-amber-800/40'}"><p class="font-black text-amber-200">Cấp ${i + 1}</p><p class="text-amber-100/80">${n} viên</p></div>`;
+        }).join('');
+        // Luyện khí: select + danh sách pháp khí
+        const sel = document.getElementById('lk-cap');
+        const cur = sel.value;
+        sel.innerHTML = Array.from({length: 9}, (_, i) => `<option value="${i + 1}">Quặng Cấp ${i + 1} (đang có: ${NGHE.quang[String(i + 1)] || 0})</option>`).join('');
+        if (cur) sel.value = cur;
+        lkRate();
+        const counts = {};
+        NGHE.phap_khi.forEach(t => counts[t] = (counts[t] || 0) + 1);
+        const tiers = Object.keys(counts).sort((a, b) => a - b);
+        document.getElementById('lk-list').innerHTML = tiers.length ? tiers.map(t => `
+            <div class="flex items-center justify-between bg-black/50 border border-amber-700/40 rounded-xl px-3 py-2">
+                <span class="text-amber-200 font-bold">⚔️ Pháp Khí Cấp ${t} × ${counts[t]}</span>
+                <button onclick="ngAct(this,'/api/nghe/ban-phap-khi',{cap:${t}})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">Bán 1 (+${t * t * 15}đ)</button>
+            </div>`).join('') : '<p class="text-amber-300/50">Chưa có pháp khí nào. Luyện khí ở trên nhé!</p>';
+        // Luyện đan
+        const h = NGHE.herbs || {};
+        document.getElementById('hd-h1').innerText = h['1'] || 0;
+        document.getElementById('hd-h2').innerText = h['2'] || 0;
+        document.getElementById('hd-dan').innerText = NGHE.dan.hoi_linh || 0;
+        document.getElementById('td-h3').innerText = h['3'] || 0;
+        document.getElementById('td-h4').innerText = h['4'] || 0;
+        document.getElementById('td-dan').innerText = NGHE.dan.tu_linh || 0;
+        // Linh dược
+        document.getElementById('duoc-plots').innerHTML = NGHE.vuon.map((plot, i) => {
+            if (!plot) return `<div class="bg-black/50 border border-amber-700/40 rounded-xl p-3 space-y-2">
+                <p class="font-black text-amber-200">🟫 Ô Đất ${i + 1} — Trống</p>
+                <div class="flex items-center gap-2">
+                    <select id="trong-cap-${i}" class="p-2 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none">${Array.from({length: 9}, (_, g) => `<option value="${g + 1}">Thảo Cấp ${g + 1} (hạt ${3 * (g + 1)}đ · ${2 * (g + 1)} phút)</option>`).join('')}</select>
+                    <button onclick="ngAct(this,'/api/nghe/vuon/trong',{o:${i},cap:parseInt(document.getElementById('trong-cap-${i}').value)})" class="bg-emerald-700 hover:bg-emerald-600 text-white font-extrabold px-3 py-2 rounded-lg cursor-pointer">🌱 Gieo Hạt</button>
+                </div></div>`;
+            if (plot.con_lai > 0) return `<div class="bg-black/50 border border-amber-700/40 rounded-xl p-3 space-y-2">
+                <p class="font-black text-amber-200">🌱 Ô Đất ${i + 1} — Thảo Cấp ${plot.cap} đang lớn</p>
+                <p class="text-amber-100/75">Còn <b class="text-amber-300" data-left="${plot.con_lai}">${fmtTime(plot.con_lai)}</b> nữa thu hoạch được.</p></div>`;
+            return `<div class="bg-emerald-950/60 border border-emerald-500/60 rounded-xl p-3 space-y-2">
+                <p class="font-black text-emerald-300">🌿 Ô Đất ${i + 1} — Thảo Cấp ${plot.cap} ĐÃ CHÍN!</p>
+                <button onclick="ngAct(this,'/api/nghe/vuon/thu',{o:${i}})" class="bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold px-3 py-2 rounded-lg cursor-pointer">🧺 Thu Hoạch (+2 cây)</button></div>`;
+        }).join('');
+        // Ngự thú
+        const tb = document.getElementById('thu-body');
+        if (NGHE.thu) {
+            const t = NGHE.thu, need = (t.cap >= 10) ? 0 : (t.cap * 3 - t.exp);
+            tb.innerHTML = `<div class="bg-black/50 border border-amber-700/40 rounded-xl p-4 space-y-3">
+                <p class="text-base font-black text-amber-300">🐾 ${t.ten} — Cấp ${t.cap}/10</p>
+                <p class="text-amber-100/80">Hiệu quả: <b class="text-amber-300">+${t.bonus_pct}%</b> điểm nghề &amp; nhiệm vụ · sản xuất <b class="text-amber-300">+${t.cap * 3} điểm</b> mỗi lần điểm danh.</p>
+                <p class="text-amber-100/80">EXP thú: ${t.exp}/27 ${t.cap < 10 ? `· còn ${need} EXP nữa lên cấp ${t.cap + 1} (cho ăn cá +2 EXP, mua thức ăn +1 EXP)` : '· ĐÃ TỐI ĐA CẤP!'}</p>
+                <p class="space-x-1">
+                    <button onclick="ngAct(this,'/api/nghe/thu/cho-an',{loai:'ca'})" class="bg-sky-700 hover:bg-sky-600 text-white font-extrabold px-3 py-2 rounded-lg cursor-pointer">🐟 Cho Ăn Bằng Cá (+2 EXP)</button>
+                    <button onclick="ngAct(this,'/api/nghe/thu/cho-an',{loai:'diem'})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-2 rounded-lg cursor-pointer">🍖 Mua Thức Ăn 20đ (+1 EXP)</button>
+                </p></div>`;
+        } else {
+            tb.innerHTML = `<div class="bg-black/50 border border-amber-700/40 rounded-xl p-4 space-y-3">
+                <p class="font-black text-amber-200">🥚 Đạo hữu chưa có Linh Thú</p>
+                <p class="text-amber-100/80">Linh thú cộng % điểm cho nghề &amp; nhiệm vụ và sản xuất điểm khi điểm danh. Có 2 cách sở hữu: <b>câu được linh thú con ở Đầm Câu</b> (hên xui) hoặc mua Trứng Linh Thú tại đây.</p>
+                <button onclick="ngAct(this,'/api/nghe/thu/mua-trung',{})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-4 py-2.5 rounded-xl cursor-pointer">🥚 Mua Trứng Linh Thú (300 điểm)</button></div>`;
+        }
+        // Đầm câu
+        document.getElementById('ca-thuong').innerText = NGHE.ca.thuong || 0;
+        document.getElementById('ca-ngon').innerText = NGHE.ca.ngon || 0;
+        document.getElementById('ca-linh').innerText = NGHE.ca.linh_ngu || 0;
+    }
+
+    function fmtTime(sec) {
+        sec = Math.max(0, sec | 0);
+        return Math.floor(sec / 60) + ' phút ' + (sec % 60) + ' giây';
+    }
+
+    function lkRate() {
+        const t = parseInt(document.getElementById('lk-cap').value || '1');
+        document.getElementById('lk-rate').innerText = `Tỉ lệ thành công: ${Math.max(40, 95 - 6 * (t - 1))}% · tốn 1 Quặng Cấp ${t} + 1 Nguyên Tinh`;
+    }
+
+    // Tabs
+    document.querySelectorAll('#nghe-tabs .ng-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#nghe-tabs .ng-tab').forEach(b => b.className = 'ng-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer');
+            btn.className = 'ng-tab bg-amber-600 text-black px-3 py-2 rounded-xl cursor-pointer';
+            document.querySelectorAll('.ng-panel').forEach(p => p.classList.add('hidden'));
+            document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+            if (btn.dataset.tab === 'phu') initCanvas();
+        });
     });
 
-    async function generateArtifact() {
+    // ---- Luyện Phù: canvas vẽ ----
+    function initCanvas() {
+        const cv = document.getElementById('phu-canvas');
+        if (!cv || cv._ready) return;
+        cv._ready = true;
+        phuCtx = cv.getContext('2d');
+        phuCtx.lineWidth = 3; phuCtx.lineCap = 'round'; phuCtx.strokeStyle = '#fbbf24';
+        const pos = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * cv.width / r.width, y: (e.clientY - r.top) * cv.height / r.height }; };
+        cv.addEventListener('pointerdown', e => { if (!phuOpen) return; phuDrawing = true; phuLast = pos(e); cv.setPointerCapture(e.pointerId); });
+        cv.addEventListener('pointermove', e => {
+            if (!phuDrawing || !phuOpen) return;
+            const p = pos(e);
+            phuCtx.beginPath(); phuCtx.moveTo(phuLast.x, phuLast.y); phuCtx.lineTo(p.x, p.y); phuCtx.stroke();
+            phuLast = p; phuPoints++;
+            document.getElementById('phu-points').innerText = phuPoints;
+        });
+        ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => cv.addEventListener(ev, () => phuDrawing = false));
+    }
+    function phuClear() {
+        const cv = document.getElementById('phu-canvas');
+        if (phuCtx) phuCtx.clearRect(0, 0, cv.width, cv.height);
+        phuPoints = 0; document.getElementById('phu-points').innerText = '0';
+    }
+    async function phuStart(btn) {
+        const r = await fetch('/api/nghe/phu/bat-dau', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+        const res = await r.json();
+        if (res.success) { phuOpen = true; phuClear(); initCanvas(); toast(res.message, true); if (res.nghe) { NGHE = res.nghe; GAME = res.game; renderNghe(); } }
+        else toast(res.message, false);
+    }
+    async function phuDone(btn) {
+        if (!phuOpen) { toast('Chưa bắt đầu lượt vẽ! Bấm "Bắt Đầu Vẽ Phù" trước.', false); return; }
+        const r = await fetch('/api/nghe/phu/hoan-thanh', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ diem_ve: phuPoints }) });
+        const res = await r.json();
+        if (res.success) { phuOpen = false; toast(res.message, true); if (res.nghe) { NGHE = res.nghe; GAME = res.game; renderNghe(); } }
+        else toast(res.message, false);
+    }
+
+    // ---- Tạo ảnh AI (tốn 1 lượt) ----
+    async function taoAnh(btn) {
+        const textPrompt = document.getElementById('prompt-input').value.trim();
+        if (!textPrompt) { toast('Hãy nhập mô tả khẩu quyết để tạo ảnh trước!', false); return; }
+        btn.disabled = true;
+        const r = await fetch('/api/nghe/phu/tao-anh', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+        const res = await r.json();
+        if (!res.success) { toast(res.message, false); btn.disabled = false; loadNghe(); return; }
+        if (res.nghe) { NGHE = res.nghe; GAME = res.game; renderNghe(); }
+        generateArtifact(btn);
+    }
+    function generateArtifact(btn) {
         const textPrompt = document.getElementById('prompt-input').value.trim();
         const styleSelect = document.getElementById('style-select').value;
         const modelSelect = document.getElementById('model-select').value;
-        const craftBtn = document.getElementById('craft-btn');
         const resultContainer = document.getElementById('result-container');
         const outputImg = document.getElementById('output-image');
         const downloadImgBtn = document.getElementById('download-img-btn');
-
-        if (!textPrompt) {
-            alert("Xin hãy nhập mô tả khẩu quyết để luyện khí!");
-            return;
-        }
-
-        craftBtn.innerText = "🔥 Đang triệu hồi linh lực Flux.1, xin chờ chốc lát...";
-        craftBtn.disabled = true;
+        btn.innerHTML = '<span>🔥 Đang triệu hồi linh lực Flux.1, xin chờ chốc lát...</span>';
         resultContainer.classList.add('hidden');
-
-        // Bổ sung các từ khóa kích thích độ nét và tính trừu tượng
         const enhancedPrompt = encodeURIComponent(`${textPrompt}, ${styleSelect}, 8k resolution, extremely detailed, sharp focus, masterpiece, 4k`);
         const seed = Math.floor(Math.random() * 10000000);
-        
-        // Gọi Engine Flux.1
         const imageUrl = `https://image.pollinations.ai/prompt/${enhancedPrompt}?width=1024&height=1024&seed=${seed}&model=${modelSelect}&nologo=true`;
-
         const imgTest = new Image();
         imgTest.src = imageUrl;
         imgTest.onload = function() {
-            outputImg.src = imageUrl;
-            downloadImgBtn.href = imageUrl;
+            outputImg.src = imageUrl; downloadImgBtn.href = imageUrl;
             resultContainer.classList.remove('hidden');
-            craftBtn.innerHTML = '<i class="fa-solid fa-fire-flame-curved"></i> <span>Khai Lô Luyện Khí (Tạo Ảnh Flux.1 AI)</span>';
-            craftBtn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-fire-flame-curved"></i><span>Khai Lô Tạo Ảnh (tốn 1 lượt)</span>';
+            btn.disabled = false;
         };
         imgTest.onerror = function() {
-            alert("Luyện khí thất bại do linh lực bất ổn, xin thử lại!");
-            craftBtn.innerHTML = '<i class="fa-solid fa-fire-flame-curved"></i> <span>Khai Lô Luyện Khí (Tạo Ảnh Flux.1 AI)</span>';
-            craftBtn.disabled = false;
+            toast('Tạo ảnh thất bại do linh lực bất ổn, thử lại nhé! (Lượt đã dùng cho lần gọi này.)', false);
+            btn.innerHTML = '<i class="fa-solid fa-fire-flame-curved"></i><span>Khai Lô Tạo Ảnh (tốn 1 lượt)</span>';
+            btn.disabled = false;
         };
     }
+
+    // Đếm ngược vườn
+    setInterval(() => {
+        let needReload = false;
+        document.querySelectorAll('[data-left]').forEach(el => {
+            let v = parseInt(el.dataset.left) - 1;
+            el.dataset.left = v;
+            el.innerText = fmtTime(v);
+            if (v <= 0) needReload = true;
+        });
+        if (needReload && !tickBusy) { tickBusy = true; loadNghe(); setTimeout(() => tickBusy = false, 3000); }
+    }, 1000);
+
+    document.addEventListener('DOMContentLoaded', loadNghe);
 </script>
 {% endblock %}
