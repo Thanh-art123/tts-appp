@@ -269,6 +269,7 @@
                     if(currentUser && currentUser.role === 'admin') {
                         deleteBtn = `<button onclick="deleteBook(${book.id})" class="text-red-400 hover:text-red-300 text-xs px-2 py-0.5 bg-red-950/60 rounded border border-red-600/40 cursor-pointer ml-2" title="Chưởng Môn Xóa"><i class="fa-solid fa-trash"></i> Xóa</button>`;
                     }
+                    let saveBtn = `<button onclick="saveToBag(${book.id})" class="text-emerald-300 hover:text-emerald-200 text-xs px-2 py-0.5 bg-emerald-950/60 rounded border border-emerald-600/40 cursor-pointer ml-2" title="Cất vào Túi Trữ Vật cá nhân"><i class="fa-solid fa-box-archive"></i> Lưu Túi Trữ Vật</button>`;
 
                     const folderHTML = `
                         <div class="space-y-2 bg-amber-950/30 border border-amber-600/30 p-3 rounded-xl">
@@ -278,7 +279,7 @@
                                     <span>${book.title}</span>
                                     <span class="text-[10px] text-amber-400/80 bg-black/60 px-2 py-0.5 rounded-full border border-amber-600/30">Tác giả: ${book.author}</span>
                                 </span>
-                                ${deleteBtn}
+                                ${saveBtn}${deleteBtn}
                             </div>
                             <ul id="${folderId}" class="space-y-1 pl-4 border-l border-amber-600/30 ml-2 mt-2 hidden">
                                 <li onclick="openReaderPage('${book.title} - Tác giả: ${book.author}', ${JSON.stringify(book.content).replace(/"/g, '&quot;')})" class="text-xs text-amber-300/80 hover:text-white hover:bg-amber-950/60 p-2 rounded-lg cursor-pointer transition flex items-center space-x-2">
@@ -306,6 +307,21 @@
             alert(res.message);
             loadBooksFromServer();
         });
+    }
+
+    function saveToBag(bookId) {
+        if(!currentUser) {
+            alert("Đạo hữu chưa đăng nhập! Hãy đăng nhập để cất truyện vào Túi Trữ Vật của riêng mình.");
+            openAuthModal();
+            return;
+        }
+        fetch('/api/bag/add', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ username: currentUser.username, book_id: bookId })
+        })
+        .then(res => res.json())
+        .then(res => { alert(res.message); });
     }
 
     function checkUploadPermission() {
@@ -338,6 +354,7 @@
                     title: title,
                     content: e.target.result,
                     author: currentUser.author_name,
+                    username: currentUser.username,
                     category: currentCategory,
                     element: currentElement
                 })

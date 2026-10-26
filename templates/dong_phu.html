@@ -8,7 +8,7 @@
         <span>Động Phủ Tu Luyện - Kho Tàng Đám Mây (Cloud Storage)</span>
     </h2>
 
-    <!-- KHU VỰC TÚI TRỮ VẬT CÁ NHÂN (LƯU TRỮ VĨNH VIỄN CÁC FILE ĐÃ TẢI LÊN THEO TÀI KHOẢN) -->
+    <!-- KHU VỰC TÚI TRỮ VẬT CÁ NHÂN (GẮN THEO TÀI KHOẢN - ĐĂNG NHẬP ĐÚNG TÊN LÀ CÒN MÃI MÃI) -->
     <div class="bg-black/70 border-2 border-amber-500/60 rounded-2xl p-5 space-y-4 shadow-lg shadow-amber-950/50">
         <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2 flex items-center justify-between">
             <span class="flex items-center space-x-2">
@@ -17,8 +17,50 @@
             </span>
             <span class="text-[10px] text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-600/40">🔒 Bảo mật theo đạo hiệu</span>
         </h3>
+        <p class="text-[11px] text-amber-200/60 leading-relaxed">
+            Tài nguyên trong túi được lưu trên đám mây và gắn chặt với tài khoản của đạo hữu: dù web sửa code hay
+            deploy lại bao nhiêu lần, chỉ cần đăng nhập đúng tên đăng nhập đã tạo là tài nguyên vẫn còn nguyên.
+            Đạo hữu có thể <b class="text-amber-300">đọc truyện ngay trong túi</b>, hoặc
+            <b class="text-amber-300">đăng tài nguyên từ túi lên Tàng Kinh Các</b> để chia sẻ cho cả tông môn.
+        </p>
         <div id="tui-tru-vat-list" class="space-y-2">
             <p class="text-xs text-amber-300/50 text-center py-4">Đang mở túi trữ vật từ hư không...</p>
+        </div>
+
+        <!-- THÊM TÀI NGUYÊN MỚI THẲNG VÀO TÚI (RIÊNG TƯ) -->
+        <div class="pt-3 border-t border-amber-600/30 space-y-3">
+            <p class="text-xs font-bold text-amber-300 flex items-center space-x-2">
+                <i class="fa-solid fa-file-arrow-up text-amber-400"></i>
+                <span>Thêm Tài Nguyên Mới Vào Túi (chế độ riêng tư, chưa đăng công khai)</span>
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                <div>
+                    <label class="block font-bold text-amber-300 mb-1">Tên truyện / tài nguyên:</label>
+                    <input type="text" id="bag-new-title" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none" placeholder="Ví dụ: Phàm Nhân Tu Tiên...">
+                </div>
+                <div>
+                    <label class="block font-bold text-amber-300 mb-1">Chọn tệp (.txt hoặc .html):</label>
+                    <input type="file" id="bag-new-file" accept=".txt,.html,.htm" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl p-2 cursor-pointer file:mr-4 file:py-1 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-extrabold file:bg-amber-600 file:text-black">
+                </div>
+                <div>
+                    <label class="block font-bold text-amber-300 mb-1">Chuyên mục (khi đăng lên Tàng Kinh Các):</label>
+                    <select id="bag-new-category" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 outline-none">
+                        <option value="truyen-dich">📜 Truyện Dịch</option>
+                        <option value="truyen-cover">✨ Truyện Cover</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-amber-300 mb-1">Hệ (khi đăng lên Tàng Kinh Các):</label>
+                    <select id="bag-new-element" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 outline-none">
+                        <option>Kim</option><option>Mộc</option><option>Thủy</option><option>Hỏa</option><option>Thổ</option>
+                        <option>Lôi</option><option>Phong</option><option>Băng</option><option>Không Gian</option><option>Thời Gian</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="uploadToBag()" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold text-xs py-2.5 px-5 rounded-xl shadow transition cursor-pointer inline-flex items-center space-x-1">
+                <i class="fa-solid fa-box-archive"></i>
+                <span>Cất Vào Túi Trữ Vật</span>
+            </button>
         </div>
     </div>
 
@@ -44,6 +86,46 @@
         </div>
     </div>
 </div>
+
+<!-- Form ẩn để mở trang đọc truyện (giống Tàng Kinh Các) -->
+<form action="/doc-truyen" method="POST" target="_blank" id="read-form">
+    <input type="hidden" name="title" id="form-title">
+    <input type="hidden" name="content" id="form-content">
+</form>
+
+<!-- Modal Đăng Lên Tàng Kinh Các -->
+<div id="publish-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="panel-3d rounded-2xl max-w-md w-full mx-4 p-6 relative border border-amber-500/80 shadow-2xl space-y-4">
+        <button onclick="closePublishModal()" class="absolute top-4 right-4 text-amber-400 hover:text-white text-lg cursor-pointer">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <h3 class="text-base font-extrabold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
+            <i class="fa-solid fa-cloud-arrow-up text-amber-500"></i>
+            <span>Đăng Lên Tàng Kinh Các</span>
+        </h3>
+        <p class="text-xs text-amber-200/80">Truyện: <b id="publish-book-title" class="text-amber-300"></b></p>
+        <div class="space-y-3 text-xs">
+            <div>
+                <label class="block font-bold text-amber-300 mb-1">Chuyên mục:</label>
+                <select id="publish-category" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 outline-none">
+                    <option value="truyen-dich">📜 Truyện Dịch</option>
+                    <option value="truyen-cover">✨ Truyện Cover</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-bold text-amber-300 mb-1">Hệ:</label>
+                <select id="publish-element" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 outline-none">
+                    <option>Kim</option><option>Mộc</option><option>Thủy</option><option>Hỏa</option><option>Thổ</option>
+                    <option>Lôi</option><option>Phong</option><option>Băng</option><option>Không Gian</option><option>Thời Gian</option>
+                </select>
+            </div>
+        </div>
+        <div class="flex justify-end space-x-2 pt-3 border-t border-amber-800/60">
+            <button onclick="closePublishModal()" class="bg-slate-800 text-amber-300 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer">Hủy</button>
+            <button onclick="submitPublish()" class="bg-emerald-600 hover:bg-emerald-500 text-black px-4 py-2 rounded-xl text-xs font-extrabold cursor-pointer">Xác Nhận Đăng</button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -51,79 +133,225 @@
     document.getElementById('nav-dong').classList.add('active');
 
     const currentUser = JSON.parse(localStorage.getItem('tongan_current_user')) || null;
+    let allBooksCache = [];
+    let currentPublishItemId = null;
 
-    function loadDongPhuData() {
+    function catLabel(cat) { return cat === 'truyen-dich' ? 'Truyện Dịch' : 'Truyện Cover'; }
+
+    function openReader(title, content) {
+        document.getElementById('form-title').value = title;
+        document.getElementById('form-content').value = content;
+        document.getElementById('read-form').submit();
+    }
+
+    // ---------- TÚI TRỮ VẬT ----------
+    function loadBag() {
         const tuiContainer = document.getElementById('tui-tru-vat-list');
-        const contributedContainer = document.getElementById('contributed-books-list');
-        const allContainer = document.getElementById('all-books-list');
         const tuiTitle = document.getElementById('tui-tru-vat-title');
 
         if (!currentUser) {
             tuiTitle.innerText = "Túi Trữ Vật (Chưa đăng nhập)";
             tuiContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Đạo hữu chưa đăng nhập. Hãy đăng nhập ở Tàng Kinh Các để mở Túi Trữ Vật cá nhân.</p>`;
-            contributedContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Đạo hữu chưa đăng nhập.</p>`;
-        } else {
-            tuiTitle.innerText = `Túi Trữ Vật Của [${currentUser.author_name}] (${currentUser.username})`;
+            return;
+        }
+        tuiTitle.innerText = `Túi Trữ Vật Của [${currentUser.author_name}] (${currentUser.username})`;
 
-            // Gọi API lấy tài nguyên riêng của tài khoản đang đăng nhập để cất vào Túi Trữ Vật & Cống Hiến
-            fetch(`/api/get-user-contributions?username=${currentUser.username}`)
+        fetch(`/api/bag?username=${encodeURIComponent(currentUser.username)}`)
+        .then(res => res.json())
+        .then(res => {
+            if (!res.success) {
+                tuiContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">${res.message}</p>`;
+                return;
+            }
+            if (res.items.length === 0) {
+                tuiContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Túi trữ vật trống rỗng. Hãy đọc truyện ở Tàng Kinh Các rồi bấm "Lưu Túi Trữ Vật", hoặc thêm tài nguyên mới ở form bên dưới.</p>`;
+                return;
+            }
+            tuiContainer.innerHTML = '';
+            res.items.forEach(item => {
+                const published = item.published_book_id ? `<span class="text-emerald-400 font-semibold bg-emerald-950/80 px-2 py-1 rounded border border-emerald-600/40"><i class="fa-solid fa-cloud-arrow-up"></i> Đã đăng Tàng Kinh Các</span>` : `<span class="text-amber-300/80 font-semibold bg-black/50 px-2 py-1 rounded border border-amber-600/30"><i class="fa-solid fa-lock"></i> Riêng tư trong túi</span>`;
+                const publishBtn = item.published_book_id ? '' : `<button onclick="openPublishModal(${item.item_id})" class="bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer"><i class="fa-solid fa-cloud-arrow-up"></i> Đăng Tàng Kinh Các</button>`;
+                tuiContainer.innerHTML += `
+                    <div class="bg-amber-950/40 border border-amber-600/40 p-3 rounded-xl flex flex-col md:flex-row md:justify-between md:items-center gap-2 text-xs">
+                        <div>
+                            <span class="font-bold text-amber-200">${item.icon} ${item.title}</span>
+                            <span class="text-[10px] text-amber-400/70 block">Tác giả: ${item.author} | ${catLabel(item.category)} - Hệ ${item.element} | Cất ngày: ${item.created_at || '—'}</span>
+                        </div>
+                        <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                            ${published}
+                            <button onclick="readBagItem(${item.item_id})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer"><i class="fa-solid fa-book-open"></i> Đọc</button>
+                            ${publishBtn}
+                            <button onclick="removeBagItem(${item.item_id})" class="bg-red-950/60 hover:bg-red-900/60 text-red-300 font-bold px-3 py-1.5 rounded-lg border border-red-600/40 cursor-pointer"><i class="fa-solid fa-trash"></i> Xóa</button>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+    }
+
+    function readBagItem(itemId) {
+        fetch(`/api/bag/content?username=${encodeURIComponent(currentUser.username)}&item_id=${itemId}`)
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) openReader(`${res.title} - Tác giả: ${res.author}`, res.content);
+            else alert(res.message);
+        });
+    }
+
+    function uploadToBag() {
+        if (!currentUser) { alert("Đạo hữu chưa đăng nhập! Hãy đăng nhập ở Tàng Kinh Các trước."); return; }
+        const title = document.getElementById('bag-new-title').value.trim();
+        const fileInput = document.getElementById('bag-new-file');
+        const cat = document.getElementById('bag-new-category').value;
+        const elem = document.getElementById('bag-new-element').value;
+        if (!title || fileInput.files.length === 0) { alert("Vui lòng điền tên truyện và chọn tệp!"); return; }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            fetch('/api/bag/upload', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username: currentUser.username, title: title, content: e.target.result, author: currentUser.author_name, category: cat, element: elem })
+            })
             .then(res => res.json())
             .then(res => {
+                alert(res.message);
                 if (res.success) {
-                    if (res.books.length === 0) {
-                        tuiContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Túi trữ vật trống rỗng. Hãy tải lên các bộ công pháp để cất giữ vĩnh viễn.</p>`;
-                        contributedContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Đạo hữu [${currentUser.author_name}] chưa cống hiến bộ công pháp nào.</p>`;
-                    } else {
-                        tuiContainer.innerHTML = '';
-                        contributedContainer.innerHTML = '';
-                        res.books.forEach(book => {
-                            let icon = book.icon || '📖';
-                            
-                            // 1. Render vào Túi Trữ Vật
-                            tuiContainer.innerHTML += `
-                                <div class="bg-amber-950/40 border border-amber-600/40 p-3 rounded-xl flex justify-between items-center text-xs">
-                                    <span class="font-bold text-amber-200">${icon} ${book.title} <span class="text-[10px] text-amber-400/70">(Hệ: ${book.element})</span></span>
-                                    <span class="text-amber-300 font-semibold bg-black/50 px-2 py-1 rounded"><i class="fa-solid fa-lock text-amber-400"></i> Cất giữ vĩnh viễn</span>
-                                </div>
-                            `;
-
-                            // 2. Render vào phần Cống hiến
-                            contributedContainer.innerHTML += `
-                                <div class="bg-amber-950/30 border border-amber-600/30 p-3 rounded-xl flex justify-between items-center text-xs">
-                                    <span class="font-bold text-amber-200">${icon} ${book.title} <span class="text-[10px] text-amber-400/70">(Hệ: ${book.element})</span></span>
-                                    <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu trên Cloud vĩnh viễn</span>
-                                </div>
-                            `;
-                        });
-                    }
+                    document.getElementById('bag-new-title').value = '';
+                    fileInput.value = '';
+                    loadBag();
                 }
             });
-        }
+        };
+        reader.readAsText(fileInput.files[0]);
+    }
 
-        // Lấy toàn bộ kho tàng chung của Tông Môn
-        fetch('/api/get-all-books')
+    function openPublishModal(itemId) {
+        currentPublishItemId = itemId;
+        fetch(`/api/bag?username=${encodeURIComponent(currentUser.username)}`)
+        .then(res => res.json())
+        .then(res => {
+            const item = (res.items || []).find(i => i.item_id === itemId);
+            if (item) {
+                document.getElementById('publish-book-title').innerText = item.title;
+                document.getElementById('publish-category').value = item.category;
+                document.getElementById('publish-element').value = item.element;
+            }
+            document.getElementById('publish-modal').classList.remove('hidden');
+        });
+    }
+
+    function closePublishModal() { document.getElementById('publish-modal').classList.add('hidden'); }
+
+    function submitPublish() {
+        if (currentPublishItemId === null) return;
+        fetch('/api/bag/publish', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                username: currentUser.username,
+                item_id: currentPublishItemId,
+                category: document.getElementById('publish-category').value,
+                element: document.getElementById('publish-element').value
+            })
+        })
+        .then(res => res.json())
+        .then(res => {
+            alert(res.message);
+            if (res.success) {
+                closePublishModal();
+                loadBag();
+                loadContributions();
+                loadAllBooks();
+            }
+        });
+    }
+
+    function removeBagItem(itemId) {
+        if (!confirm("Lấy tài nguyên này ra khỏi Túi Trữ Vật? (Bản đã đăng ở Tàng Kinh Các vẫn giữ nguyên)")) return;
+        fetch('/api/bag/remove', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ username: currentUser.username, item_id: itemId })
+        })
+        .then(res => res.json())
+        .then(res => { alert(res.message); if (res.success) loadBag(); });
+    }
+
+    function saveToBag(bookId) {
+        if (!currentUser) { alert("Đạo hữu chưa đăng nhập! Hãy đăng nhập ở Tàng Kinh Các để dùng Túi Trữ Vật."); return; }
+        fetch('/api/bag/add', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ username: currentUser.username, book_id: bookId })
+        })
+        .then(res => res.json())
+        .then(res => { alert(res.message); if (res.success) loadBag(); });
+    }
+
+    // ---------- CỐNG HIẾN ----------
+    function loadContributions() {
+        const contributedContainer = document.getElementById('contributed-books-list');
+        if (!currentUser) {
+            contributedContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-3">Đạo hữu chưa đăng nhập.</p>`;
+            return;
+        }
+        fetch(`/api/get-user-contributions?username=${encodeURIComponent(currentUser.username)}`)
         .then(res => res.json())
         .then(res => {
             if (res.success) {
                 if (res.books.length === 0) {
-                    allContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Kho tàng tông môn hiện đang trống.</p>`;
+                    contributedContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-3">Đạo hữu [${currentUser.author_name}] chưa cống hiến bộ công pháp nào.</p>`;
                 } else {
-                    allContainer.innerHTML = '';
+                    contributedContainer.innerHTML = '';
                     res.books.forEach(book => {
-                        let icon = book.icon || '📖';
-                        allContainer.innerHTML += `
-                            <div class="bg-black/80 border border-amber-600/30 p-3 rounded-xl flex justify-between items-center text-xs">
-                                <div>
-                                    <span class="font-bold text-amber-300">${icon} ${book.title}</span>
-                                    <span class="text-[10px] text-amber-400/60 block">Tác giả: ${book.author} | Thể loại: ${book.category} (${book.element})</span>
-                                </div>
-                                <span class="text-amber-500 font-bold bg-amber-950/80 px-2 py-1 rounded border border-amber-600/40">Đang lưu hành</span>
+                        contributedContainer.innerHTML += `
+                            <div class="bg-amber-950/30 border border-amber-600/30 p-3 rounded-xl flex justify-between items-center text-xs">
+                                <span class="font-bold text-amber-200">${book.icon || '📖'} ${book.title} <span class="text-[10px] text-amber-400/70">(Hệ: ${book.element})</span></span>
+                                <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu trên Cloud vĩnh viễn</span>
                             </div>
                         `;
                     });
                 }
             }
         });
+    }
+
+    // ---------- TOÀN BỘ KHO TÀNG ----------
+    function loadAllBooks() {
+        const allContainer = document.getElementById('all-books-list');
+        fetch('/api/get-all-books')
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                allBooksCache = res.books;
+                if (res.books.length === 0) {
+                    allContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Kho tàng tông môn hiện đang trống.</p>`;
+                } else {
+                    allContainer.innerHTML = '';
+                    res.books.forEach((book, idx) => {
+                        allContainer.innerHTML += `
+                            <div class="bg-black/80 border border-amber-600/30 p-3 rounded-xl flex flex-col md:flex-row md:justify-between md:items-center gap-2 text-xs">
+                                <div>
+                                    <span class="font-bold text-amber-300">${book.icon || '📖'} ${book.title}</span>
+                                    <span class="text-[10px] text-amber-400/60 block">Tác giả: ${book.author} | ${catLabel(book.category)} - Hệ ${book.element}</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="openReader('${(book.title + ' - Tác giả: ' + book.author).replace(/'/g, "\\'")}', allBooksCache[${idx}].content)" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer"><i class="fa-solid fa-book-open"></i> Đọc</button>
+                                    <button onclick="saveToBag(${book.id})" class="bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-300 font-bold px-3 py-1.5 rounded-lg border border-emerald-600/40 cursor-pointer"><i class="fa-solid fa-box-archive"></i> Lưu Túi</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            }
+        });
+    }
+
+    function loadDongPhuData() {
+        loadBag();
+        loadContributions();
+        loadAllBooks();
     }
 
     document.addEventListener('DOMContentLoaded', loadDongPhuData);
