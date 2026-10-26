@@ -193,8 +193,8 @@
       },
       "bag": [],
       "game": {
-        "diem": 20,
-        "exp": 0,
+        "diem": 40,
+        "exp": 20,
         "tu_vi": {
           "muc": 1,
           "cap": -1,
@@ -216,18 +216,22 @@
         "stats": {
           "total": {
             "diem_danh": 1,
-            "doi_linh_thach": 1
+            "doi_linh_thach": 1,
+            "doc_chuong": 1
           },
           "today": {
             "date": "2026-10-26",
             "diem_danh": 1,
-            "doi_linh_thach": 1
+            "doi_linh_thach": 1,
+            "doc_chuong": 1
           }
         },
         "missions": {
           "active": {},
           "claimed_today": [],
-          "newbie_done": []
+          "newbie_done": [
+            "nb1"
+          ]
         },
         "notifications": [],
         "history": [
@@ -238,6 +242,10 @@
           {
             "time": "26/10/2026 13:45",
             "text": "Đổi 10 Nguyên Tinh -> +100 Linh Khí"
+          },
+          {
+            "time": "26/10/2026 13:45",
+            "text": "Thưởng nhiệm vụ [Bước Vào Tông Môn] (+20 Điểm Cống Hiến)"
           }
         ],
         "streak": {
