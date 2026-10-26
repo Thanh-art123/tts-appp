@@ -1,163 +1,245 @@
 {% extends "base.html" %}
-{% block title %}Bí Cảnh Tu Luyện{% endblock %}
+{% block title %}Chợ Đấu Giá - Tông Môn Tu Luyện{% endblock %}
 
 {% block content %}
-<div class="panel-3d rounded-2xl p-6 space-y-6">
-    <div class="flex justify-between items-center border-b border-amber-600/40 pb-3">
-        <h2 class="text-lg font-bold text-amber-400 flex items-center space-x-2">
-            <i class="fa-solid fa-mountain-sun text-amber-500"></i>
-            <span>Bí Cảnh Tu Luyện - Linh Khí Đồng Bộ Cloud</span>
-        </h2>
-        <span id="bi-canh-user-name" class="text-xs font-bold text-amber-300 bg-black/60 px-3 py-1 rounded-xl border border-amber-500/50">Chưa Đăng Nhập</span>
+<div class="panel-3d rounded-2xl p-6 relative space-y-5">
+    <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
+        <i class="fa-solid fa-gavel text-amber-500"></i>
+        <span>Chợ Đấu Giá Tông Môn — Buôn Bán · Đấu Giá · Trao Đổi</span>
+    </h2>
+    <p class="text-xs text-amber-200/80 leading-relaxed">Nơi đệ tử toàn Tông Môn giao thương bằng <b class="text-amber-300">Điểm Cống Hiến</b>: rao bán giá cố định, đấu giá vật hiếm (trả bằng Điểm hoặc Nguyên Tinh), hoặc rao đổi vật lấy vật. Mọi giao dịch đều <b>ký quỹ tại chợ</b> nên không lo bị lừa; chợ thu <b class="text-amber-300">phí sàn 5%</b> khi bán thành công. Điều kiện rao bán/mở đấu giá: <b class="text-amber-300">Cấp Hoạt Động ≥ 5</b> (chống tài khoản rác).</p>
+    <div class="flex flex-wrap gap-2 text-[11px] font-bold">
+        <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">💠 Điểm: <b id="cho-diem" class="text-amber-300">…</b></span>
+        <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">💎 Nguyên Tinh: <b id="cho-nt" class="text-amber-300">…</b></span>
+        <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">⭐ Cấp Hoạt Động: <b id="cho-cap" class="text-amber-300">…</b></span>
+        <span id="cho-quyen" class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">…</span>
     </div>
 
-    <!-- Thông báo chưa đăng nhập -->
-    <div id="unauth-notice" class="bg-black/80 border border-red-500/60 p-6 rounded-2xl text-center space-y-3 hidden">
-        <i class="fa-solid fa-lock text-red-400 text-3xl"></i>
-        <p class="text-xs text-amber-200 font-bold">Đạo hữu chưa đăng nhập tài khoản Cloud Tông Môn!</p>
-        <p class="text-[11px] text-amber-400/70">Hãy sang <a href="/tang-kinh-cac" class="text-amber-300 underline font-bold">Tàng Kinh Các</a> để đăng nhập hoặc tạo tài khoản mới.</p>
+    <div class="flex flex-wrap gap-1.5 text-[11px] font-extrabold" id="cho-tabs">
+        <button data-tab="rao" class="cho-tab bg-amber-600 text-black px-3 py-2 rounded-xl cursor-pointer">🏷️ Rao Bán</button>
+        <button data-tab="dau" class="cho-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">🔨 Đấu Giá</button>
+        <button data-tab="doi" class="cho-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">🔁 Trao Đổi</button>
+        <button data-tab="dang" class="cho-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">➕ Đăng Bán / Mở Đấu Giá</button>
+        <button data-tab="su" class="cho-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">🧾 Giao Dịch Gần Đây</button>
     </div>
 
-    <!-- Nội dung Tu Luyện Cá Nhân -->
-    <div id="tu-luyen-content" class="space-y-6">
-        <!-- Thông tin Cảnh Giới -->
-        <div class="bg-black/60 border border-amber-600/40 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="space-y-1 text-center md:text-left">
-                <p class="text-xs text-amber-400/80 uppercase font-bold">Cảnh Giới Hiện Tại</p>
-                <p class="text-2xl font-extrabold text-amber-300 tracking-wide" id="txt-canh-gioi">Đang tải...</p>
-                <p class="text-xs text-emerald-400 font-bold" id="txt-tieu-canh">---</p>
-            </div>
+    <!-- RAO BÁN -->
+    <div id="ctab-rao" class="cho-panel space-y-3">
+        <div id="rao-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs"></div>
+    </div>
 
-            <!-- Thanh Tiến Trình Linh Khí -->
-            <div class="w-full md:w-1/2 space-y-2">
-                <div class="flex justify-between text-xs font-bold text-amber-300">
-                    <span>Linh Khí Tích Lũy</span>
-                    <span id="txt-diem-progress">0 / 0</span>
-                </div>
-                <div class="w-full bg-black/80 rounded-full h-3 border border-amber-600/50 overflow-hidden">
-                    <div id="progress-bar" class="bg-gradient-to-r from-amber-600 to-yellow-400 h-full transition-all duration-500" style="width: 0%"></div>
-                </div>
-            </div>
+    <!-- ĐẤU GIÁ -->
+    <div id="ctab-dau" class="cho-panel hidden space-y-3">
+        <p class="text-[11px] text-amber-200/70">Đặt giá là tiền được <b>ký quỹ ngay</b> — bị trả cao hơn sẽ <b>hoàn 100%</b> kèm thông báo. Trả giá trong 2 phút cuối thì phiên <b>tự kéo dài thêm 2 phút</b>. Hết giờ: người cao nhất thắng, người bán nhận 95% (phí sàn 5%).</p>
+        <div id="dau-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs"></div>
+    </div>
 
-            <button onclick="dotPha()" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black font-extrabold px-6 py-3 rounded-xl text-xs shadow-lg transition cursor-pointer flex items-center space-x-2">
-                <i class="fa-solid fa-bolt-lightning"></i>
-                <span>Đột Phá Cảnh Giới</span>
-            </button>
+    <!-- TRAO ĐỔI -->
+    <div id="ctab-doi" class="cho-panel hidden space-y-3">
+        <div id="doi-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs"></div>
+    </div>
+
+    <!-- ĐĂNG BÁN -->
+    <div id="ctab-dang" class="cho-panel hidden space-y-4">
+        <div id="dang-lock" class="hidden bg-black/60 border border-red-500/50 rounded-2xl p-4 text-xs text-amber-100">
+            🔒 Đạo hữu đang ở <b>Cấp Hoạt Động <span id="lock-cap">1</span></b> — cần <b>Cấp 5</b> mới được rao bán / mở đấu giá / rao trao đổi (chống tài khoản rác). Đọc truyện, điểm danh, làm nhiệm vụ để tích Kinh Nghiệm lên cấp nhé! Mua và trả giá thì không cần điều kiện.
         </div>
-
-        <!-- Kho Vật Phẩm Thần Thông Cá Nhân -->
-        <div class="bg-black/60 border border-amber-600/40 rounded-2xl p-5 space-y-3">
-            <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2">
-                📦 Pháp Bảo & Vật Phẩm Tích Lũy (Đám Mây)
-            </h3>
-            <div class="grid grid-cols-3 gap-3 text-center text-xs">
-                <div class="bg-amber-950/40 border border-amber-600/30 p-3 rounded-xl">
-                    <span class="block text-xl mb-1">🌸</span>
-                    <span class="text-amber-200 font-bold">Thần Hoa: <span id="num-hoa" class="text-amber-400">0</span></span>
-                </div>
-                <div class="bg-amber-950/40 border border-amber-600/30 p-3 rounded-xl">
-                    <span class="block text-xl mb-1">🔥</span>
-                    <span class="text-amber-200 font-bold">Thánh Lửa: <span id="num-lua" class="text-amber-400">0</span></span>
-                </div>
-                <div class="bg-amber-950/40 border border-amber-600/30 p-3 rounded-xl">
-                    <span class="block text-xl mb-1">🪴</span>
-                    <span class="text-amber-200 font-bold">Linh Cây: <span id="num-cay" class="text-amber-400">0</span></span>
+        <div id="dang-forms" class="space-y-4">
+            <div class="bg-black/50 border border-amber-700/40 rounded-2xl p-4 space-y-3 text-xs">
+                <p class="font-black text-amber-300 text-sm">🏷️ Rao Bán Giá Cố Định (tối đa 5 tin)</p>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+                    <select id="rb-item" class="item-select p-2.5 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none"></select>
+                    <input id="rb-qty" type="number" min="1" value="1" placeholder="Số lượng" class="p-2.5 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none">
+                    <input id="rb-price" type="number" min="1" placeholder="Giá bán (điểm, cho cả lô)" class="p-2.5 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none">
+                    <button onclick="dangRao(this)" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-2.5 rounded-lg cursor-pointer">🏷️ Đăng Rao Bán</button>
                 </div>
             </div>
-        </div>
-
-        <!-- Các Hành Động Ngộ Đạo -->
-        <div class="bg-black/60 border border-amber-600/40 rounded-2xl p-5 space-y-3">
-            <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2">
-                ⚡ Hành Động Ngộ Đạo Tăng Linh Khí
-            </h3>
-            <div class="flex flex-wrap gap-3">
-                <button onclick="hanhDong('dang_bai')" class="bg-amber-900/60 hover:bg-amber-800/80 border border-amber-600/50 text-amber-200 font-bold px-4 py-2 rounded-xl text-xs transition cursor-pointer flex items-center space-x-2">
-                    <i class="fa-solid fa-pen-nib text-amber-400"></i>
-                    <span>Truyền Thừa Kinh Điển (+50 Điểm)</span>
-                </button>
-                <button onclick="hanhDong('nghe_truyen')" class="bg-amber-900/60 hover:bg-amber-800/80 border border-amber-600/50 text-amber-200 font-bold px-4 py-2 rounded-xl text-xs transition cursor-pointer flex items-center space-x-2">
-                    <i class="fa-solid fa-headphones text-amber-400"></i>
-                    <span>Tọa Thiền Lắng Nghe (+30 Điểm)</span>
-                </button>
-                <button onclick="hanhDong('nhat_vat_pham')" class="bg-amber-900/60 hover:bg-amber-800/80 border border-amber-600/50 text-amber-200 font-bold px-4 py-2 rounded-xl text-xs transition cursor-pointer flex items-center space-x-2">
-                    <i class="fa-solid fa-gem text-amber-400"></i>
-                    <span>Duyên Khởi Nhặt Vật Phẩm (+20 Điểm)</span>
-                </button>
+            <div class="bg-black/50 border border-amber-700/40 rounded-2xl p-4 space-y-3 text-xs">
+                <p class="font-black text-amber-300 text-sm">🔨 Mở Phiên Đấu Giá (tối đa 3 phiên)</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <select id="dg-item" class="item-select p-2.5 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none"></select>
+                    <input id="dg-qty" type="number" min="1" value="1" placeholder="Số lượng" class="p-2.5 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none">
+                    <input id="dg-start" type="number" min="1" placeholder="Giá khởi điểm" class="p-2.5 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none">
+                    <select id="dg-cur" class="p-2.5 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none">
+                        <option value="diem">Trả giá bằng Điểm Cống Hiến</option>
+                        <option value="nguyen">Trả giá bằng Nguyên Tinh</option>
+                    </select>
+                    <select id="dg-hours" class="p-2.5 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none">
+                        <option value="6">Kéo dài 6 giờ</option>
+                        <option value="12" selected>Kéo dài 12 giờ</option>
+                        <option value="24">Kéo dài 24 giờ</option>
+                    </select>
+                    <button onclick="dangDau(this)" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-2.5 rounded-lg cursor-pointer">🔨 Mở Đấu Giá</button>
+                </div>
+            </div>
+            <div class="bg-black/50 border border-amber-700/40 rounded-2xl p-4 space-y-3 text-xs">
+                <p class="font-black text-amber-300 text-sm">🔁 Rao Trao Đổi Vật Lấy Vật (tối đa 3 tin)</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="space-y-2">
+                        <p class="font-bold text-amber-200">Đem đổi:</p>
+                        <select id="td-give" class="item-select w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none"></select>
+                        <input id="td-gqty" type="number" min="1" value="1" placeholder="Số lượng đem đổi" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none">
+                    </div>
+                    <div class="space-y-2">
+                        <p class="font-bold text-amber-200">Muốn nhận:</p>
+                        <select id="td-want" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none"></select>
+                        <input id="td-wqty" type="number" min="1" value="1" placeholder="Số lượng muốn nhận" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none">
+                    </div>
+                </div>
+                <button onclick="dangDoi(this)" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-2.5 rounded-lg cursor-pointer w-full md:w-auto">🔁 Đăng Rao Trao Đổi</button>
             </div>
         </div>
     </div>
+
+    <!-- GIAO DỊCH GẦN ĐÂY -->
+    <div id="ctab-su" class="cho-panel hidden space-y-2">
+        <div id="su-list" class="space-y-2 text-xs"></div>
+    </div>
+
+    <div id="cho-toast" class="hidden fixed left-1/2 bottom-6 -translate-x-1/2 z-50 bg-emerald-800 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl border border-emerald-400/60 max-w-[92vw]"></div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    document.getElementById('nav-bi')?.classList.add('active');
+    let CHO = null, GAME = null, tickBusy = false;
 
-    const currentUser = JSON.parse(localStorage.getItem('tongan_current_user')) || null;
-
-    function renderTuLuyenUI(res) {
-        if(!res.success) return;
-        const data = res.data;
-        document.getElementById('txt-canh-gioi').innerText = res.ten_canh;
-        document.getElementById('txt-tieu-canh').innerText = `[${res.ten_tieu_canh}]`;
-        document.getElementById('txt-diem-progress').innerText = `${data.diem_tich_tuyem} / ${res.diem_max}`;
-        
-        let pct = Math.min(100, Math.round((data.diem_tich_tuyem / res.diem_max) * 100));
-        document.getElementById('progress-bar').style.width = pct + '%';
-
-        document.getElementById('num-hoa').innerText = data.vat_pham.hoa;
-        document.getElementById('num-lua').innerText = data.vat_pham.lua;
-        document.getElementById('num-cay').innerText = data.vat_pham.cay;
+    function fmtNum(n) { return (n === null || n === undefined) ? '0' : Number(n).toLocaleString('vi-VN'); }
+    function curName(c) { return c === 'diem' ? 'điểm' : 'Nguyên Tinh'; }
+    function fmtTime(sec) {
+        sec = Math.max(0, sec | 0);
+        const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+        return (h > 0 ? h + ' giờ ' : '') + m + ' phút ' + s + ' giây';
+    }
+    function toast(msg, ok) {
+        const t = document.getElementById('cho-toast');
+        t.innerText = msg;
+        t.className = 'fixed left-1/2 bottom-6 -translate-x-1/2 z-50 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl max-w-[92vw] border ' + (ok === false ? 'bg-red-900 border-red-400/60' : 'bg-emerald-800 border-emerald-400/60');
+        clearTimeout(t._h); t._h = setTimeout(() => t.classList.add('hidden'), 5000);
     }
 
-    function loadTuLuyenData() {
-        if(!currentUser) {
-            document.getElementById('unauth-notice').classList.remove('hidden');
-            document.getElementById('tu-luyen-content').classList.add('hidden');
-            return;
+    async function choAct(btn, url, body) {
+        if (btn) btn.disabled = true;
+        try {
+            const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
+            const res = await r.json();
+            if (res.success) { toast(res.message, true); if (res.cho) { CHO = res.cho; GAME = res.game; renderCho(); } else loadCho(); }
+            else { toast(res.message || 'Có lỗi xảy ra!', false); loadCho(); }
+        } catch (e) { toast('Mất kết nối, thử lại nhé!', false); }
+        if (btn) btn.disabled = false;
+    }
+
+    function loadCho() {
+        fetch('/api/cho').then(r => r.json()).then(res => {
+            if (res.success) { CHO = res.cho; GAME = res.game; renderCho(); }
+        }).catch(() => {});
+    }
+
+    function renderCho() {
+        if (!CHO || !GAME) return;
+        document.getElementById('cho-diem').innerText = fmtNum(GAME.diem);
+        document.getElementById('cho-nt').innerText = fmtNum((GAME.linh_thach || {}).nguyen || 0);
+        document.getElementById('cho-cap').innerText = CHO.cap_hoat_dong;
+        document.getElementById('cho-quyen').innerHTML = CHO.can_sell ? '✔ Đạo hữu <b class="text-emerald-300">được phép</b> rao bán / mở đấu giá' : '🔒 Cần Cấp Hoạt Động 5 để bán (mua &amp; trả giá tự do)';
+        // Rao bán
+        document.getElementById('rao-list').innerHTML = CHO.listings.length ? CHO.listings.map(l => `
+            <div class="bg-black/50 border ${l.mine ? 'border-sky-500/60' : 'border-amber-700/40'} rounded-xl p-3 space-y-2">
+                <p class="font-black text-amber-200">${l.label} <span class="text-amber-400">× ${l.qty}</span></p>
+                <p class="text-amber-100/75">Người bán: ${l.seller_name} · ${l.created}</p>
+                <p class="text-base font-black text-emerald-300">${fmtNum(l.price)} điểm</p>
+                ${l.mine
+                    ? `<button onclick="choAct(this,'/api/cho/huy-rao',{id:'${l.id}'})" class="bg-slate-700 hover:bg-slate-600 text-amber-100 font-bold px-3 py-2 rounded-lg cursor-pointer">↩️ Hủy Rao (trả lại đồ)</button>`
+                    : `<button onclick="choAct(this,'/api/cho/mua',{id:'${l.id}'})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-2 rounded-lg cursor-pointer">🛍️ Mua Ngay</button>`}
+            </div>`).join('') : '<p class="text-amber-300/50">Chợ đang vắng — chưa có tin rao bán nào. Sang tab Đăng Bán để mở hàng!</p>';
+        // Đấu giá
+        document.getElementById('dau-list').innerHTML = CHO.auctions.length ? CHO.auctions.map(a => `
+            <div class="bg-black/50 border ${a.dang_thang ? 'border-emerald-500/70' : a.mine ? 'border-sky-500/60' : 'border-amber-700/40'} rounded-xl p-3 space-y-2">
+                <p class="font-black text-amber-200">${a.label} <span class="text-amber-400">× ${a.qty}</span></p>
+                <p class="text-amber-100/75">Người bán: ${a.seller_name} · ${a.bids} lượt trả giá</p>
+                <p class="text-amber-100/85">${a.bidder ? `Giá hiện tại: <b class="text-base text-emerald-300">${fmtNum(a.cur)} ${curName(a.currency)}</b> — dẫn đầu: <b class="text-amber-300">${a.bidder_name}</b>` : `Giá khởi điểm: <b class="text-base text-emerald-300">${fmtNum(a.start)} ${curName(a.currency)}</b> — chưa ai trả giá`}</p>
+                <p class="text-amber-100/75">⏳ Còn lại: <b class="text-amber-300" data-left="${a.con_lai}">${fmtTime(a.con_lai)}</b></p>
+                ${a.mine
+                    ? (a.bidder
+                        ? '<span class="text-sky-300 font-bold">Phiên của bạn — đang có người trả giá, không hủy được.</span>'
+                        : `<button onclick="choAct(this,'/api/cho/dau-gia/huy',{id:'${a.id}'})" class="bg-slate-700 hover:bg-slate-600 text-amber-100 font-bold px-3 py-2 rounded-lg cursor-pointer">↩️ Hủy Phiên (chưa ai trả giá)</button>`)
+                    : (a.dang_thang
+                        ? '<span class="text-emerald-300 font-bold">🏆 Bạn đang dẫn đầu phiên này!</span>'
+                        : `<div class="flex items-center gap-2">
+                               <input id="bid-${a.id}" type="number" min="${a.gia_toi_thieu}" value="${a.gia_toi_thieu}" class="w-32 p-2 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none">
+                               <button onclick="choAct(this,'/api/cho/dau-gia/dat',{id:'${a.id}',amount:parseInt(document.getElementById('bid-${a.id}').value)})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-2 rounded-lg cursor-pointer">🔨 Đặt Giá (tối thiểu ${fmtNum(a.gia_toi_thieu)})</button>
+                           </div>`)}
+            </div>`).join('') : '<p class="text-amber-300/50">Chưa có phiên đấu giá nào đang chạy.</p>';
+        // Trao đổi
+        document.getElementById('doi-list').innerHTML = CHO.barters.length ? CHO.barters.map(b => `
+            <div class="bg-black/50 border ${b.mine ? 'border-sky-500/60' : 'border-amber-700/40'} rounded-xl p-3 space-y-2">
+                <p class="text-amber-100/85"><b class="text-amber-300">${b.seller_name}</b> rao đổi:</p>
+                <p class="font-black text-amber-200">Đưa: ${b.give.label} × ${b.give.qty}</p>
+                <p class="font-black text-emerald-300">Muốn nhận: ${b.want.label} × ${b.want.qty}</p>
+                ${b.mine
+                    ? `<button onclick="choAct(this,'/api/cho/trao-doi/huy',{id:'${b.id}'})" class="bg-slate-700 hover:bg-slate-600 text-amber-100 font-bold px-3 py-2 rounded-lg cursor-pointer">↩️ Hủy Rao Đổi</button>`
+                    : `<button onclick="choAct(this,'/api/cho/trao-doi/chap-nhan',{id:'${b.id}'})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-2 rounded-lg cursor-pointer">🔁 Chấp Nhận Đổi (cần có ${b.want.label} × ${b.want.qty})</button>`}
+            </div>`).join('') : '<p class="text-amber-300/50">Chưa có tin trao đổi nào.</p>';
+        // Đăng bán: khóa/mở theo cấp
+        document.getElementById('dang-lock').classList.toggle('hidden', CHO.can_sell);
+        document.getElementById('dang-forms').classList.toggle('hidden', !CHO.can_sell);
+        document.getElementById('lock-cap').innerText = CHO.cap_hoat_dong;
+        if (CHO.can_sell) {
+            const itemOpts = CHO.my_items.length
+                ? CHO.my_items.map(i => `<option value="${i.kind}|${i.key}">${i.label} — đang có ${i.qty}</option>`).join('')
+                : '<option value="">(Kho đang trống — hãy hành nghề/khai thác trước)</option>';
+            document.querySelectorAll('.item-select').forEach(sel => { const v = sel.value; sel.innerHTML = itemOpts; if (v) sel.value = v; });
+            const wantSel = document.getElementById('td-want');
+            const wv = wantSel.value;
+            wantSel.innerHTML = CHO.catalog.map(i => `<option value="${i.kind}|${i.key}">${i.label}</option>`).join('');
+            if (wv) wantSel.value = wv;
         }
-
-        document.getElementById('bi-canh-user-name').innerText = `Đạo Hào: ${currentUser.author_name}`;
-
-        fetch(`/api/get-tu-luyen?username=${encodeURIComponent(currentUser.username)}`)
-        .then(res => res.json())
-        .then(res => {
-            if(res.success) {
-                renderTuLuyenUI(res);
-            } else {
-                alert(res.message);
-            }
-        });
+        // Giao dịch gần đây
+        document.getElementById('su-list').innerHTML = CHO.deals.length ? CHO.deals.map(d => `
+            <div class="bg-black/50 border border-amber-700/40 rounded-xl px-3 py-2"><span class="text-amber-400/70">${d.time}</span><br><span class="text-amber-100/90">${d.text}</span></div>`).join('')
+            : '<p class="text-amber-300/50">Chưa có giao dịch nào trên chợ.</p>';
     }
 
-    function hanhDong(loai) {
-        if(!currentUser) return;
-        fetch('/api/hanh-dong', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ username: currentUser.username, loai: loai })
-        })
-        .then(res => res.json())
-        .then(res => {
-            if(res.success) renderTuLuyenUI(res);
-        });
+    function pickVal(id) {
+        const v = document.getElementById(id).value || '';
+        const [kind, key] = v.split('|');
+        return { kind, key };
+    }
+    function dangRao(btn) {
+        const p = pickVal('rb-item');
+        if (!p.kind) { toast('Kho đang trống, chưa có gì để bán!', false); return; }
+        choAct(btn, '/api/cho/rao-ban', { kind: p.kind, key: p.key, qty: parseInt(document.getElementById('rb-qty').value || '0'), price: parseInt(document.getElementById('rb-price').value || '0') });
+    }
+    function dangDau(btn) {
+        const p = pickVal('dg-item');
+        if (!p.kind) { toast('Kho đang trống, chưa có gì để đấu giá!', false); return; }
+        choAct(btn, '/api/cho/dau-gia/tao', { kind: p.kind, key: p.key, qty: parseInt(document.getElementById('dg-qty').value || '0'), start: parseInt(document.getElementById('dg-start').value || '0'), currency: document.getElementById('dg-cur').value, hours: parseInt(document.getElementById('dg-hours').value) });
+    }
+    function dangDoi(btn) {
+        const g = pickVal('td-give'), w = pickVal('td-want');
+        if (!g.kind) { toast('Kho đang trống, chưa có gì đem đổi!', false); return; }
+        choAct(btn, '/api/cho/trao-doi/tao', { give_kind: g.kind, give_key: g.key, give_qty: parseInt(document.getElementById('td-gqty').value || '0'), want_kind: w.kind, want_key: w.key, want_qty: parseInt(document.getElementById('td-wqty').value || '0') });
     }
 
-    function dotPha() {
-        if(!currentUser) return;
-        fetch('/api/dot-pha', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ username: currentUser.username })
-        })
-        .then(res => res.json())
-        .then(res => {
-            alert(res.message);
-            if(res.success) renderTuLuyenUI(res);
+    document.querySelectorAll('#cho-tabs .cho-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#cho-tabs .cho-tab').forEach(b => b.className = 'cho-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer');
+            btn.className = 'cho-tab bg-amber-600 text-black px-3 py-2 rounded-xl cursor-pointer';
+            document.querySelectorAll('.cho-panel').forEach(p => p.classList.add('hidden'));
+            document.getElementById('ctab-' + btn.dataset.tab).classList.remove('hidden');
         });
-    }
+    });
 
-    document.addEventListener('DOMContentLoaded', loadTuLuyenData);
+    setInterval(() => {
+        let needReload = false;
+        document.querySelectorAll('[data-left]').forEach(el => {
+            let v = parseInt(el.dataset.left) - 1;
+            el.dataset.left = v;
+            el.innerText = fmtTime(v);
+            if (v <= 0) needReload = true;
+        });
+        if (needReload && !tickBusy) { tickBusy = true; loadCho(); setTimeout(() => tickBusy = false, 5000); }
+    }, 1000);
+
+    document.addEventListener('DOMContentLoaded', loadCho);
 </script>
 {% endblock %}
