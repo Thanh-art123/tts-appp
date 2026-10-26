@@ -92,7 +92,7 @@
             "doc_chuong": 1,
             "khai_thac": 3,
             "lk_ok": 2,
-            "ve_phu": 1
+            "ve_phu": 2
           },
           "today": {
             "date": "2026-10-26",
@@ -100,7 +100,7 @@
             "doc_chuong": 1,
             "khai_thac": 3,
             "lk_ok": 2,
-            "ve_phu": 1
+            "ve_phu": 2
           }
         },
         "missions": {
