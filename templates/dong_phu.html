@@ -3,10 +3,19 @@
 
 {% block content %}
 <div class="panel-3d rounded-2xl p-6 space-y-6">
-    <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 mb-4 flex items-center space-x-2">
-        <i class="fa-solid fa-torii-gate text-amber-500"></i>
-        <span>Động Phủ Tu Luyện - Kho Tàng Đám Mây (Cloud Storage)</span>
-    </h2>
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-amber-600/40 pb-3 mb-4 gap-4">
+        <h2 class="text-lg font-bold text-amber-400 flex items-center space-x-2">
+            <i class="fa-solid fa-torii-gate text-amber-500"></i>
+            <span>Động Phủ Tu Luyện - Kho Tàng Đám Mây (Cloud Storage)</span>
+        </h2>
+        <div class="flex items-center space-x-2">
+            <span id="user-badge" class="text-xs font-bold text-amber-300 bg-black/60 px-3 py-1.5 rounded-xl border border-amber-500/50">Chưa đăng nhập</span>
+            <button onclick="openAuthModal()" id="auth-btn-text" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-4 py-2 rounded-xl text-xs shadow transition cursor-pointer flex items-center space-x-2">
+                <i class="fa-solid fa-user-lock"></i>
+                <span>Đăng Nhập / Đăng Ký</span>
+            </button>
+        </div>
+    </div>
 
     <!-- KHU VỰC TÚI TRỮ VẬT CÁ NHÂN (GẮN THEO TÀI KHOẢN - ĐĂNG NHẬP ĐÚNG TÊN LÀ CÒN MÃI MÃI) -->
     <div class="bg-black/70 border-2 border-amber-500/60 rounded-2xl p-5 space-y-4 shadow-lg shadow-amber-950/50">
@@ -93,6 +102,37 @@
     <input type="hidden" name="content" id="form-content">
 </form>
 
+<!-- Modal Đăng Nhập / Đăng Ký (dùng chung tài khoản với Tàng Kinh Các) -->
+<div id="auth-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="panel-3d rounded-2xl max-w-md w-full mx-4 p-6 relative border border-amber-500/80 shadow-2xl space-y-4">
+        <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-amber-400 hover:text-white text-lg cursor-pointer">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <h3 class="text-base font-extrabold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
+            <i class="fa-solid fa-shield-halved text-amber-500"></i>
+            <span>Đăng Nhập Tông Môn (Chưởng Môn / Đệ Tử)</span>
+        </h3>
+        <div class="space-y-3 text-xs">
+            <div>
+                <label class="block font-bold text-amber-300 mb-1">Tài Khoản (Username):</label>
+                <input type="text" id="login-username" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none" placeholder="Ví dụ: admin hoặc detu01...">
+            </div>
+            <div>
+                <label class="block font-bold text-amber-300 mb-1">Mật Khẩu:</label>
+                <input type="password" id="login-password" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none" placeholder="Mật khẩu bảo mật...">
+            </div>
+            <div id="register-extra-field" class="hidden">
+                <label class="block font-bold text-amber-300 mb-1">Đạo Hào (Tên hiển thị khi đăng bài):</label>
+                <input type="text" id="register-author-name" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none" placeholder="Ví dụ: Thiên Tôn...">
+            </div>
+        </div>
+        <div class="flex flex-col space-y-2 pt-3 border-t border-amber-800/60">
+            <button onclick="submitLogin()" id="action-login-btn" class="w-full bg-amber-600 hover:bg-amber-500 text-black py-2.5 rounded-xl text-xs font-extrabold cursor-pointer">Đăng Nhập Hệ Thống</button>
+            <button onclick="toggleAuthMode()" id="toggle-mode-btn" class="text-amber-400 hover:underline text-center text-xs font-bold">Chưa có tài khoản? Đăng ký đạo tịch mới</button>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Đăng Lên Tàng Kinh Các -->
 <div id="publish-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
     <div class="panel-3d rounded-2xl max-w-md w-full mx-4 p-6 relative border border-amber-500/80 shadow-2xl space-y-4">
@@ -130,9 +170,82 @@
 
 {% block scripts %}
 <script>
-    document.getElementById('nav-dong').classList.add('active');
+    document.getElementById('nav-dong')?.classList.add('active');
 
-    const currentUser = JSON.parse(localStorage.getItem('tongan_current_user')) || null;
+    let currentUser = JSON.parse(localStorage.getItem('tongan_current_user')) || null;
+    let isRegisterMode = false;
+
+    // ---------- ĐĂNG NHẬP / ĐĂNG KÝ NGAY TẠI ĐỘNG PHỦ ----------
+    function updateAuthUI() {
+        const badge = document.getElementById('user-badge');
+        const btn = document.getElementById('auth-btn-text');
+        if (!badge || !btn) return;
+        if (currentUser) {
+            let roleText = currentUser.role === 'admin' ? '⚡ Chưởng Môn Nhân' : '👤 Đệ Tử';
+            badge.innerText = `${roleText}: ${currentUser.author_name}`;
+            btn.innerHTML = `<i class="fa-solid fa-right-from-bracket"></i><span>Đăng Xuất</span>`;
+            btn.setAttribute('onclick', 'logoutUser()');
+        } else {
+            badge.innerText = 'Chưa đăng nhập';
+            btn.innerHTML = `<i class="fa-solid fa-user-lock"></i><span>Đăng Nhập / Đăng Ký</span>`;
+            btn.setAttribute('onclick', 'openAuthModal()');
+        }
+    }
+
+    function logoutUser() {
+        localStorage.removeItem('tongan_current_user');
+        currentUser = null;
+        updateAuthUI();
+        loadDongPhuData();
+        alert("Đã đăng xuất thành công!");
+    }
+
+    function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
+    function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
+
+    function toggleAuthMode() {
+        isRegisterMode = !isRegisterMode;
+        if (isRegisterMode) {
+            document.getElementById('register-extra-field').classList.remove('hidden');
+            document.getElementById('action-login-btn').innerText = "Đăng Ký Đạo Tịch";
+            document.getElementById('toggle-mode-btn').innerText = "Đã có tài khoản? Quay lại đăng nhập";
+        } else {
+            document.getElementById('register-extra-field').classList.add('hidden');
+            document.getElementById('action-login-btn').innerText = "Đăng Nhập Hệ Thống";
+            document.getElementById('toggle-mode-btn').innerText = "Chưa có tài khoản? Đăng ký đạo tịch mới";
+        }
+    }
+
+    function submitLogin() {
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+        const author_name = document.getElementById('register-author-name').value.trim();
+
+        if (!username || !password) { alert("Vui lòng điền tài khoản và mật khẩu!"); return; }
+        if (isRegisterMode && !author_name) { alert("Vui lòng nhập đạo hào (tên hiển thị)!"); return; }
+
+        const endpoint = isRegisterMode ? '/api/register' : '/api/login';
+        const payload = isRegisterMode ? {username, password, author_name} : {username, password};
+
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                alert(res.message);
+                currentUser = res.user;
+                localStorage.setItem('tongan_current_user', JSON.stringify(currentUser));
+                closeAuthModal();
+                updateAuthUI();
+                loadDongPhuData();
+            } else {
+                alert(res.message);
+            }
+        });
+    }
     let allBooksCache = [];
     let currentPublishItemId = null;
 
@@ -151,7 +264,7 @@
 
         if (!currentUser) {
             tuiTitle.innerText = "Túi Trữ Vật (Chưa đăng nhập)";
-            tuiContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Đạo hữu chưa đăng nhập. Hãy đăng nhập ở Tàng Kinh Các để mở Túi Trữ Vật cá nhân.</p>`;
+            tuiContainer.innerHTML = `<p class="text-xs text-amber-400/50 text-center py-4">Đạo hữu chưa đăng nhập. Hãy bấm nút "Đăng Nhập / Đăng Ký" ở phía trên trang này để mở Túi Trữ Vật cá nhân.</p>`;
             return;
         }
         tuiTitle.innerText = `Túi Trữ Vật Của [${currentUser.author_name}] (${currentUser.username})`;
@@ -199,7 +312,7 @@
     }
 
     function uploadToBag() {
-        if (!currentUser) { alert("Đạo hữu chưa đăng nhập! Hãy đăng nhập ở Tàng Kinh Các trước."); return; }
+        if (!currentUser) { alert("Đạo hữu chưa đăng nhập! Hãy bấm nút Đăng Nhập / Đăng Ký ở phía trên trang này trước."); openAuthModal(); return; }
         const title = document.getElementById('bag-new-title').value.trim();
         const fileInput = document.getElementById('bag-new-file');
         const cat = document.getElementById('bag-new-category').value;
@@ -279,7 +392,7 @@
     }
 
     function saveToBag(bookId) {
-        if (!currentUser) { alert("Đạo hữu chưa đăng nhập! Hãy đăng nhập ở Tàng Kinh Các để dùng Túi Trữ Vật."); return; }
+        if (!currentUser) { alert("Đạo hữu chưa đăng nhập! Hãy đăng nhập để dùng Túi Trữ Vật."); openAuthModal(); return; }
         fetch('/api/bag/add', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -354,6 +467,6 @@
         loadAllBooks();
     }
 
-    document.addEventListener('DOMContentLoaded', loadDongPhuData);
+    document.addEventListener('DOMContentLoaded', () => { updateAuthUI(); loadDongPhuData(); });
 </script>
 {% endblock %}
