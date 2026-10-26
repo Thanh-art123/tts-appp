@@ -11,9 +11,9 @@
 
         <div class="flex items-center space-x-2">
             <span id="user-badge" class="text-xs font-bold text-amber-300 bg-black/60 px-3 py-1.5 rounded-xl border border-amber-500/50">Chưa đăng nhập</span>
-            <button onclick="openAuthModal()" id="auth-btn-text" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-4 py-2 rounded-xl text-xs shadow transition cursor-pointer flex items-center space-x-2">
-                <i class="fa-solid fa-user-lock"></i>
-                <span>Đăng Nhập / Đăng Ký</span>
+            <button onclick="globalLogout()" class="bg-red-700 hover:bg-red-600 text-white font-extrabold px-4 py-2 rounded-xl text-xs shadow transition cursor-pointer flex items-center space-x-2">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Đăng Xuất</span>
             </button>
         </div>
     </div>
@@ -68,40 +68,6 @@
     <input type="hidden" name="content" id="form-content">
 </form>
 
-<!-- Modal Đăng Nhập / Đăng Ký Hệ Thống -->
-<div id="auth-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-    <div class="panel-3d rounded-2xl max-w-md w-full mx-4 p-6 relative border border-amber-500/80 shadow-2xl space-y-4">
-        <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-amber-400 hover:text-white text-lg cursor-pointer">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
-        
-        <h3 class="text-base font-extrabold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
-            <i class="fa-solid fa-shield-halved text-amber-500"></i>
-            <span>Đăng Nhập Tông Môn (Chưởng Môn / Đệ Tử)</span>
-        </h3>
-
-        <div class="space-y-3 text-xs">
-            <div>
-                <label class="block font-bold text-amber-300 mb-1">Tài Khoản (Username):</label>
-                <input type="text" id="login-username" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none" placeholder="Ví dụ: admin hoặc detu01...">
-            </div>
-            <div>
-                <label class="block font-bold text-amber-300 mb-1">Mật Khẩu:</label>
-                <input type="password" id="login-password" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none" placeholder="Mật khẩu bảo mật...">
-            </div>
-            <div id="register-extra-field" class="hidden">
-                <label class="block font-bold text-amber-300 mb-1">Đạo Hào (Tên hiển thị khi đăng bài):</label>
-                <input type="text" id="register-author-name" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none" placeholder="Ví dụ: Thiên Tôn...">
-            </div>
-        </div>
-
-        <div class="flex flex-col space-y-2 pt-3 border-t border-amber-800/60">
-            <button onclick="submitLogin()" id="action-login-btn" class="w-full bg-amber-600 hover:bg-amber-500 text-black py-2.5 rounded-xl text-xs font-extrabold cursor-pointer">Đăng Nhập Hệ Thống</button>
-            <button onclick="toggleAuthMode()" id="toggle-mode-btn" class="text-amber-400 hover:underline text-center text-xs font-bold">Chưa có tài khoản? Đăng ký đạo tịch mới</button>
-        </div>
-    </div>
-</div>
-
 <!-- Modal Tải Lên File Truyện -->
 <div id="upload-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
     <div class="panel-3d rounded-2xl max-w-lg w-full mx-4 p-6 relative border border-amber-500/80 shadow-2xl space-y-4">
@@ -144,81 +110,21 @@
     let currentCategory = 'truyen-dich';
     let currentElement = 'Kim';
     let currentUser = JSON.parse(localStorage.getItem('tongan_current_user')) || null;
-    let isRegisterMode = false;
 
     function updateAuthUI() {
-        if(currentUser) {
+        const badge = document.getElementById('user-badge');
+        if (!badge) return;
+        if (currentUser) {
             let roleText = currentUser.role === 'admin' ? '⚡ Chưởng Môn Nhân' : '👤 Đệ Tử';
-            document.getElementById('user-badge').innerText = `${roleText}: ${currentUser.author_name}`;
-            document.getElementById('auth-btn-text').innerHTML = `<i class="fa-solid fa-right-from-bracket"></i><span>Đăng Xuất</span>`;
-            document.getElementById('auth-btn-text').setAttribute('onclick', 'logoutUser()');
+            badge.innerText = `${roleText}: ${currentUser.author_name}`;
         } else {
-            document.getElementById('user-badge').innerText = 'Chưa đăng nhập';
-            document.getElementById('auth-btn-text').innerHTML = `<i class="fa-solid fa-user-lock"></i><span>Đăng Nhập / Đăng Ký</span>`;
-            document.getElementById('auth-btn-text').setAttribute('onclick', 'openAuthModal()');
+            badge.innerText = 'Chưa đăng nhập';
         }
     }
 
-    function logoutUser() {
-        localStorage.removeItem('tongan_current_user');
-        currentUser = null;
-        updateAuthUI();
-        alert("Đã đăng xuất thành công!");
-        loadBooksFromServer();
-    }
-
-    function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
-    function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
-
-    function toggleAuthMode() {
-        isRegisterMode = !isRegisterMode;
-        if(isRegisterMode) {
-            document.getElementById('register-extra-field').classList.remove('hidden');
-            document.getElementById('action-login-btn').innerText = "Đăng Ký Đạo Tịch";
-            document.getElementById('toggle-mode-btn').innerText = "Đã có tài khoản? Quay lại đăng nhập";
-        } else {
-            document.getElementById('register-extra-field').classList.add('hidden');
-            document.getElementById('action-login-btn').innerText = "Đăng Nhập Hệ Thống";
-            document.getElementById('toggle-mode-btn').innerText = "Chưa có tài khoản? Đăng ký đạo tịch mới";
-        }
-    }
-
-    function submitLogin() {
-        const username = document.getElementById('login-username').value.trim();
-        const password = document.getElementById('login-password').value.trim();
-        const author_name = document.getElementById('register-author-name').value.trim();
-
-        if(!username || !password) {
-            alert("Vui lòng điền tài khoản và mật khẩu!");
-            return;
-        }
-
-        if(isRegisterMode && !author_name) {
-            alert("Vui lòng nhập đạo hào (tên hiển thị)!");
-            return;
-        }
-
-        const endpoint = isRegisterMode ? '/api/register' : '/api/login';
-        const payload = isRegisterMode ? {username, password, author_name} : {username, password};
-
-        fetch(endpoint, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
-        })
-        .then(res => res.json())
-        .then(res => {
-            if(res.success) {
-                alert(res.message);
-                currentUser = res.user;
-                localStorage.setItem('tongan_current_user', JSON.stringify(currentUser));
-                closeAuthModal();
-                updateAuthUI();
-                loadBooksFromServer();
-            } else {
-                alert(res.message);
-            }
-        });
+    function requireLogin() {
+        alert("Đạo hữu chưa đăng nhập! Đang đưa đạo hữu tới Cổng Tông Môn...");
+        window.location.href = '/dang-nhap';
     }
 
     function switchCategory(catName) {
@@ -312,7 +218,7 @@
     function saveToBag(bookId) {
         if(!currentUser) {
             alert("Đạo hữu chưa đăng nhập! Hãy đăng nhập để cất truyện vào Túi Trữ Vật của riêng mình.");
-            openAuthModal();
+            requireLogin();
             return;
         }
         fetch('/api/bag/add', {
@@ -327,7 +233,7 @@
     function checkUploadPermission() {
         if(!currentUser) {
             alert("Đạo hữu chưa đăng nhập! Hãy đăng nhập hệ thống trước khi tải truyện lên Cloud.");
-            openAuthModal();
+            requireLogin();
             return;
         }
         document.getElementById('book-author-display').value = currentUser.author_name;

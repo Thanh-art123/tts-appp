@@ -110,6 +110,14 @@
                     <span class="hidden sm:inline">Tải Nhạc</span>
                 </label>
             </div>
+
+            <!-- TÀI KHOẢN ĐANG ĐĂNG NHẬP (TOÀN WEB) -->
+            <div id="global-account" class="hidden items-center space-x-2 bg-amber-950/90 px-3 py-1.5 rounded-full border border-amber-500/60 shadow-xl">
+                <span id="global-user-badge" class="text-xs font-bold text-amber-100 whitespace-nowrap"></span>
+                <button onclick="globalLogout()" class="text-xs bg-red-700 hover:bg-red-600 text-white font-extrabold px-2.5 py-1 rounded-full transition shadow whitespace-nowrap">
+                    <i class="fa-solid fa-right-from-bracket"></i> Đăng Xuất
+                </button>
+            </div>
         </div>
     </header>
 
@@ -319,6 +327,28 @@
                 updatePlayButtonUI(false);
             }
         }
+    </script>
+    <!-- TÀI KHOẢN TOÀN WEB: hiển thị đạo hữu đang đăng nhập + đăng xuất -->
+    <script>
+        function globalLogout() {
+            fetch('/api/logout', { method: 'POST' })
+            .finally(() => {
+                localStorage.removeItem('tongan_current_user');
+                window.location.href = '/dang-nhap';
+            });
+        }
+
+        (function showGlobalAccount() {
+            try {
+                const u = JSON.parse(localStorage.getItem('tongan_current_user') || 'null');
+                const box = document.getElementById('global-account');
+                if (u && box) {
+                    document.getElementById('global-user-badge').innerText = (u.role === 'admin' ? '⚡ ' : '👤 ') + u.author_name;
+                    box.classList.remove('hidden');
+                    box.classList.add('flex');
+                }
+            } catch (e) { /* bỏ qua nếu dữ liệu local hỏng */ }
+        })();
     </script>
     {% block scripts %}{% endblock %}
 </body>

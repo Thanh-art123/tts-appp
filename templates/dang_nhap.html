@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Cổng Tông Môn - Đăng Nhập / Đăng Ký{% endblock %}
+
+{% block content %}
+<div class="panel-3d rounded-2xl p-6 space-y-5 max-w-xl mx-auto">
+    <div class="text-center space-y-2">
+        <i class="fa-solid fa-torii-gate text-amber-400 text-4xl"></i>
+        <h2 class="text-xl font-black text-amber-400 tracking-wide">CỔNG TÔNG MÔN</h2>
+        <p class="text-xs text-amber-200/70 leading-relaxed">
+            Muốn vào Tông Môn Tu Luyện, đạo hữu phải <b class="text-amber-300">đăng nhập</b> trước.
+            Chưa có tài khoản thì <b class="text-amber-300">đăng ký đạo tịch mới</b> ngay tại đây —
+            tài khoản và mọi tài nguyên đạo hữu đăng lên sẽ được <b class="text-amber-300">lưu giữ vĩnh viễn</b>,
+            đăng nhập đúng tên là còn nguyên tất cả.
+        </p>
+    </div>
+
+    <div class="space-y-3 text-xs">
+        <div>
+            <label class="block font-bold text-amber-300 mb-1">Tài Khoản (Username):</label>
+            <input type="text" id="dn-username" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2.5 focus:outline-none" placeholder="Nhập tên đăng nhập...">
+        </div>
+        <div>
+            <label class="block font-bold text-amber-300 mb-1">Mật Khẩu:</label>
+            <input type="password" id="dn-password" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2.5 focus:outline-none" placeholder="Nhập mật khẩu...">
+        </div>
+        <div id="dn-register-field" class="hidden">
+            <label class="block font-bold text-amber-300 mb-1">Đạo Hào (Tên hiển thị khi đăng bài):</label>
+            <input type="text" id="dn-author" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2.5 focus:outline-none" placeholder="Ví dụ: Thiên Tôn...">
+        </div>
+    </div>
+
+    <div class="flex flex-col space-y-2 pt-2 border-t border-amber-800/60">
+        <button onclick="submitAuth()" id="dn-action-btn" class="w-full bg-amber-600 hover:bg-amber-500 text-black py-3 rounded-xl text-sm font-extrabold cursor-pointer">Đăng Nhập Vào Tông Môn</button>
+        <button onclick="toggleMode()" id="dn-toggle-btn" class="text-amber-400 hover:underline text-center text-xs font-bold">Chưa có tài khoản? Đăng ký đạo tịch mới</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let registerMode = false;
+
+    function toggleMode() {
+        registerMode = !registerMode;
+        document.getElementById('dn-register-field').classList.toggle('hidden', !registerMode);
+        document.getElementById('dn-action-btn').innerText = registerMode ? "Đăng Ký & Vào Tông Môn" : "Đăng Nhập Vào Tông Môn";
+        document.getElementById('dn-toggle-btn').innerText = registerMode ? "Đã có tài khoản? Quay lại đăng nhập" : "Chưa có tài khoản? Đăng ký đạo tịch mới";
+    }
+
+    function submitAuth() {
+        const username = document.getElementById('dn-username').value.trim();
+        const password = document.getElementById('dn-password').value.trim();
+        const author_name = document.getElementById('dn-author').value.trim();
+
+        if (!username || !password) { alert("Vui lòng điền tài khoản và mật khẩu!"); return; }
+        if (registerMode && !author_name) { alert("Vui lòng nhập đạo hào (tên hiển thị)!"); return; }
+
+        const endpoint = registerMode ? '/api/register' : '/api/login';
+        const payload = registerMode ? {username, password, author_name} : {username, password};
+
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                localStorage.setItem('tongan_current_user', JSON.stringify(res.user));
+                alert(res.message);
+                window.location.href = '/';
+            } else {
+                alert(res.message);
+            }
+        })
+        .catch(() => alert("Không kết nối được tới Tông Môn, xin thử lại!"));
+    }
+
+    document.getElementById('dn-password').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') submitAuth();
+    });
+</script>
+{% endblock %}
