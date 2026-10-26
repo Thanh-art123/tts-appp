@@ -1,1 +1,37 @@
-{"background_color":"#dceeff","description":"Ứng dụng nghe giảng kinh, chuyển văn bản thành giọng đọc và tu luyện Tông Môn (điểm, nhiệm vụ, nghề phụ trợ, chợ đấu giá).","display":"standalone","icons":[{"purpose":"any","sizes":"192x192","src":"/static/icon-192.png","type":"image/png"},{"purpose":"any","sizes":"512x512","src":"/static/icon-512.png","type":"image/png"},{"purpose":"maskable","sizes":"512x512","src":"/static/icon-512.png","type":"image/png"}],"lang":"vi","name":"Nghe Giảng Kinh — Tông Môn Tu Luyện","orientation":"portrait","scope":"/","short_name":"Tông Môn","start_url":"/","theme_color":"#a9d1f7"}
+{
+  "background_color": "#dceeff",
+  "description": "Ứng dụng nghe giảng kinh, chuyển văn bản thành giọng đọc và tu luyện Tông Môn (điểm, nhiệm vụ, nghề phụ trợ, chợ đấu giá).",
+  "display": "standalone",
+  "icons": [
+    {
+      "purpose": "any",
+      "sizes": "192x192",
+      "src": "/static/icon-192.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "any",
+      "sizes": "512x512",
+      "src": "/static/icon-512.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "maskable",
+      "sizes": "512x512",
+      "src": "/static/icon-512.png",
+      "type": "image/png"
+    }
+  ],
+  "lang": "vi",
+  "name": "Nghe Giảng Kinh — Tông Môn Tu Luyện",
+  "orientation": "portrait",
+  "scope": "/",
+  "short_name": "Tông Môn",
+  "start_url": "/",
+  "theme_color": "#a9d1f7",
+  "id": "/",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ]
+}

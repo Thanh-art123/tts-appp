@@ -2,7 +2,7 @@
 // - Nhạc nền (.mp3): cache-first để phát mượt, đỡ tắc và nghe lại không tốn tải.
 // - Tài nguyên tĩnh khác: stale-while-revalidate.
 // - Trang HTML & API: luôn lấy mạng (dữ liệu game phải tươi), lỗi mạng mới báo offline.
-const CACHE = 'tongmon-v3';
+const CACHE = 'tongmon-v4';
 const CORE = ['/static/icon-192.png', '/static/icon-512.png', '/static/manifest.json'];
 
 self.addEventListener('install', (e) => {
