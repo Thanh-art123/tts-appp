@@ -66,8 +66,8 @@
         }
       ],
       "game": {
-        "diem": 217,
-        "exp": 16,
+        "diem": 232,
+        "exp": 26,
         "tu_vi": {
           "muc": 1,
           "cap": -1,
@@ -75,7 +75,7 @@
         },
         "linh_khi": 0,
         "linh_thach": {
-          "nguyen": 2,
+          "nguyen": 1,
           "vien": 0,
           "vi": 0,
           "vinh": 0
@@ -90,13 +90,15 @@
           "total": {
             "diem_danh": 1,
             "doc_chuong": 1,
-            "khai_thac": 2
+            "khai_thac": 2,
+            "lk_ok": 1
           },
           "today": {
             "date": "2026-10-26",
             "diem_danh": 1,
             "doc_chuong": 1,
-            "khai_thac": 2
+            "khai_thac": 2,
+            "lk_ok": 1
           }
         },
         "missions": {
@@ -139,6 +141,10 @@
           {
             "time": "26/10/2026 15:40",
             "text": "Khai thác quặng ở Mỏ Quặng (+2 Điểm Cống Hiến)"
+          },
+          {
+            "time": "26/10/2026 15:40",
+            "text": "Luyện khí thành công pháp khí cấp 1 (+15 Điểm Cống Hiến)"
           }
         ],
         "streak": {
@@ -149,7 +155,7 @@
         "nghe": {
           "quang": {
             "3": 1,
-            "1": 1
+            "1": 0
           },
           "dan": {
             "hoi_linh": 0,
@@ -160,7 +166,9 @@
             "ngon": 0,
             "linh_ngu": 0
           },
-          "phap_khi": [],
+          "phap_khi": [
+            1
+          ],
           "thu": null,
           "vuon": [
             null,
