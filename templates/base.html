@@ -259,6 +259,7 @@
         let tmTick = false;
         let bgAudio = new Audio();
         bgAudio.preload = 'auto';
+        bgAudio.loop = true; // hết bài tự lặp lại, phát xuyên suốt không ngừng
         window.sharedAudio = bgAudio;
 
         function tmSave() {
@@ -366,7 +367,7 @@
             });
             bgAudio.addEventListener('play', () => { updatePlayButtonUI(true); tmSave(); });
             bgAudio.addEventListener('pause', () => { updatePlayButtonUI(false); tmSave(); });
-            bgAudio.addEventListener('ended', () => { isCustom = false; playTrack((currentTrack + 1) % playlist.length); });
+            bgAudio.addEventListener('ended', () => { bgAudio.currentTime = 0; bgAudio.play().catch(() => {}); });
             window.addEventListener('beforeunload', tmSave);
             if (tmState.playing) {
                 bgAudio.play().catch(() => {
