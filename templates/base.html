@@ -10,7 +10,9 @@
     <meta name="theme-color" content="#a9d1f7">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3502/3502685.png">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon-192.png') }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Tông Môn">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -95,7 +97,7 @@
                         <span>TÀI NGUYÊN:</span>
                         <i class="fa-solid fa-folder-open text-[9px]"></i>
                     </p>
-                    <p id="song-title" class="text-xs font-bold text-amber-100 w-28 truncate group-hover:text-amber-300">Burlesque</p>
+                    <p id="song-title" class="text-xs font-bold text-amber-100 w-28 truncate group-hover:text-amber-300">Trúc Lâm Thanh Âm (Sáo Trúc)</p>
                 </div>
                 
                 <div class="flex items-center space-x-1 pl-1 border-l border-amber-700/50">
@@ -232,55 +234,53 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}");
+                navigator.serviceWorker.register('/sw.js');
             });
         }
     </script>
 
     <script>
         const playlist = [
+            { title: "Trúc Lâm Thanh Âm (Sáo Trúc)", src: "/static/music/sao-truc.mp3" },
             { title: "Burlesque", src: "/static/music/Burlesque - National Sweetheart.mp3" },
             { title: "The Joint is Jumpin", src: "/static/music/The Joint is Jumpin - Joel Cummins.mp3" },
             { title: "Videodrome", src: "/static/music/Videodrome - National Sweetheart.mp3" }
         ];
 
-        let currentTrack = 0;
-        let bgAudio = window.sharedAudio || new Audio(playlist[currentTrack].src);
+        // NHẠC NỀN CHỐNG TẮC: lưu vị trí phát vào localStorage mỗi giây,
+        // chuyển trang là tự nối tiếp đúng chỗ đang nghe (không phát lại từ đầu).
+        const TM_KEY = 'tm_music_v1';
+        let tmState = { i: 0, t: 0, playing: false, vol: 0.3 };
+        try { Object.assign(tmState, JSON.parse(localStorage.getItem(TM_KEY) || '{}')); } catch (e) {}
+        if (!(tmState.i >= 0 && tmState.i < playlist.length)) tmState.i = 0;
+
+        let currentTrack = tmState.i;
+        let isCustom = false;
+        let tmTick = false;
+        let bgAudio = new Audio();
+        bgAudio.preload = 'auto';
         window.sharedAudio = bgAudio;
 
-        bgAudio.volume = 0.3;
-        bgAudio.loop = true;
-
-        bgAudio.onended = function() {
-            currentTrack = (currentTrack + 1) % playlist.length;
-            playTrack(currentTrack);
-        };
-
-        function changeMusicVolume(val) {
-            if (bgAudio) {
-                bgAudio.volume = parseFloat(val);
-            }
+        function tmSave() {
+            if (isCustom) return;
+            try {
+                localStorage.setItem(TM_KEY, JSON.stringify({
+                    i: currentTrack,
+                    t: bgAudio.currentTime || 0,
+                    playing: !bgAudio.paused,
+                    vol: bgAudio.volume
+                }));
+            } catch (e) {}
         }
 
-        function playTrack(index) {
-            currentTrack = index;
-            bgAudio.pause();
-            bgAudio = new Audio(playlist[index].src);
-            bgAudio.volume = parseFloat(document.getElementById('bg-volume').value);
-            bgAudio.loop = true;
-            window.sharedAudio = bgAudio;
-            document.getElementById('song-title').innerText = playlist[index].title;
-            
-            bgAudio.play().then(() => {
-                updatePlayButtonUI(true);
-            }).catch(e => console.log(e));
-            
-            closeResourceModal();
+        function changeMusicVolume(val) {
+            if (bgAudio) { bgAudio.volume = parseFloat(val); tmSave(); }
         }
 
         function updatePlayButtonUI(isPlaying) {
             const btn = document.getElementById('music-btn');
             const disc = document.getElementById('disc-icon');
+            if (!btn) return;
             if (isPlaying) {
                 btn.innerText = "⏸ Dừng";
                 btn.classList.replace('bg-amber-500', 'bg-red-600');
@@ -292,24 +292,42 @@
             }
         }
 
+        function playTrack(index) {
+            isCustom = false;
+            currentTrack = index;
+            bgAudio.src = playlist[index].src;
+            bgAudio.currentTime = 0;
+            document.getElementById('song-title').innerText = playlist[index].title;
+            bgAudio.play().then(() => updatePlayButtonUI(true)).catch(e => console.log(e));
+            closeResourceModal();
+        }
+
+        function toggleMusic() {
+            if (bgAudio.paused) {
+                if (!bgAudio.src) bgAudio.src = playlist[currentTrack].src;
+                bgAudio.play().then(() => updatePlayButtonUI(true)).catch(e => console.log(e));
+            } else {
+                bgAudio.pause();
+                updatePlayButtonUI(false);
+            }
+        }
+
         function openResourceModal() {
             const listContainer = document.getElementById('resource-list');
             listContainer.innerHTML = '';
-            
             playlist.forEach((track, index) => {
                 const item = document.createElement('div');
-                item.className = `flex justify-between items-center p-3 rounded-xl border transition cursor-pointer ${index === currentTrack ? 'bg-amber-900/80 border-amber-400 text-amber-200' : 'bg-black/60 border-amber-700/40 text-amber-300 hover:bg-amber-950/60'}`;
+                item.className = `flex justify-between items-center p-3 rounded-xl border transition cursor-pointer ${(!isCustom && index === currentTrack) ? 'bg-amber-900/80 border-amber-400 text-amber-200' : 'bg-black/60 border-amber-700/40 text-amber-300 hover:bg-amber-950/60'}`;
                 item.innerHTML = `
                     <div class="flex items-center space-x-2">
-                        <i class="fa-solid ${index === currentTrack ? 'fa-compact-disc text-amber-400 animate-spin' : 'fa-music text-amber-600'} text-xs"></i>
+                        <i class="fa-solid ${(!isCustom && index === currentTrack) ? 'fa-compact-disc text-amber-400 animate-spin' : 'fa-music text-amber-600'} text-xs"></i>
                         <span class="text-xs font-bold truncate w-56">${track.title}</span>
                     </div>
-                    <span class="text-[10px] bg-amber-500 text-black px-2 py-0.5 rounded-full font-bold">${index === currentTrack ? 'Đang phát' : 'Chọn'}</span>
+                    <span class="text-[10px] bg-amber-500 text-black px-2 py-0.5 rounded-full font-bold">${(!isCustom && index === currentTrack) ? 'Đang phát' : 'Chọn'}</span>
                 `;
                 item.onclick = () => playTrack(index);
                 listContainer.appendChild(item);
             });
-
             document.getElementById('resource-modal').classList.remove('hidden');
         }
 
@@ -320,33 +338,44 @@
         function loadCustomMusic(event) {
             const file = event.target.files[0];
             if (file) {
-                const customUrl = URL.createObjectURL(file);
-                bgAudio.pause();
-                bgAudio = new Audio(customUrl);
-                bgAudio.volume = parseFloat(document.getElementById('bg-volume').value);
-                bgAudio.loop = true;
-                window.sharedAudio = bgAudio;
-                
+                isCustom = true;
+                bgAudio.src = URL.createObjectURL(file);
                 document.getElementById('song-title').innerText = file.name;
-                bgAudio.play();
-                updatePlayButtonUI(true);
+                bgAudio.play().then(() => updatePlayButtonUI(true)).catch(e => console.log(e));
             }
         }
 
-        function toggleMusic() {
-            const btn = document.getElementById('music-btn');
-            const disc = document.getElementById('disc-icon');
-            if (bgAudio.paused) {
-                bgAudio.play().then(() => {
-                    updatePlayButtonUI(true);
-                }).catch(() => {
-                    playTrack((currentTrack + 1) % playlist.length);
+        // Khởi tạo: khôi phục bài, vị trí, âm lượng và trạng thái phát từ trang trước
+        (function initMusic() {
+            const volEl = document.getElementById('bg-volume');
+            bgAudio.volume = (typeof tmState.vol === 'number') ? tmState.vol : 0.3;
+            if (volEl) volEl.value = bgAudio.volume;
+            bgAudio.src = playlist[currentTrack].src;
+            document.getElementById('song-title').innerText = playlist[currentTrack].title;
+            let restored = false;
+            bgAudio.addEventListener('loadedmetadata', function() {
+                if (!restored && tmState.t > 3 && bgAudio.duration && tmState.t < bgAudio.duration - 3) {
+                    try { bgAudio.currentTime = tmState.t; } catch (e) {}
+                }
+                restored = true;
+            });
+            bgAudio.addEventListener('timeupdate', function() {
+                if (tmTick) return;
+                tmTick = true;
+                setTimeout(() => { tmTick = false; tmSave(); }, 1000);
+            });
+            bgAudio.addEventListener('play', () => { updatePlayButtonUI(true); tmSave(); });
+            bgAudio.addEventListener('pause', () => { updatePlayButtonUI(false); tmSave(); });
+            bgAudio.addEventListener('ended', () => { isCustom = false; playTrack((currentTrack + 1) % playlist.length); });
+            window.addEventListener('beforeunload', tmSave);
+            if (tmState.playing) {
+                bgAudio.play().catch(() => {
+                    // Trình duyệt chặn tự phát: chạm/click đầu tiên vào trang sẽ nối phát tiếp
+                    const once = () => { bgAudio.play().catch(() => {}); document.removeEventListener('pointerdown', once); };
+                    document.addEventListener('pointerdown', once);
                 });
-            } else {
-                bgAudio.pause();
-                updatePlayButtonUI(false);
             }
-        }
+        })();
     </script>
     <!-- HỒ SƠ TOÀN WEB: nạp /api/me -> danh tính, điểm, EXP, tu vi + thông báo -->
     <script>
