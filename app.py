@@ -196,6 +196,7 @@ def _normalize_db(data):
         return _initial_data()
     data.setdefault("users", [])
     data.setdefault("books", [])
+    data.setdefault("market", {"seq": 1, "listings": [], "auctions": [], "barters": [], "deals": []})
     for user in data["users"]:
         if "tu_luyen" not in user:
             user["tu_luyen"] = get_default_tu_luyen()
@@ -634,6 +635,11 @@ def dong_phu():
 
 @app.route('/bi-canh')
 def bi_canh():
+    return render_template('bi_canh.html')
+
+
+@app.route('/cho-dau-gia')
+def cho_dau_gia():
     return render_template('bi_canh.html')
 
 
@@ -1880,6 +1886,504 @@ def api_leaderboard():
         "hoat_dong": top(lambda r: r["exp"], lambda r: f"Cấp {1 + r['exp'] // 250} · {fmt(r['exp'])} EXP"),
     }
     return jsonify({"success": True, "boards": boards})
+
+
+# --- Chợ Đấu Giá (Đợt 3): buôn bán / đấu giá / trao đổi ---
+FISH_NAMES = {"thuong": "Cá Thường", "ngon": "Cá Ngon", "linh_ngu": "Linh Ngư"}
+PILL_NAMES = {"hoi_linh": "Hồi Linh Đan", "tu_linh": "Tụ Linh Đan"}
+
+
+def _market(db):
+    m = db.setdefault("market", {"seq": 1, "listings": [], "auctions": [], "barters": [], "deals": []})
+    for k, v in {"seq": 1, "listings": [], "auctions": [], "barters": [], "deals": []}.items():
+        if k not in m:
+            m[k] = v
+    return m
+
+
+def _item_valid(kind, key):
+    try:
+        if kind == "thach":
+            return key in STONE_TYPES
+        if kind in ("thao", "quang", "phap_khi"):
+            return 1 <= int(key) <= 9
+        if kind == "dan":
+            return key in PILL_NAMES
+        if kind == "ca":
+            return key in FISH_NAMES
+        if kind == "bao_vat":
+            return any(t["id"] == key for t in TREASURES)
+    except Exception:
+        return False
+    return False
+
+
+def _item_label(kind, key):
+    if kind == "thach":
+        return STONE_TYPES[key]["name"]
+    if kind == "thao":
+        return f"{HERBS[int(key) - 1]['name']} (Thảo Cấp {key})"
+    if kind == "quang":
+        return f"Quặng Cấp {key}"
+    if kind == "phap_khi":
+        return f"Pháp Khí Cấp {key}"
+    if kind == "dan":
+        return PILL_NAMES[key]
+    if kind == "ca":
+        return FISH_NAMES[key]
+    if kind == "bao_vat":
+        t = next(x for x in TREASURES if x["id"] == key)
+        return f"{t['name']} (Bảo Vật)"
+    return str(key)
+
+
+def _item_count(user, kind, key):
+    g = _ensure_game(user)
+    if kind == "thach":
+        return int(g["linh_thach"].get(key, 0))
+    if kind == "thao":
+        return int(g["inventory"].get("herbs", {}).get(str(key), 0))
+    if kind == "quang":
+        return int(_nghe(user)["quang"].get(str(key), 0))
+    if kind == "dan":
+        return int(_nghe(user)["dan"].get(key, 0))
+    if kind == "ca":
+        return int(_nghe(user)["ca"].get(key, 0))
+    if kind == "phap_khi":
+        return _nghe(user)["phap_khi"].count(int(key))
+    if kind == "bao_vat":
+        return 1 if key in g["inventory"].get("treasures", []) else 0
+    return 0
+
+
+def _item_add(user, kind, key, qty):
+    g = _ensure_game(user)
+    ng = _nghe(user)
+    if kind == "thach":
+        _add_stone(user, key, qty)
+    elif kind == "thao":
+        h = g["inventory"].setdefault("herbs", {})
+        h[str(key)] = int(h.get(str(key), 0)) + qty
+    elif kind == "quang":
+        ng["quang"][str(key)] = int(ng["quang"].get(str(key), 0)) + qty
+    elif kind == "dan":
+        ng["dan"][key] = int(ng["dan"].get(key, 0)) + qty
+    elif kind == "ca":
+        ng["ca"][key] = int(ng["ca"].get(key, 0)) + qty
+    elif kind == "phap_khi":
+        ng["phap_khi"].extend([int(key)] * qty)
+    elif kind == "bao_vat":
+        if key not in g["inventory"].setdefault("treasures", []):
+            g["inventory"]["treasures"].append(key)
+
+
+def _item_remove(user, kind, key, qty):
+    if _item_count(user, kind, key) < qty:
+        return False
+    g = _ensure_game(user)
+    ng = _nghe(user)
+    if kind == "thach":
+        _add_stone(user, key, -qty)
+    elif kind == "thao":
+        g["inventory"]["herbs"][str(key)] -= qty
+    elif kind == "quang":
+        ng["quang"][str(key)] -= qty
+    elif kind == "dan":
+        ng["dan"][key] -= qty
+    elif kind == "ca":
+        ng["ca"][key] -= qty
+    elif kind == "phap_khi":
+        for _ in range(qty):
+            ng["phap_khi"].remove(int(key))
+    elif kind == "bao_vat":
+        g["inventory"]["treasures"].remove(key)
+    return True
+
+
+def _my_items(user):
+    out = []
+    for loai in STONE_TYPES:
+        n = _item_count(user, "thach", loai)
+        if n > 0:
+            out.append({"kind": "thach", "key": loai, "label": _item_label("thach", loai), "qty": n})
+    for kind in ("thao", "quang", "phap_khi"):
+        for t in range(1, 10):
+            n = _item_count(user, kind, t)
+            if n > 0:
+                out.append({"kind": kind, "key": str(t), "label": _item_label(kind, t), "qty": n})
+    for kind, names in (("dan", PILL_NAMES), ("ca", FISH_NAMES)):
+        for key in names:
+            n = _item_count(user, kind, key)
+            if n > 0:
+                out.append({"kind": kind, "key": key, "label": _item_label(kind, key), "qty": n})
+    for t in TREASURES:
+        if _item_count(user, "bao_vat", t["id"]) > 0:
+            out.append({"kind": "bao_vat", "key": t["id"], "label": _item_label("bao_vat", t["id"]), "qty": 1})
+    return out
+
+
+def _item_catalog():
+    out = []
+    for loai in STONE_TYPES:
+        out.append({"kind": "thach", "key": loai, "label": _item_label("thach", loai)})
+    for kind in ("thao", "quang", "phap_khi"):
+        for t in range(1, 10):
+            out.append({"kind": kind, "key": str(t), "label": _item_label(kind, t)})
+    for kind, names in (("dan", PILL_NAMES), ("ca", FISH_NAMES)):
+        for key in names:
+            out.append({"kind": kind, "key": key, "label": _item_label(kind, key)})
+    for t in TREASURES:
+        out.append({"kind": "bao_vat", "key": t["id"], "label": _item_label("bao_vat", t["id"])})
+    return out
+
+
+def _can_sell(user):
+    if user.get("role") == "admin":
+        return True
+    return 1 + int(_ensure_game(user).get("exp", 0)) // 250 >= 5
+
+
+def _cur_name(currency):
+    return "Điểm Cống Hiến" if currency == "diem" else "Nguyên Tinh"
+
+
+def _min_step(currency, cur):
+    """Bước giá tối thiểu: điểm thì 10, Nguyên Tinh thì 1 (hoặc 5% giá hiện tại)."""
+    base = 10 if currency == "diem" else 1
+    return max(base, -(-int(cur) * 5 // 100))
+
+
+def _cur_balance(user, currency):
+    g = _ensure_game(user)
+    return int(g.get("diem", 0)) if currency == "diem" else int(g["linh_thach"].get("nguyen", 0))
+
+
+def _cur_pay(user, currency, amount):
+    if _cur_balance(user, currency) < amount:
+        return False
+    if currency == "diem":
+        _add_diem(user, -amount)
+    else:
+        _add_stone(user, "nguyen", -amount)
+    return True
+
+
+def _cur_grant(user, currency, amount):
+    if currency == "diem":
+        _add_diem(user, amount)
+    else:
+        _add_stone(user, "nguyen", amount)
+
+
+def _deal(db, text):
+    m = _market(db)
+    m["deals"].append({"time": now_jst(), "text": text})
+    m["deals"] = m["deals"][-30:]
+
+
+def _settle_auctions(db):
+    m = _market(db)
+    now = time.time()
+    changed = False
+    for a in list(m["auctions"]):
+        if a["ends"] <= now:
+            seller = find_user(db, a["seller"])
+            if a.get("bidder"):
+                winner = find_user(db, a["bidder"])
+                pay = int(a["cur"] * 0.95)
+                if seller:
+                    _cur_grant(seller, a["currency"], pay)
+                    _notify(seller, f"🔨 Đấu giá [{a['label']} ×{a['qty']}] đã kết thúc: {a['bidder_name']} thắng với {a['cur']} {_cur_name(a['currency'])} — đạo hữu nhận {pay} (sau phí sàn 5%).")
+                if winner:
+                    _item_add(winner, a["kind"], a["key"], a["qty"])
+                    _notify(winner, f"🏆 Đạo hữu đã THẮNG đấu giá [{a['label']} ×{a['qty']}] với giá {a['cur']} {_cur_name(a['currency'])}! Vật phẩm đã về kho.")
+                    _log(winner, f"Thắng đấu giá {a['label']} ×{a['qty']} ({a['cur']} {_cur_name(a['currency'])})")
+                _deal(db, f"🔨 {a['bidder_name']} thắng đấu giá {a['label']} ×{a['qty']} với {a['cur']} {_cur_name(a['currency'])} (người bán: {a['seller_name']}).")
+            else:
+                if seller:
+                    _item_add(seller, a["kind"], a["key"], a["qty"])
+                    _notify(seller, f"🔨 Đấu giá [{a['label']} ×{a['qty']}] hết giờ mà không có ai trả giá — vật phẩm đã trả lại kho.")
+                _deal(db, f"🔨 Đấu giá {a['label']} ×{a['qty']} của {a['seller_name']} hết giờ, không có người trả giá.")
+            m["auctions"].remove(a)
+            changed = True
+    return changed
+
+
+def _market_view(db, user):
+    m = _market(db)
+    now = time.time()
+    me = user["username"]
+    listings = [dict(l, mine=(l["seller"] == me)) for l in m["listings"]]
+    auctions = []
+    for a in m["auctions"]:
+        aa = dict(a)
+        aa["mine"] = a["seller"] == me
+        aa["dang_thang"] = a.get("bidder") == me
+        aa["con_lai"] = max(0, int(a["ends"] - now))
+        aa["gia_toi_thieu"] = a["start"] if not a.get("bidder") else a["cur"] + _min_step(a["currency"], a["cur"])
+        auctions.append(aa)
+    barters = [dict(b, mine=(b["seller"] == me)) for b in m["barters"]]
+    g = _ensure_game(user)
+    return {
+        "listings": listings, "auctions": auctions, "barters": barters,
+        "deals": list(reversed(m["deals"][-12:])),
+        "my_items": _my_items(user), "catalog": _item_catalog(),
+        "can_sell": _can_sell(user), "cap_hoat_dong": 1 + int(g.get("exp", 0)) // 250,
+    }
+
+
+def _cho_resp(db, user, message):
+    return jsonify({"success": True, "message": message, "game": game_summary(user), "cho": _market_view(db, user)})
+
+
+@app.route('/api/cho', methods=['GET'])
+def api_cho():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    if _settle_auctions(db):
+        save_database(db, "ket thuc dau gia het gio")
+    return jsonify({"success": True, "game": game_summary(user), "cho": _market_view(db, user)})
+
+
+@app.route('/api/cho/rao-ban', methods=['POST'])
+def api_cho_rao_ban():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    if not _can_sell(user):
+        return jsonify({"success": False, "message": "Phải đạt Cấp Hoạt Động 5 mới được rao bán ở Chợ Đấu Giá (chống tài khoản rác). Hãy đọc truyện, làm nhiệm vụ để lên cấp nhé!"})
+    data = request.json or {}
+    kind, key = data.get('kind'), str(data.get('key'))
+    qty, price = int(data.get('qty', 0) or 0), int(data.get('price', 0) or 0)
+    if not _item_valid(kind, key):
+        return jsonify({"success": False, "message": "Vật phẩm không hợp lệ!"})
+    if qty < 1 or price < 1:
+        return jsonify({"success": False, "message": "Số lượng và giá bán phải từ 1 trở lên!"})
+    m = _market(db)
+    if sum(1 for l in m["listings"] if l["seller"] == user["username"]) >= 5:
+        return jsonify({"success": False, "message": "Mỗi người chỉ được rao tối đa 5 món cùng lúc!"})
+    if not _item_remove(user, kind, key, qty):
+        return jsonify({"success": False, "message": "Không đủ vật phẩm trong kho để rao bán!"})
+    lid = f"l{int(time.time()*1000)}-{user['username']}"
+    m["listings"].append({"id": lid, "seller": user["username"], "seller_name": user.get("author_name", user["username"]),
+                          "kind": kind, "key": key, "label": _item_label(kind, key), "qty": qty, "price": price,
+                          "created": now_jst()})
+    _log(user, f"Rao bán {_item_label(kind, key)} ×{qty} với giá {price} điểm")
+    save_database(db, f"@{user['username']} rao ban {kind}:{key} x{qty} gia {price}")
+    return _cho_resp(db, user, f"🏷️ Đã rao bán {_item_label(kind, key)} ×{qty} với giá {price} Điểm Cống Hiến. Vật phẩm đang ký quỹ ở chợ, hủy rao sẽ trả lại.")
+
+
+@app.route('/api/cho/huy-rao', methods=['POST'])
+def api_cho_huy_rao():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    m = _market(db)
+    lid = (request.json or {}).get('id')
+    l = next((x for x in m["listings"] if x["id"] == lid), None)
+    if not l or l["seller"] != user["username"]:
+        return jsonify({"success": False, "message": "Không tìm thấy tin rao của đạo hữu!"})
+    _item_add(user, l["kind"], l["key"], l["qty"])
+    m["listings"].remove(l)
+    save_database(db, f"@{user['username']} huy rao ban {lid}")
+    return _cho_resp(db, user, f"Đã hủy rao và trả lại {l['label']} ×{l['qty']} vào kho.")
+
+
+@app.route('/api/cho/mua', methods=['POST'])
+def api_cho_mua():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    m = _market(db)
+    lid = (request.json or {}).get('id')
+    l = next((x for x in m["listings"] if x["id"] == lid), None)
+    if not l:
+        return jsonify({"success": False, "message": "Tin rao này không còn nữa!"})
+    if l["seller"] == user["username"]:
+        return jsonify({"success": False, "message": "Không thể mua đồ của chính mình!"})
+    g = _ensure_game(user)
+    if int(g.get("diem", 0)) < l["price"]:
+        return jsonify({"success": False, "message": f"Không đủ Điểm Cống Hiến (cần {l['price']}, đang có {g.get('diem', 0)})!"})
+    seller = find_user(db, l["seller"])
+    _add_diem(user, -l["price"], f"Mua {l['label']} ở Chợ Đấu Giá")
+    _item_add(user, l["kind"], l["key"], l["qty"])
+    nhan = int(l["price"] * 0.95)
+    if seller:
+        _add_diem(seller, nhan, f"Bán {l['label']} ở Chợ Đấu Giá (sau phí 5%)")
+        _notify(seller, f"🏷️ {user.get('author_name', user['username'])} đã mua [{l['label']} ×{l['qty']}] của đạo hữu ở Chợ Đấu Giá: +{nhan} Điểm Cống Hiến (giá {l['price']}, trừ phí sàn 5%).")
+        _log(seller, f"Bán {l['label']} ×{l['qty']} ở chợ (+{nhan} điểm)")
+    _deal(db, f"🏷️ {user.get('author_name', user['username'])} mua {l['label']} ×{l['qty']} của {l['seller_name']} với {l['price']} điểm.")
+    m["listings"].remove(l)
+    save_database(db, f"@{user['username']} mua {l['kind']}:{l['key']} gia {l['price']}")
+    return _cho_resp(db, user, f"🛍️ Đã mua {l['label']} ×{l['qty']} với {l['price']} Điểm Cống Hiến. Vật phẩm đã về kho của đạo hữu!")
+
+
+@app.route('/api/cho/dau-gia/tao', methods=['POST'])
+def api_cho_dau_gia_tao():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    if not _can_sell(user):
+        return jsonify({"success": False, "message": "Phải đạt Cấp Hoạt Động 5 mới được mở đấu giá ở Chợ Đấu Giá (chống tài khoản rác)!"})
+    data = request.json or {}
+    kind, key = data.get('kind'), str(data.get('key'))
+    qty, start = int(data.get('qty', 0) or 0), int(data.get('start', 0) or 0)
+    currency = data.get('currency') if data.get('currency') in ("diem", "nguyen") else "diem"
+    hours = int(data.get('hours', 12) or 12)
+    if hours not in (6, 12, 24):
+        hours = 12
+    if not _item_valid(kind, key):
+        return jsonify({"success": False, "message": "Vật phẩm không hợp lệ!"})
+    if qty < 1 or start < 1:
+        return jsonify({"success": False, "message": "Số lượng và giá khởi điểm phải từ 1 trở lên!"})
+    m = _market(db)
+    if sum(1 for a in m["auctions"] if a["seller"] == user["username"]) >= 3:
+        return jsonify({"success": False, "message": "Mỗi người chỉ được mở tối đa 3 phiên đấu giá cùng lúc!"})
+    if not _item_remove(user, kind, key, qty):
+        return jsonify({"success": False, "message": "Không đủ vật phẩm trong kho để đấu giá!"})
+    aid = f"a{int(time.time()*1000)}-{user['username']}"
+    m["auctions"].append({"id": aid, "seller": user["username"], "seller_name": user.get("author_name", user["username"]),
+                          "kind": kind, "key": key, "label": _item_label(kind, key), "qty": qty,
+                          "currency": currency, "start": start, "cur": 0, "bidder": None, "bidder_name": "",
+                          "bids": 0, "ends": time.time() + hours * 3600, "created": now_jst()})
+    _log(user, f"Mở đấu giá {_item_label(kind, key)} ×{qty}, khởi điểm {start} {_cur_name(currency)}, {hours} giờ")
+    save_database(db, f"@{user['username']} mo dau gia {kind}:{key} x{qty}")
+    return _cho_resp(db, user, f"🔨 Đã mở phiên đấu giá {_item_label(kind, key)} ×{qty}: khởi điểm {start} {_cur_name(currency)}, kéo dài {hours} giờ.")
+
+
+@app.route('/api/cho/dau-gia/dat', methods=['POST'])
+def api_cho_dau_gia_dat():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    _settle_auctions(db)
+    m = _market(db)
+    data = request.json or {}
+    a = next((x for x in m["auctions"] if x["id"] == data.get('id')), None)
+    if not a:
+        return jsonify({"success": False, "message": "Phiên đấu giá này đã kết thúc hoặc không tồn tại!"})
+    if a["seller"] == user["username"]:
+        return jsonify({"success": False, "message": "Không thể tự trả giá đồ của mình!"})
+    if a.get("bidder") == user["username"]:
+        return jsonify({"success": False, "message": "Đạo hữu đang là người trả giá cao nhất rồi!"})
+    amount = int(data.get('amount', 0) or 0)
+    toi_thieu = a["start"] if not a.get("bidder") else a["cur"] + _min_step(a["currency"], a["cur"])
+    if amount < toi_thieu:
+        return jsonify({"success": False, "message": f"Giá trả tối thiểu lúc này là {toi_thieu} {_cur_name(a['currency'])}!"})
+    if not _cur_pay(user, a["currency"], amount):
+        return jsonify({"success": False, "message": f"Không đủ {_cur_name(a['currency'])} để đặt giá {amount} (tiền sẽ ký quỹ, thua sẽ hoàn)!"})
+    if a.get("bidder"):
+        prev = find_user(db, a["bidder"])
+        if prev:
+            _cur_grant(prev, a["currency"], a["cur"])
+            _notify(prev, f"🔨 Đạo hữu vừa bị TRẢ GIÁ CAO HƠN ở phiên [{a['label']} ×{a['qty']}]: giá mới {amount} {_cur_name(a['currency'])}. Đã hoàn lại {a['cur']} {_cur_name(a['currency'])} ký quỹ.")
+    a["cur"], a["bidder"], a["bidder_name"] = amount, user["username"], user.get("author_name", user["username"])
+    a["bids"] = int(a.get("bids", 0)) + 1
+    keo_dai = ""
+    if a["ends"] - time.time() < 120:
+        a["ends"] = time.time() + 120
+        keo_dai = " (trả giá phút cuối: phiên tự kéo dài thêm 2 phút)"
+    _log(user, f"Trả giá {amount} {_cur_name(a['currency'])} cho {a['label']}")
+    save_database(db, f"@{user['username']} tra gia {amount} phien {a['id']}")
+    return _cho_resp(db, user, f"🔨 Đã đặt giá {amount} {_cur_name(a['currency'])} cho [{a['label']} ×{a['qty']}] — đạo hữu đang dẫn đầu!{keo_dai} Tiền đã ký quỹ, nếu thua sẽ hoàn 100%.")
+
+
+@app.route('/api/cho/dau-gia/huy', methods=['POST'])
+def api_cho_dau_gia_huy():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    m = _market(db)
+    a = next((x for x in m["auctions"] if x["id"] == (request.json or {}).get('id')), None)
+    if not a or a["seller"] != user["username"]:
+        return jsonify({"success": False, "message": "Không tìm thấy phiên đấu giá của đạo hữu!"})
+    if a.get("bidder"):
+        return jsonify({"success": False, "message": "Đã có người trả giá, không hủy được nữa!"})
+    _item_add(user, a["kind"], a["key"], a["qty"])
+    m["auctions"].remove(a)
+    save_database(db, f"@{user['username']} huy dau gia {a['id']}")
+    return _cho_resp(db, user, f"Đã hủy phiên đấu giá và trả lại {a['label']} ×{a['qty']} vào kho.")
+
+
+@app.route('/api/cho/trao-doi/tao', methods=['POST'])
+def api_cho_trao_doi_tao():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    if not _can_sell(user):
+        return jsonify({"success": False, "message": "Phải đạt Cấp Hoạt Động 5 mới được rao trao đổi ở Chợ Đấu Giá (chống tài khoản rác)!"})
+    data = request.json or {}
+    gk, gkey, gqty = data.get('give_kind'), str(data.get('give_key')), int(data.get('give_qty', 0) or 0)
+    wk, wkey, wqty = data.get('want_kind'), str(data.get('want_key')), int(data.get('want_qty', 0) or 0)
+    if not _item_valid(gk, gkey) or not _item_valid(wk, wkey):
+        return jsonify({"success": False, "message": "Vật phẩm đổi/muốn không hợp lệ!"})
+    if gqty < 1 or wqty < 1:
+        return jsonify({"success": False, "message": "Số lượng phải từ 1 trở lên!"})
+    m = _market(db)
+    if sum(1 for b in m["barters"] if b["seller"] == user["username"]) >= 3:
+        return jsonify({"success": False, "message": "Mỗi người chỉ được rao tối đa 3 tin trao đổi cùng lúc!"})
+    if not _item_remove(user, gk, gkey, gqty):
+        return jsonify({"success": False, "message": "Không đủ vật phẩm đem đổi trong kho!"})
+    bid = f"b{int(time.time()*1000)}-{user['username']}"
+    m["barters"].append({"id": bid, "seller": user["username"], "seller_name": user.get("author_name", user["username"]),
+                         "give": {"kind": gk, "key": gkey, "label": _item_label(gk, gkey), "qty": gqty},
+                         "want": {"kind": wk, "key": wkey, "label": _item_label(wk, wkey), "qty": wqty},
+                         "created": now_jst()})
+    save_database(db, f"@{user['username']} rao trao doi {gk}:{gkey} lay {wk}:{wkey}")
+    return _cho_resp(db, user, f"🔁 Đã rao đổi: {_item_label(gk, gkey)} ×{gqty} lấy {_item_label(wk, wkey)} ×{wqty}. Vật phẩm đã ký quỹ ở chợ.")
+
+
+@app.route('/api/cho/trao-doi/huy', methods=['POST'])
+def api_cho_trao_doi_huy():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    m = _market(db)
+    b = next((x for x in m["barters"] if x["id"] == (request.json or {}).get('id')), None)
+    if not b or b["seller"] != user["username"]:
+        return jsonify({"success": False, "message": "Không tìm thấy tin trao đổi của đạo hữu!"})
+    _item_add(user, b["give"]["kind"], b["give"]["key"], b["give"]["qty"])
+    m["barters"].remove(b)
+    save_database(db, f"@{user['username']} huy trao doi {b['id']}")
+    return _cho_resp(db, user, f"Đã hủy tin trao đổi và trả lại {b['give']['label']} ×{b['give']['qty']} vào kho.")
+
+
+@app.route('/api/cho/trao-doi/chap-nhan', methods=['POST'])
+def api_cho_trao_doi_chap_nhan():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    m = _market(db)
+    b = next((x for x in m["barters"] if x["id"] == (request.json or {}).get('id')), None)
+    if not b:
+        return jsonify({"success": False, "message": "Tin trao đổi này không còn nữa!"})
+    if b["seller"] == user["username"]:
+        return jsonify({"success": False, "message": "Không thể tự chấp nhận tin đổi của mình!"})
+    w = b["want"]
+    if not _item_remove(user, w["kind"], w["key"], w["qty"]):
+        return jsonify({"success": False, "message": f"Đạo hữu không có đủ {w['label']} ×{w['qty']} để đổi!"})
+    seller = find_user(db, b["seller"])
+    gv = b["give"]
+    _item_add(user, gv["kind"], gv["key"], gv["qty"])
+    if seller:
+        _item_add(seller, w["kind"], w["key"], w["qty"])
+        _notify(seller, f"🔁 {user.get('author_name', user['username'])} đã chấp nhận trao đổi: đạo hữu nhận {w['label']} ×{w['qty']}, đổi lại {gv['label']} ×{gv['qty']}.")
+        _log(seller, f"Trao đổi thành công: nhận {w['label']} ×{w['qty']}")
+    _deal(db, f"🔁 {user.get('author_name', user['username'])} đổi {w['label']} ×{w['qty']} lấy {gv['label']} ×{gv['qty']} của {b['seller_name']}.")
+    m["barters"].remove(b)
+    save_database(db, f"@{user['username']} chap nhan trao doi {b['id']}")
+    return _cho_resp(db, user, f"🔁 Trao đổi thành công! Đạo hữu nhận {gv['label']} ×{gv['qty']}, đưa đi {w['label']} ×{w['qty']}.")
 
 
 # --- Thông báo & nhật ký ---
