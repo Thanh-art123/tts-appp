@@ -1,0 +1,39 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "password": "123",
+      "role": "admin",
+      "author_name": "Chưởng Môn Nhân",
+      "tu_luyen": {
+        "diem_tich_tuyem": 120,
+        "cap_hien_tai": 1,
+        "tieu_canh": 0,
+        "vat_pham": {
+          "hoa": 2,
+          "lua": 1,
+          "cay": 3
+        }
+      },
+      "bag": []
+    },
+    {
+      "username": "test_tieuhac",
+      "password": "test123456",
+      "role": "member",
+      "author_name": "Tai Khoan Test",
+      "tu_luyen": {
+        "diem_tich_tuyem": 120,
+        "cap_hien_tai": 1,
+        "tieu_canh": 0,
+        "vat_pham": {
+          "hoa": 2,
+          "lua": 1,
+          "cay": 3
+        }
+      },
+      "bag": []
+    }
+  ],
+  "books": []
+}
