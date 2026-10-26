@@ -7,7 +7,7 @@ import time
 import urllib.request
 import urllib.error
 from datetime import datetime, timezone, timedelta
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_from_directory
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "tong_mon_secret_key_chuong_mon_toi_cao")
@@ -589,7 +589,7 @@ _PUBLIC_PATHS = {"/dang-nhap", "/api/login", "/api/register", "/favicon.ico"}
 @app.before_request
 def _require_login():
     path = request.path
-    if path.startswith("/static/") or path in _PUBLIC_PATHS:
+    if path.startswith("/static/") or path == "/sw.js" or path in _PUBLIC_PATHS:
         return None
     if session.get("username"):
         return None
@@ -611,6 +611,15 @@ def dang_nhap():
 @app.route('/')
 def home():
     return render_template('index.html')
+
+
+@app.route('/sw.js')
+def service_worker():
+    """Service Worker phải phục vụ từ gốc (/) mới có phạm vi toàn trang cho PWA."""
+    resp = send_from_directory(app.static_folder, 'sw.js')
+    resp.headers['Content-Type'] = 'application/javascript'
+    resp.headers['Cache-Control'] = 'no-cache'
+    return resp
 
 
 @app.route('/tang-kinh-cac')
