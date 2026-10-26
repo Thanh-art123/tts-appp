@@ -7,7 +7,7 @@ import time
 import urllib.request
 import urllib.error
 from datetime import datetime, timezone, timedelta
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_from_directory
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_from_directory, Response
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "tong_mon_secret_key_chuong_mon_toi_cao")
@@ -611,6 +611,52 @@ def dang_nhap():
 @app.route('/')
 def home():
     return render_template('index.html')
+
+
+# ============================================================
+# GIỌNG ĐỌC PHÍA MÁY CHỦ (edge-tts) — giọng AI thần âm chạy trên server,
+# phát qua thẻ audio nên điện thoại Android / app / WebView đều nghe được,
+# không phụ thuộc giọng máy của trình duyệt như trước.
+# ============================================================
+try:
+    import asyncio as _asyncio
+    import edge_tts as _edge_tts
+except Exception:
+    _edge_tts = None
+
+TTS_VOICES = {"vi-VN-HoaiMyNeural", "vi-VN-NamMinhNeural"}
+
+
+@app.route('/api/tts', methods=['POST'])
+def api_tts():
+    if _edge_tts is None:
+        return jsonify({"success": False, "message": "Máy chủ chưa sẵn sàng giọng đọc."}), 503
+    data = request.get_json(silent=True) or {}
+    text = (data.get("text") or "").strip()
+    if not text:
+        return jsonify({"success": False, "message": "Chưa có nội dung cần đọc."}), 400
+    text = text[:1000]
+    voice = data.get("voice") or "vi-VN-HoaiMyNeural"
+    if voice not in TTS_VOICES:
+        voice = "vi-VN-HoaiMyNeural"
+
+    async def _gen():
+        comm = _edge_tts.Communicate(text, voice)
+        buf = bytearray()
+        async for part in comm.stream():
+            if part.get("type") == "audio":
+                buf.extend(part.get("data") or b"")
+        return bytes(buf)
+
+    try:
+        audio = _asyncio.run(_gen())
+    except Exception as e:
+        print("[TTS] Loi:", e)
+        return jsonify({"success": False, "message": "Tạo giọng đọc thất bại, thử lại sau."}), 502
+    if not audio:
+        return jsonify({"success": False, "message": "Không tạo được âm thanh."}), 502
+    return Response(audio, mimetype="audio/mpeg",
+                    headers={"Cache-Control": "no-store"})
 
 
 @app.route('/sw.js')
