@@ -32,7 +32,20 @@
           "cay": 3
         }
       },
-      "bag": []
+      "bag": [
+        {
+          "item_id": 1,
+          "title": "Truyen Test - Xoa Duoc",
+          "content": "Day la truyen test cua tieu hac de kiem tra tinh nang, chuong mon xoa giup.",
+          "author": "Tai Khoan Test",
+          "category": "truyen-dich",
+          "element": "Kim",
+          "icon": "📜",
+          "source_book_id": 1,
+          "published_book_id": null,
+          "created_at": "26/10/2026 11:18"
+        }
+      ]
     }
   ],
   "books": [
