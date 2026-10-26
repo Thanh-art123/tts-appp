@@ -146,6 +146,8 @@
     <!-- MÁY NGHE TRUYỆN THẦN ÂM (giọng máy chủ, nghe được trên mọi điện thoại) -->
     <div style="background: linear-gradient(90deg, #064e3b, #065f46); padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; border-bottom: 2px solid #f59e0b;">
         <button id="rd-toggle" onclick="rdToggle()" style="background: #f59e0b; color: #111; border: none; font-weight: 800; font-size: 13px; padding: 8px 16px; border-radius: 999px; cursor: pointer;">▶ Nghe Truyện</button>
+        <button onclick="rdSkip(-1)" title="Đoạn trước" style="background: #1f2937; color: #fff; border: none; font-weight: 700; font-size: 13px; padding: 8px 12px; border-radius: 999px; cursor: pointer;">⏮</button>
+        <button onclick="rdSkip(1)" title="Đoạn sau" style="background: #1f2937; color: #fff; border: none; font-weight: 700; font-size: 13px; padding: 8px 12px; border-radius: 999px; cursor: pointer;">⏭</button>
         <button onclick="rdStop()" style="background: #374151; color: #fff; border: none; font-weight: 700; font-size: 13px; padding: 8px 14px; border-radius: 999px; cursor: pointer;">⏹ Dừng</button>
         <select id="rd-voice" style="padding: 7px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 1px solid #10b981;">
             <option value="vi-VN-HoaiMyNeural">🎙 Nữ — Hoài My</option>
@@ -252,11 +254,11 @@
             if (gen !== RD.gen) return;
             RD.audio.src = RD.urls.get(RD.idx);
             RD.audio.playbackRate = rdRate();
-            rdStatus(`Đang đọc đoạn ${RD.idx + 1}/${RD.chunks.length}`);
+            rdStatus(`Đang đọc đoạn ${RD.idx + 1}/${RD.chunks.length} (${Math.round(RD.idx / Math.max(1, RD.chunks.length) * 100)}%)`);
             RD.state = 'playing'; rdBtn('⏸ Tạm Dừng');
             try { await RD.audio.play(); } catch (e) {}
             if (RD.idx + 1 < RD.chunks.length) rdFetch(RD.idx + 1).catch(() => {});
-            await new Promise(res => { RD.audio.onended = res; RD.audio.onerror = res; });
+            await new Promise(res => { RD._wake = res; RD.audio.onended = res; RD.audio.onerror = res; });
             if (gen !== RD.gen) return;
             RD.idx++;
         }
@@ -285,8 +287,20 @@
         }
         RD.idx = 0; RD.gen++; rdLoop(RD.gen);
     }
+    function rdSkip(d) {
+        if (!RD.chunks.length) return;
+        const was = RD.state;
+        RD.gen++; if (RD._wake) RD._wake();
+        RD.idx = Math.min(RD.chunks.length - 1, Math.max(0, RD.idx + d));
+        if (was !== 'idle') {
+            RD.state = 'playing'; rdBtn('⏸ Tạm Dừng'); rdLoop(RD.gen);
+        } else {
+            rdStatus(`Đã chuyển tới đoạn ${RD.idx + 1}/${RD.chunks.length} — bấm Nghe Truyện để đọc từ đây.`);
+        }
+    }
     function rdStop() {
         RD.gen++; RD.state = 'idle'; RD.idx = 0;
+        if (RD._wake) RD._wake();
         RD.audio.pause(); RD.audio.removeAttribute('src'); RD.audio.load();
         rdBtn('▶ Nghe Truyện'); rdStatus('Đã dừng đọc.');
     }

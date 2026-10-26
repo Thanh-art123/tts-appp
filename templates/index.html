@@ -69,7 +69,7 @@
         </div>
         <div>
             <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Tập / Chương để bắt đầu nghe:</label>
-            <select id="bk-chapter" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
+            <select id="bk-chapter" onchange="bkChapterChanged()" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
                 <option value="">—</option>
             </select>
         </div>
@@ -81,6 +81,18 @@
         <i class="fa-solid fa-headphones"></i>
         <span id="bk-play-text">Nghe Truyện (Tự Sang Chương)</span>
     </button>
+    <div id="bk-progress-wrap" class="hidden space-y-2 bg-black/40 p-3 rounded-xl border border-amber-800/40">
+        <div class="flex items-center gap-2">
+            <button onclick="bkChapJump(-1)" title="Chương trước" class="bg-amber-900/70 hover:bg-amber-800 text-amber-200 text-xs font-bold px-3 py-2 rounded-lg border border-amber-700/50">⏮</button>
+            <input type="range" id="bk-seek" min="0" max="1000" value="0" oninput="bkSeekInput(this.value)" onchange="bkSeekGo(this.value)" class="flex-1 h-1.5 accent-amber-500 rounded-lg cursor-pointer">
+            <button onclick="bkChapJump(1)" title="Chương sau" class="bg-amber-900/70 hover:bg-amber-800 text-amber-200 text-xs font-bold px-3 py-2 rounded-lg border border-amber-700/50">⏭</button>
+        </div>
+        <div class="flex justify-between gap-2 text-[11px] text-amber-200/90">
+            <span id="bk-pos" class="truncate">📍 —</span>
+            <span id="bk-time" class="whitespace-nowrap">≈ 00:00 / 00:00</span>
+        </div>
+        <p class="text-[10px] text-amber-200/50">Kéo thanh trượt để tua tới đoạn mong muốn • ⏮ ⏭ nhảy chương • vị trí nghe dở được tự ghi nhớ cho lần sau.</p>
+    </div>
 </div>
 {% endblock %}
 
@@ -167,6 +179,7 @@
             TT.audio.playbackRate = currentRate();
             showSegStatus('Đang đọc', 'text-emerald-400 font-bold');
             TT.state = 'playing'; setMainUI('playing');
+            if (TT.mode === 'book') { saveBookmark(); bkProgressUI(0); }
             try { await TT.audio.play(); } catch (e) {}
             if (TT.idx + 1 < TT.segments.length) fetchChunkBlob(TT.idx + 1).catch(() => {});
             await new Promise(res => { TT._wake = res; TT.audio.onended = res; TT.audio.onerror = res; });
@@ -182,7 +195,11 @@
         TT.gen++;
         TT.mode = mode;
         TT.segments = segs;
+        TT.cum = []; TT.totalChars = 0;
+        segs.forEach(sg => { TT.cum.push(TT.totalChars); TT.totalChars += (sg.chars || sg.text.length); });
         TT.idx = 0;
+        const wrap = document.getElementById('bk-progress-wrap');
+        if (wrap) wrap.classList.toggle('hidden', mode !== 'book');
         TT.blobs.clear();
         TT.urls.forEach(u => URL.revokeObjectURL(u)); TT.urls.clear();
         playLoop(TT.gen);
@@ -225,7 +242,7 @@
         const text = document.getElementById('tts-text').value.trim();
         if (!text) { alert('Xin hãy nhập nội dung cần đọc!'); return; }
         const parts = chunkText(text);
-        startSegments(parts.map((p, i) => ({ label: `Đoạn ${i + 1}/${parts.length}`, text: p })), 'text');
+        startSegments(parts.map((p, i) => ({ label: `Đoạn ${i + 1}/${parts.length}`, text: p, ci: -1, chars: p.length })), 'text');
     }
 
     function changeRateRealTime(val) {
@@ -272,19 +289,30 @@
     // ===== NGHE TRUYỆN TỪ TÀNG KINH CÁC =====
     const BK = { chapters: [], title: '' };
     function bkToggle() {
-        if (TT.mode === 'book' && pauseResume()) return;
         if (!BK.chapters.length) { alert('Hãy chọn một truyện trước!'); return; }
         const start = parseInt(document.getElementById('bk-chapter').value) || 0;
+        // Đang nghe đúng truyện + đúng chương đã chọn -> nút này chỉ Tạm dừng / Tiếp tục
+        if (TT.mode === 'book' && TT.state !== 'idle' && TT.bookId === BK.bookId && TT.startChapter === start && pauseResume()) return;
         const segs = [];
         for (let ci = start; ci < BK.chapters.length; ci++) {
             const parts = chunkText(BK.chapters[ci].text);
-            parts.forEach(p => segs.push({ label: `${BK.chapters[ci].title} (chương ${ci + 1}/${BK.chapters.length} của «${BK.title}»)`, text: p }));
+            parts.forEach(p => segs.push({ label: `${BK.chapters[ci].title} (chương ${ci + 1}/${BK.chapters.length} của «${BK.title}»)`, text: p, ci: ci, chars: p.length }));
         }
         if (!segs.length) { alert('Chương này chưa có nội dung!'); return; }
+        // Nghe tiếp đoạn dở dang lần trước nếu chọn đúng chương đã lưu
+        if (BK.resumeCi === start && BK.resumeSeg > 0) {
+            const inChap = segs.filter(x => x.ci === start).length;
+            const drop = Math.min(BK.resumeSeg, Math.max(0, inChap - 1));
+            if (drop > 0) segs.splice(0, drop);
+            BK.resumeSeg = 0; BK.resumeCi = -1;
+        }
+        TT.bookId = BK.bookId; TT.startChapter = start;
         startSegments(segs, 'book');
     }
     async function bkLoadChapters(id) {
         if (!id) return;
+        BK.bookId = id;
+        if (TT.mode === 'book' && TT.state !== 'idle') stopSession();
         const csel = document.getElementById('bk-chapter');
         csel.innerHTML = '<option value="">Đang tải danh sách chương...</option>';
         bkStatus('Đang tải chương...');
@@ -299,7 +327,15 @@
                 o.value = i; o.textContent = c.title;
                 csel.appendChild(o);
             });
-            bkStatus(`Sẵn sàng: «${BK.title}» có ${BK.chapters.length} chương. Bấm Nghe Truyện để bắt đầu!`);
+            const saved = loadBookmark();
+            BK.resumeSeg = 0; BK.resumeCi = -1;
+            if (saved && String(saved.bookId) === String(id) && saved.ci >= 0 && saved.ci < BK.chapters.length) {
+                csel.value = saved.ci;
+                BK.resumeCi = saved.ci; BK.resumeSeg = saved.seg || 0;
+                bkStatus(`Lần trước nghe tới: ${BK.chapters[saved.ci].title} — bấm Nghe Truyện để nghe tiếp đúng chỗ dở!`);
+            } else {
+                bkStatus(`Sẵn sàng: «${BK.title}» có ${BK.chapters.length} chương. Bấm Nghe Truyện để bắt đầu!`);
+            }
         } catch (e) { bkStatus('Không tải được truyện này.'); }
     }
     async function bkInit() {
@@ -326,6 +362,85 @@
             sel.innerHTML = '<option value="">Không tải được danh sách truyện</option>';
         }
     }
+
+    // ===== TIẾN ĐỘ, TUA & GHI NHỚ VỊ TRÍ NGHE =====
+    function fmtT(sec) {
+        sec = Math.max(0, Math.round(sec));
+        const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), x = sec % 60;
+        return (h ? h + ':' + String(m).padStart(2, '0') : String(m).padStart(2, '0')) + ':' + String(x).padStart(2, '0');
+    }
+    function estSec(chars) { return chars / 13.5 / currentRate(); }
+    function stopSession() {
+        TT.gen++; TT.state = 'idle'; TT.audio.pause();
+        if (TT._wake) TT._wake();
+        setMainUI('idle');
+    }
+    function bkChapterChanged() {
+        BK.resumeSeg = 0; BK.resumeCi = -1;
+        if (TT.mode === 'book' && TT.state !== 'idle') {
+            stopSession();
+            bkStatus('Đã chọn chương khác — bấm Nghe Truyện để đọc từ chương vừa chọn.');
+        }
+    }
+    function saveBookmark() {
+        if (TT.mode !== 'book' || !TT.segments.length) return;
+        const seg = TT.segments[TT.idx];
+        if (!seg || seg.ci < 0) return;
+        let within = 0;
+        for (let i = 0; i < TT.idx; i++) if (TT.segments[i].ci === seg.ci) within++;
+        try { localStorage.setItem('tm_listen_pos', JSON.stringify({ bookId: TT.bookId, ci: seg.ci, seg: within })); } catch (e) {}
+    }
+    function loadBookmark() {
+        try { return JSON.parse(localStorage.getItem('tm_listen_pos') || 'null'); } catch (e) { return null; }
+    }
+    function bkProgressUI(frac) {
+        if (!TT.segments.length || !TT.totalChars) return;
+        const seg = TT.segments[TT.idx];
+        if (!seg) return;
+        const pos = (TT.cum[TT.idx] || 0) + (frac || 0) * (seg.chars || 0);
+        const slider = document.getElementById('bk-seek');
+        if (slider && document.activeElement !== slider) slider.value = Math.round(pos / TT.totalChars * 1000);
+        const posEl = document.getElementById('bk-pos');
+        if (posEl) posEl.innerText = '📍 ' + seg.label;
+        const timeEl = document.getElementById('bk-time');
+        if (timeEl) timeEl.innerText = `≈ ${fmtT(estSec(pos))} / ${fmtT(estSec(TT.totalChars))}`;
+    }
+    function segIndexAt(v) {
+        const target = TT.totalChars * (parseInt(v) || 0) / 1000;
+        let i = 0;
+        while (i < TT.segments.length - 1 && (TT.cum[i + 1] || 0) <= target) i++;
+        return i;
+    }
+    function bkSeekInput(v) {
+        if (!TT.segments.length) return;
+        const seg = TT.segments[segIndexAt(v)];
+        const posEl = document.getElementById('bk-pos');
+        if (posEl && seg) posEl.innerText = '🎯 Tua tới: ' + seg.label;
+        const timeEl = document.getElementById('bk-time');
+        if (timeEl) timeEl.innerText = `≈ ${fmtT(estSec(TT.totalChars * v / 1000))} / ${fmtT(estSec(TT.totalChars))}`;
+    }
+    function bkSeekGo(v) {
+        if (!TT.segments.length || TT.mode !== 'book') return;
+        TT.gen++; if (TT._wake) TT._wake();
+        TT.idx = segIndexAt(v);
+        TT.state = 'playing';
+        saveBookmark();
+        playLoop(TT.gen);
+    }
+    function bkChapJump(d) {
+        if (!TT.segments.length || TT.mode !== 'book') return;
+        const cur = TT.segments[TT.idx];
+        if (!cur) return;
+        const j = TT.segments.findIndex(x => x.ci === (cur.ci || 0) + d);
+        if (j < 0) { bkStatus(d > 0 ? 'Đã ở chương cuối rồi.' : 'Đã ở chương đầu rồi.'); return; }
+        TT.gen++; if (TT._wake) TT._wake();
+        TT.idx = j; TT.state = 'playing';
+        playLoop(TT.gen);
+    }
+    TT.audio.addEventListener('timeupdate', () => {
+        if (TT.mode === 'book' && TT.state === 'playing' && TT.audio.duration > 0)
+            bkProgressUI(Math.min(1, TT.audio.currentTime / TT.audio.duration));
+    });
     bkInit();
 </script>
 
