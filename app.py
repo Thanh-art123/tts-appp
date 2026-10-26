@@ -5,10 +5,12 @@ import threading
 import urllib.request
 import urllib.error
 from datetime import datetime, timezone, timedelta
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "tong_mon_secret_key_chuong_mon_toi_cao")
+# Phiên đăng nhập bền 1 năm: đăng nhập 1 lần, những lần sau vào web là vẫn còn đăng nhập
+app.permanent_session_lifetime = timedelta(days=365)
 
 DB_FILE = "tong_mon_data.json"
 
@@ -276,6 +278,38 @@ def now_jst():
     return datetime.now(timezone(timedelta(hours=9))).strftime("%d/%m/%Y %H:%M")
 
 
+# ============================================================
+# CỔNG ĐĂNG NHẬP TOÀN WEB
+# ------------------------------------------------------------
+# Trước khi vào được bất kỳ trang nào của web, người dùng bắt
+# buộc phải đăng nhập (hoặc đăng ký tài khoản mới). Thông tin
+# tài khoản + mọi tài nguyên người dùng đăng lên được lưu vĩnh
+# viễn trên GitHub (nhánh data) nên không bao giờ mất.
+# ============================================================
+_PUBLIC_PATHS = {"/dang-nhap", "/api/login", "/api/register", "/favicon.ico"}
+
+
+@app.before_request
+def _require_login():
+    path = request.path
+    if path.startswith("/static/") or path in _PUBLIC_PATHS:
+        return None
+    if session.get("username"):
+        return None
+    if path.startswith("/api/"):
+        return jsonify({"success": False,
+                        "message": "Cần đăng nhập để sử dụng Tông Môn!",
+                        "need_login": True}), 401
+    return redirect(url_for("dang_nhap"))
+
+
+@app.route('/dang-nhap')
+def dang_nhap():
+    if session.get("username"):
+        return redirect(url_for('home'))
+    return render_template('dang_nhap.html')
+
+
 # --- CÁC ROUTE GIAO DIỆN ĐIỀU HƯỚNG CHÍNH ---
 @app.route('/')
 def home():
@@ -320,6 +354,8 @@ def api_login():
     user = next((u for u in db['users'] if u['username'] == username and u['password'] == password), None)
 
     if user:
+        session.permanent = True
+        session['username'] = user['username']
         return jsonify({"success": True, "message": f"Đăng nhập thành công với danh nghĩa [{user['author_name']}]!", "user": public_user(user)})
     else:
         return jsonify({"success": False, "message": "Sai tài khoản hoặc mật khẩu!"})
@@ -350,7 +386,29 @@ def api_register():
     db['users'].append(new_user)
     save_database(db, f"Dang ky tai khoan moi: {username}")
 
+    # Đăng ký xong là đăng nhập luôn để vào web
+    session.permanent = True
+    session['username'] = username
     return jsonify({"success": True, "message": "Đăng ký thành công!", "user": public_user(new_user)})
+
+
+@app.route('/api/logout', methods=['POST'])
+def api_logout():
+    session.clear()
+    return jsonify({"success": True, "message": "Đã đăng xuất!"})
+
+
+@app.route('/api/me', methods=['GET'])
+def api_me():
+    username = session.get('username')
+    if not username:
+        return jsonify({"success": False, "message": "Chưa đăng nhập!"})
+    db = load_database()
+    user = find_user(db, username)
+    if not user:
+        session.clear()
+        return jsonify({"success": False, "message": "Tài khoản không còn tồn tại!"})
+    return jsonify({"success": True, "user": public_user(user)})
 
 
 # --- API TU LUYỆN & BÍ CẢNH ---
