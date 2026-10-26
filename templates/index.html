@@ -19,7 +19,8 @@
             <div>
                 <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Giọng Đọc:</label>
                 <select id="voice-select" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
-                    <option value="">Đang nạp linh âm...</option>
+                    <option value="vi-VN-HoaiMyNeural">🎙 Giọng Nữ — Hoài My (Thần Âm AI)</option>
+                    <option value="vi-VN-NamMinhNeural">👨 Giọng Nam — Nam Minh (Thần Âm AI)</option>
                 </select>
             </div>
 
@@ -56,136 +57,167 @@
 
 {% block scripts %}
 <script>
-    let synth = window.speechSynthesis;
-    let currentUtterance = null;
+    // ===== GIỌNG ĐỌC THẦN ÂM TỪ MÁY CHỦ (edge-tts) =====
+    // Âm thanh tạo trên server rồi phát bằng thẻ audio -> Android/app/WebView đều nghe được.
+    const TT = {
+        audio: new Audio(),
+        chunks: [], idx: 0, gen: 0,
+        state: 'idle', // idle | playing | paused
+        sig: '', blobs: new Map(), urls: new Map()
+    };
+    TT.audio.preload = 'auto';
 
-    function populateVoices() {
-        const voiceSelect = document.getElementById('voice-select');
-        if (!voiceSelect) return;
+    const statusEl = () => document.getElementById('status-display');
+    function setStatus(txt, cls) {
+        const el = statusEl();
+        if (el) { el.innerText = txt; el.className = cls || 'text-emerald-400'; }
+    }
+    function setMainUI(mode) {
+        const icon = document.getElementById('main-icon');
+        const text = document.getElementById('main-text');
+        if (mode === 'playing') { icon.className = 'fa-solid fa-pause'; text.innerText = 'Tạm Dừng'; }
+        else if (mode === 'paused') { icon.className = 'fa-solid fa-play'; text.innerText = 'Tiếp Tục Đọc'; }
+        else { icon.className = 'fa-solid fa-play'; text.innerText = 'Phát Âm Thanh (1 Click)'; }
+    }
+    function currentRate() { return parseFloat(document.getElementById('rate-range').value) || 1; }
 
-        let voices = synth.getVoices();
-        voiceSelect.innerHTML = '';
-        
-        let viVoices = voices.filter(v => v.lang.includes('vi') || v.lang.includes('VN'));
-        if (viVoices.length > 0) {
-            viVoices.forEach((voice) => {
-                const option = document.createElement('option');
-                option.value = voices.indexOf(voice);
-                option.textContent = voice.name.includes('An') ? `🎙 Microsoft An (${voice.lang})` : voice.name.includes('Nam') ? `👨 ${voice.name}` : ` VN: ${voice.name}`;
-                voiceSelect.appendChild(option);
-            });
-        } else {
-            voices.forEach((voice, index) => {
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = `${voice.name} (${voice.lang})`;
-                voiceSelect.appendChild(option);
-            });
+    function chunkText(text, maxLen) {
+        maxLen = maxLen || 900;
+        const parts = text.replace(/\s+/g, ' ').match(/[^.!?…]+[.!?…]*["”’']?\s*/g) || [text];
+        const out = []; let cur = '';
+        for (const p of parts) {
+            if (cur && (cur + p).length > maxLen) { out.push(cur.trim()); cur = p; }
+            else cur += p;
+            while (cur.length > maxLen) { out.push(cur.slice(0, maxLen).trim()); cur = cur.slice(maxLen); }
         }
+        if (cur.trim()) out.push(cur.trim());
+        return out.filter(Boolean);
     }
 
-    if (synth.onvoiceschanged !== undefined) {
-        synth.onvoiceschanged = populateVoices;
+    async function fetchChunkBlob(i) {
+        if (TT.blobs.has(i)) return TT.blobs.get(i);
+        const res = await fetch('/api/tts', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: TT.chunks[i], voice: document.getElementById('voice-select').value })
+        });
+        if (!res.ok) throw new Error('tts fail');
+        const blob = await res.blob();
+        TT.blobs.set(i, blob);
+        return blob;
+    }
+    function chunkURL(i) {
+        if (!TT.urls.has(i)) TT.urls.set(i, URL.createObjectURL(TT.blobs.get(i)));
+        return TT.urls.get(i);
     }
 
-    setTimeout(populateVoices, 100);
-    setTimeout(populateVoices, 500);
+    async function playLoop(gen) {
+        while (TT.idx < TT.chunks.length) {
+            if (gen !== TT.gen) return;
+            setStatus(`Đang tạo âm thanh đoạn ${TT.idx + 1}/${TT.chunks.length}...`, 'text-amber-400');
+            try { await fetchChunkBlob(TT.idx); }
+            catch (e) { fallbackSpeak(); return; }
+            if (gen !== TT.gen) return;
+            TT.audio.src = chunkURL(TT.idx);
+            TT.audio.playbackRate = currentRate();
+            setStatus(`Đang đọc đoạn ${TT.idx + 1}/${TT.chunks.length}`, 'text-emerald-400 font-bold');
+            TT.state = 'playing'; setMainUI('playing');
+            try { await TT.audio.play(); } catch (e) {}
+            await new Promise(res => { TT._wake = res; TT.audio.onended = res; TT.audio.onerror = res; });
+            if (gen !== TT.gen) return;
+            TT.idx++;
+        }
+        TT.state = 'idle'; setMainUI('idle');
+        setStatus('Hoàn thành', 'text-emerald-400');
+    }
+
+    function fallbackSpeak() {
+        // Phương án dự phòng: giọng máy của trình duyệt (nếu máy chủ bận)
+        const synth = window.speechSynthesis;
+        const text = document.getElementById('tts-text').value.trim();
+        TT.state = 'idle'; setMainUI('idle');
+        if (!synth || !text) { setStatus('Máy chủ giọng đọc đang bận, thử lại sau giây lát.', 'text-red-400'); return; }
+        setStatus('Đang đọc bằng giọng dự phòng của máy...', 'text-amber-400');
+        synth.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        const vi = synth.getVoices().find(v => (v.lang || '').toLowerCase().includes('vi'));
+        if (vi) u.voice = vi;
+        u.rate = Math.min(currentRate(), 2);
+        u.onend = () => setStatus('Hoàn thành', 'text-emerald-400');
+        synth.speak(u);
+    }
+
+    function togglePlayStop() {
+        if (TT.state === 'playing') {
+            TT.audio.pause();
+            TT.state = 'paused'; setMainUI('paused');
+            setStatus('Đã tạm dừng', 'text-amber-400');
+            return;
+        }
+        if (TT.state === 'paused') {
+            TT.state = 'playing'; setMainUI('playing');
+            TT.audio.playbackRate = currentRate();
+            TT.audio.play().catch(() => {});
+            setStatus(`Đang đọc đoạn ${TT.idx + 1}/${TT.chunks.length}`, 'text-emerald-400 font-bold');
+            return;
+        }
+        const text = document.getElementById('tts-text').value.trim();
+        if (!text) { alert('Xin hãy nhập nội dung cần đọc!'); return; }
+        const sig = text + '|' + document.getElementById('voice-select').value;
+        if (sig !== TT.sig) {
+            TT.sig = sig;
+            TT.chunks = chunkText(text);
+            TT.blobs.clear();
+            TT.urls.forEach(u => URL.revokeObjectURL(u)); TT.urls.clear();
+        }
+        TT.idx = 0;
+        TT.gen++;
+        playLoop(TT.gen);
+    }
+
+    function changeRateRealTime(val) {
+        document.getElementById('rate-val').innerText = parseFloat(val).toFixed(1) + 'x';
+        updateDuration();
+        if (TT.state === 'playing' || TT.state === 'paused') TT.audio.playbackRate = parseFloat(val);
+    }
 
     function updateDuration() {
         const textEl = document.getElementById('tts-text');
         const rateEl = document.getElementById('rate-range');
         const durationEl = document.getElementById('duration-display');
         if (!textEl || !rateEl || !durationEl) return;
-
         const text = textEl.value.trim();
         const rate = parseFloat(rateEl.value);
         const words = text ? text.split(/\s+/).length : 0;
         let seconds = (words / 150) * 60 / rate;
-        let mins = Math.floor(seconds / 60);
-        let secs = Math.floor(seconds % 60);
-        durationEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        durationEl.innerText = `${Math.floor(seconds / 60).toString().padStart(2, '0')}:${Math.floor(seconds % 60).toString().padStart(2, '0')}`;
     }
-
     const ttsTextEl = document.getElementById('tts-text');
-    if (ttsTextEl) {
-        ttsTextEl.addEventListener('input', updateDuration);
-        updateDuration();
-    }
+    if (ttsTextEl) { ttsTextEl.addEventListener('input', updateDuration); updateDuration(); }
+    document.getElementById('voice-select').addEventListener('change', () => { TT.sig = ''; });
 
-    function changeRateRealTime(val) {
-        document.getElementById('rate-val').innerText = parseFloat(val).toFixed(1) + "x";
-        updateDuration();
-        if (synth.speaking && currentUtterance) {
-            currentUtterance.rate = parseFloat(val);
-            synth.cancel();
-            synth.speak(currentUtterance);
-        }
-    }
-
-    function togglePlayStop() {
-        const mainIcon = document.getElementById('main-icon');
-        const mainText = document.getElementById('main-text');
-        const statusDisplay = document.getElementById('status-display');
-
-        if (synth.speaking && !synth.paused) {
-            synth.cancel();
-            mainIcon.className = "fa-solid fa-play";
-            mainText.innerText = "Phát Âm Thanh (1 Click)";
-            statusDisplay.innerText = "Đã dừng";
-            statusDisplay.className = "text-amber-400";
-            return;
-        }
-
+    async function downloadAudioMP3() {
         const text = document.getElementById('tts-text').value.trim();
-        if (!text) {
-            alert("Xin hãy nhập nội dung cần đọc!");
-            return;
+        if (!text) { alert('Không có nội dung để tải!'); return; }
+        const sig = text + '|' + document.getElementById('voice-select').value;
+        if (sig !== TT.sig) {
+            TT.sig = sig; TT.chunks = chunkText(text);
+            TT.blobs.clear(); TT.urls.forEach(u => URL.revokeObjectURL(u)); TT.urls.clear();
         }
-
-        synth.cancel();
-
-        currentUtterance = new SpeechSynthesisUtterance(text);
-        const voiceIndex = document.getElementById('voice-select').value;
-        let voices = synth.getVoices();
-        if (voices[voiceIndex]) {
-            currentUtterance.voice = voices[voiceIndex];
-        }
-
-        currentUtterance.rate = parseFloat(document.getElementById('rate-range').value);
-        currentUtterance.pitch = 1.0; // Giữ chuẩn mặc định ổn định
-
-        currentUtterance.onend = function() {
-            mainIcon.className = "fa-solid fa-play";
-            mainText.innerText = "Phát Âm Thanh (1 Click)";
-            statusDisplay.innerText = "Hoàn thành";
-            statusDisplay.className = "text-emerald-400";
-        };
-
-        synth.speak(currentUtterance);
-        mainIcon.className = "fa-solid fa-stop";
-        mainText.innerText = "Dừng Lại";
-        statusDisplay.innerText = "Đang đọc...";
-        statusDisplay.className = "text-emerald-400 font-bold";
-    }
-
-    function downloadAudioMP3() {
-        const text = document.getElementById('tts-text').value.trim();
-        if (!text) {
-            alert("Không có nội dung để tải!");
-            return;
-        }
-        
-        alert("Đang trích xuất tệp âm thanh...");
-        setTimeout(() => {
-            const blob = new Blob([text], { type: 'audio/mp3' });
-            const url = URL.createObjectURL(blob);
+        try {
+            const parts = [];
+            for (let i = 0; i < TT.chunks.length; i++) {
+                setStatus(`Đang tạo file MP3: đoạn ${i + 1}/${TT.chunks.length}...`, 'text-amber-400');
+                parts.push(await fetchChunkBlob(i));
+            }
+            const file = new Blob(parts, { type: 'audio/mpeg' });
             const a = document.createElement('a');
-            a.href = url;
-            a.download = 'kinh_van_tu_tien.mp3';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }, 800);
+            a.href = URL.createObjectURL(file);
+            a.download = 'giong-doc-than-am.mp3';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            setStatus('Đã tải file MP3 thật về máy!', 'text-emerald-400');
+        } catch (e) {
+            setStatus('Tải MP3 thất bại — máy chủ giọng đọc đang bận.', 'text-red-400');
+        }
     }
 </script>
 {% endblock %}

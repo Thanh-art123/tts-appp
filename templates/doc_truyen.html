@@ -141,6 +141,24 @@
         </div>
     </div>
 
+    <!-- MÁY NGHE TRUYỆN THẦN ÂM (giọng máy chủ, nghe được trên mọi điện thoại) -->
+    <div style="background: linear-gradient(90deg, #064e3b, #065f46); padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; border-bottom: 2px solid #f59e0b;">
+        <button id="rd-toggle" onclick="rdToggle()" style="background: #f59e0b; color: #111; border: none; font-weight: 800; font-size: 13px; padding: 8px 16px; border-radius: 999px; cursor: pointer;">▶ Nghe Truyện</button>
+        <button onclick="rdStop()" style="background: #374151; color: #fff; border: none; font-weight: 700; font-size: 13px; padding: 8px 14px; border-radius: 999px; cursor: pointer;">⏹ Dừng</button>
+        <select id="rd-voice" style="padding: 7px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 1px solid #10b981;">
+            <option value="vi-VN-HoaiMyNeural">🎙 Nữ — Hoài My</option>
+            <option value="vi-VN-NamMinhNeural">👨 Nam — Nam Minh</option>
+        </select>
+        <select id="rd-rate" onchange="rdRateChange()" style="padding: 7px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 1px solid #10b981;">
+            <option value="0.8">0.8x</option>
+            <option value="1" selected>1.0x</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+            <option value="2">2.0x</option>
+        </select>
+        <span id="rd-status" style="color: #d1fae5; font-size: 12px; font-weight: 600;">Giọng thần âm từ máy chủ — nghe được trên mọi điện thoại 📱</span>
+    </div>
+
     <center>
         <div class="reader-container-box" id="main-reader-box" style="text-align: left;">
             
@@ -260,6 +278,70 @@
                 targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
+    </script>
+    <!-- ENGINE NGHE TRUYỆN: tạo giọng trên máy chủ, phát theo từng đoạn -->
+    <script>
+    const RD = { audio: new Audio(), chunks: [], idx: 0, gen: 0, state: 'idle', sig: '', blobs: new Map(), urls: new Map() };
+    RD.audio.preload = 'auto';
+    function rdStatus(t) { const el = document.getElementById('rd-status'); if (el) el.innerText = t; }
+    function rdBtn(t) { const b = document.getElementById('rd-toggle'); if (b) b.innerText = t; }
+    function rdRate() { return parseFloat(document.getElementById('rd-rate').value) || 1; }
+    function rdRateChange() { RD.audio.playbackRate = rdRate(); }
+    function rdChunk(text, maxLen) {
+        maxLen = maxLen || 900;
+        const parts = text.replace(/\s+/g, ' ').match(/[^.!?…]+[.!?…]*["”’']?\s*/g) || [text];
+        const out = []; let cur = '';
+        for (const p of parts) {
+            if (cur && (cur + p).length > maxLen) { out.push(cur.trim()); cur = p; } else cur += p;
+            while (cur.length > maxLen) { out.push(cur.slice(0, maxLen).trim()); cur = cur.slice(maxLen); }
+        }
+        if (cur.trim()) out.push(cur.trim());
+        return out.filter(Boolean);
+    }
+    async function rdFetch(i) {
+        if (RD.blobs.has(i)) return;
+        const res = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: RD.chunks[i], voice: document.getElementById('rd-voice').value }) });
+        if (!res.ok) throw new Error('tts');
+        RD.blobs.set(i, await res.blob());
+        RD.urls.set(i, URL.createObjectURL(RD.blobs.get(i)));
+    }
+    async function rdLoop(gen) {
+        while (RD.idx < RD.chunks.length) {
+            if (gen !== RD.gen) return;
+            rdStatus(`Đang tạo âm thanh đoạn ${RD.idx + 1}/${RD.chunks.length}...`);
+            try { await rdFetch(RD.idx); } catch (e) { rdStatus('Máy chủ giọng đọc đang bận — đợi vài giây rồi bấm Nghe lại.'); RD.state = 'idle'; rdBtn('▶ Nghe Truyện'); return; }
+            if (gen !== RD.gen) return;
+            RD.audio.src = RD.urls.get(RD.idx);
+            RD.audio.playbackRate = rdRate();
+            rdStatus(`Đang đọc đoạn ${RD.idx + 1}/${RD.chunks.length}`);
+            RD.state = 'playing'; rdBtn('⏸ Tạm Dừng');
+            try { await RD.audio.play(); } catch (e) {}
+            await new Promise(res => { RD.audio.onended = res; RD.audio.onerror = res; });
+            if (gen !== RD.gen) return;
+            RD.idx++;
+        }
+        RD.state = 'idle'; rdBtn('▶ Nghe Truyện'); rdStatus('Đã đọc xong toàn bộ. 🎉');
+    }
+    function rdToggle() {
+        if (RD.state === 'playing') { RD.audio.pause(); RD.state = 'paused'; rdBtn('▶ Tiếp Tục'); rdStatus('Đã tạm dừng'); return; }
+        if (RD.state === 'paused') { RD.state = 'playing'; rdBtn('⏸ Tạm Dừng'); RD.audio.playbackRate = rdRate(); RD.audio.play().catch(() => {}); return; }
+        const el = document.getElementById('story-content-body');
+        const text = el ? el.innerText.trim() : '';
+        if (!text || text.length < 30 || text.includes('Đang xử lý')) { alert('Nội dung truyện đang tải — đợi vài giây rồi bấm Nghe Truyện lại nhé!'); return; }
+        const sig = text.slice(0, 200) + '|' + text.length + '|' + document.getElementById('rd-voice').value;
+        if (sig !== RD.sig) {
+            RD.sig = sig; RD.chunks = rdChunk(text);
+            RD.blobs.clear(); RD.urls.forEach(u => URL.revokeObjectURL(u)); RD.urls.clear();
+        }
+        RD.idx = 0; RD.gen++; rdLoop(RD.gen);
+    }
+    function rdStop() {
+        RD.gen++; RD.state = 'idle'; RD.idx = 0;
+        RD.audio.pause(); RD.audio.removeAttribute('src'); RD.audio.load();
+        rdBtn('▶ Nghe Truyện'); rdStatus('Đã dừng đọc.');
+    }
+    document.getElementById('rd-voice').addEventListener('change', () => { rdStop(); RD.sig = ''; });
     </script>
 </body>
 </html>
