@@ -64,7 +64,47 @@
           "published_book_id": null,
           "created_at": "26/10/2026 12:14"
         }
-      ]
+      ],
+      "game": {
+        "diem": 220,
+        "exp": 0,
+        "tu_vi": {
+          "muc": 1,
+          "cap": -1,
+          "break_missions": 0
+        },
+        "linh_khi": 0,
+        "linh_thach": {
+          "nguyen": 0,
+          "vien": 0,
+          "vi": 0,
+          "vinh": 0
+        },
+        "capacity": 10,
+        "inventory": {
+          "treasures": [],
+          "herbs": {},
+          "pha_canh_dan": 0
+        },
+        "stats": {
+          "total": {},
+          "today": {
+            "date": "2026-10-26"
+          }
+        },
+        "missions": {
+          "active": {},
+          "claimed_today": [],
+          "newbie_done": []
+        },
+        "notifications": [],
+        "history": [],
+        "streak": {
+          "last": "",
+          "count": 0
+        },
+        "locked": false
+      }
     },
     {
       "username": "test_tieuhac",
@@ -94,7 +134,104 @@
           "published_book_id": null,
           "created_at": "26/10/2026 11:18"
         }
-      ]
+      ],
+      "game": {
+        "diem": 170,
+        "exp": 0,
+        "tu_vi": {
+          "muc": 1,
+          "cap": -1,
+          "break_missions": 0
+        },
+        "linh_khi": 0,
+        "linh_thach": {
+          "nguyen": 0,
+          "vien": 0,
+          "vi": 0,
+          "vinh": 0
+        },
+        "capacity": 10,
+        "inventory": {
+          "treasures": [],
+          "herbs": {},
+          "pha_canh_dan": 0
+        },
+        "stats": {
+          "total": {},
+          "today": {
+            "date": "2026-10-26"
+          }
+        },
+        "missions": {
+          "active": {},
+          "claimed_today": [],
+          "newbie_done": []
+        },
+        "notifications": [],
+        "history": [],
+        "streak": {
+          "last": "",
+          "count": 0
+        },
+        "locked": false
+      }
+    },
+    {
+      "username": "test_dot1",
+      "password": "test12345",
+      "role": "member",
+      "author_name": "Test Đợt 1",
+      "tu_luyen": {
+        "diem_tich_tuyem": 120,
+        "cap_hien_tai": 1,
+        "tieu_canh": 0,
+        "vat_pham": {
+          "hoa": 2,
+          "lua": 1,
+          "cay": 3
+        }
+      },
+      "bag": [],
+      "game": {
+        "diem": 120,
+        "exp": 0,
+        "tu_vi": {
+          "muc": 1,
+          "cap": -1,
+          "break_missions": 0
+        },
+        "linh_khi": 0,
+        "linh_thach": {
+          "nguyen": 0,
+          "vien": 0,
+          "vi": 0,
+          "vinh": 0
+        },
+        "capacity": 10,
+        "inventory": {
+          "treasures": [],
+          "herbs": {},
+          "pha_canh_dan": 0
+        },
+        "stats": {
+          "total": {},
+          "today": {
+            "date": "2026-10-26"
+          }
+        },
+        "missions": {
+          "active": {},
+          "claimed_today": [],
+          "newbie_done": []
+        },
+        "notifications": [],
+        "history": [],
+        "streak": {
+          "last": "",
+          "count": 0
+        },
+        "locked": false
+      }
     }
   ],
   "books": [
