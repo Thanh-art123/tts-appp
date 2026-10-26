@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import base64
 import threading
@@ -698,6 +699,47 @@ def cho_dau_gia():
     return render_template('bi_canh.html')
 
 
+_CHAP_HEAD = re.compile(r'^\s*(Chương|Chapter|Phần|Hồi)\s+\d+', re.I)
+
+
+def _paragraphs(content):
+    """Tách nội dung truyện thành từng đoạn ngay trên máy chủ — trang đọc
+    hiển thị tức thì bằng HTML thuần, không phụ thuộc JS xử lý trên máy khách
+    (nguyên nhân cũ khiến truyện kẹt ở dòng 'Đang xử lý...' trên điện thoại)."""
+    text = (content or '').replace('\r\n', '\n').replace('\r', '\n')
+    text = re.sub(r'([^\n])((?:Chương|Chapter)\s+\d+[:\s])', r'\1\n\2', text, flags=re.I)
+    paras, chap = [], 0
+    for line in text.split('\n'):
+        line = line.strip()
+        if not line:
+            continue
+        is_chap = bool(_CHAP_HEAD.match(line))
+        if is_chap:
+            chap += 1
+        paras.append({"t": line, "chap": chap if is_chap else 0,
+                        "anchor": f"chap-pos-{chap}" if is_chap else ""})
+    return paras
+
+
+def _split_chapters(content):
+    """Chia truyện thành các chương theo tiêu đề 'Chương N' để nghe từng tập."""
+    chapters, cur = [], None
+    for p in _paragraphs(content):
+        if p["chap"]:
+            cur = {"title": p["t"][:120], "paras": []}
+            chapters.append(cur)
+        else:
+            if cur is None:
+                cur = {"title": "Mở đầu", "paras": []}
+                chapters.append(cur)
+            cur["paras"].append(p["t"])
+    for c in chapters:
+        c["text"] = "\n".join(c.pop("paras"))
+    if not chapters:
+        chapters = [{"title": "Toàn văn", "text": (content or '').strip()}]
+    return chapters
+
+
 @app.route('/doc-truyen', methods=['POST'])
 def doc_truyen():
     title = request.form.get('title', 'Chương Truyện')
@@ -716,7 +758,10 @@ def doc_truyen():
                     save_database(db, f"@{uname} doc truyen")
     except Exception:
         pass
-    return render_template('doc_truyen.html', chapter_title=title, chapter_content=content)
+    paras = _paragraphs(content)
+    links = [p for p in paras if p["chap"]]
+    return render_template('doc_truyen.html', chapter_title=title,
+                           paragraphs=paras, chapter_links=links)
 
 
 # --- API XÁC THỰC & ĐĂNG NHẬP ---
@@ -829,6 +874,31 @@ def get_user_contributions():
         "success": True,
         "books": user_books
     })
+
+
+@app.route('/api/nghe/books', methods=['GET'])
+def nghe_books():
+    """Danh sách truyện nhẹ (không kèm nội dung) cho mục Nghe Truyện."""
+    db = load_database()
+    out = []
+    for b in db['books']:
+        out.append({
+            "id": b.get('id'), "title": b.get('title', ''),
+            "author": b.get('author', ''), "username": b.get('username', ''),
+            "chapters": len(_split_chapters(b.get('content', '')))
+        })
+    return jsonify({"success": True, "books": out})
+
+
+@app.route('/api/nghe/book/<int:bid>', methods=['GET'])
+def nghe_book(bid):
+    """Một truyện đã chia sẵn theo chương để máy nghe đọc nối tiếp."""
+    db = load_database()
+    b = next((x for x in db['books'] if x.get('id') == bid), None)
+    if not b:
+        return jsonify({"success": False, "message": "Không tìm thấy truyện."}), 404
+    return jsonify({"success": True, "id": b.get('id'), "title": b.get('title', ''),
+                    "chapters": _split_chapters(b.get('content', ''))})
 
 
 @app.route('/api/get-books', methods=['GET'])
