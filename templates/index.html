@@ -53,37 +53,76 @@
         </div>
     </div>
 </div>
+
+<div class="panel-3d rounded-2xl p-6 relative space-y-4 mt-6">
+    <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
+        <i class="fa-solid fa-book-open text-amber-500"></i>
+        <span>Nghe Truyện Từ Tàng Kinh Các</span>
+    </h2>
+    <p class="text-xs text-amber-200/80 leading-relaxed">Mọi truyện đạo hữu tải lên Tàng Kinh Các đều tự xuất hiện ở đây. Chọn truyện, chọn tập rồi bấm nghe — <strong class="text-amber-300">hết chương này máy tự sang chương tiếp theo</strong>, không cần thao tác. Giọng đọc và tốc độ dùng chung với thanh công cụ phía trên.</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+            <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Truyện:</label>
+            <select id="bk-select" onchange="bkLoadChapters(this.value)" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
+                <option value="">Đang nạp danh sách truyện...</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Tập / Chương để bắt đầu nghe:</label>
+            <select id="bk-chapter" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
+                <option value="">—</option>
+            </select>
+        </div>
+    </div>
+    <div class="flex justify-between items-center text-xs text-amber-300 px-1 bg-black/40 p-2 rounded-lg border border-amber-800/40">
+        <span>📻 Trạng thái nghe truyện: <strong id="bk-status" class="text-emerald-400">Đang nạp...</strong></span>
+    </div>
+    <button onclick="bkToggle()" id="bk-play-btn" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-xs">
+        <i class="fa-solid fa-headphones"></i>
+        <span id="bk-play-text">Nghe Truyện (Tự Sang Chương)</span>
+    </button>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
     // ===== GIỌNG ĐỌC THẦN ÂM TỪ MÁY CHỦ (edge-tts) =====
-    // Âm thanh tạo trên server rồi phát bằng thẻ audio -> Android/app/WebView đều nghe được.
+    // Âm thanh tạo trên server, phát bằng thẻ audio -> Android/app đều nghe được.
+    // Engine chạy theo "đoạn" (segment): văn bản tự do hoặc từng chương truyện nối tiếp.
     const TT = {
-        audio: new Audio(),
-        chunks: [], idx: 0, gen: 0,
-        state: 'idle', // idle | playing | paused
-        sig: '', blobs: new Map(), urls: new Map()
+        audio: new Audio(), segments: [], idx: 0, gen: 0,
+        state: 'idle', mode: 'text', blobs: new Map(), urls: new Map()
     };
     TT.audio.preload = 'auto';
 
-    const statusEl = () => document.getElementById('status-display');
     function setStatus(txt, cls) {
-        const el = statusEl();
+        const el = document.getElementById('status-display');
         if (el) { el.innerText = txt; el.className = cls || 'text-emerald-400'; }
     }
-    function setMainUI(mode) {
+    function bkStatus(txt) {
+        const el = document.getElementById('bk-status');
+        if (el) el.innerText = txt;
+    }
+    function setMainUI(state) {
         const icon = document.getElementById('main-icon');
         const text = document.getElementById('main-text');
-        if (mode === 'playing') { icon.className = 'fa-solid fa-pause'; text.innerText = 'Tạm Dừng'; }
-        else if (mode === 'paused') { icon.className = 'fa-solid fa-play'; text.innerText = 'Tiếp Tục Đọc'; }
-        else { icon.className = 'fa-solid fa-play'; text.innerText = 'Phát Âm Thanh (1 Click)'; }
+        const bkText = document.getElementById('bk-play-text');
+        if (state === 'playing') {
+            icon.className = 'fa-solid fa-pause'; text.innerText = 'Tạm Dừng';
+            if (bkText && TT.mode === 'book') bkText.innerText = 'Tạm Dừng';
+        } else if (state === 'paused') {
+            icon.className = 'fa-solid fa-play'; text.innerText = 'Tiếp Tục Đọc';
+            if (bkText && TT.mode === 'book') bkText.innerText = 'Tiếp Tục Nghe';
+        } else {
+            icon.className = 'fa-solid fa-play'; text.innerText = 'Phát Âm Thanh (1 Click)';
+            if (bkText) bkText.innerText = 'Nghe Truyện (Tự Sang Chương)';
+        }
     }
     function currentRate() { return parseFloat(document.getElementById('rate-range').value) || 1; }
 
     function chunkText(text, maxLen) {
         maxLen = maxLen || 900;
-        const parts = text.replace(/\s+/g, ' ').match(/[^.!?…]+[.!?…]*["”’']?\s*/g) || [text];
+        const parts = (text || '').replace(/\s+/g, ' ').match(/[^.!?…]+[.!?…]*["”’']?\s*/g) || [text];
         const out = []; let cur = '';
         for (const p of parts) {
             if (cur && (cur + p).length > maxLen) { out.push(cur.trim()); cur = p; }
@@ -94,48 +133,83 @@
         return out.filter(Boolean);
     }
 
-    async function fetchChunkBlob(i) {
-        if (TT.blobs.has(i)) return TT.blobs.get(i);
+    async function ttsBlob(text) {
         const res = await fetch('/api/tts', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: TT.chunks[i], voice: document.getElementById('voice-select').value })
+            body: JSON.stringify({ text: text, voice: document.getElementById('voice-select').value })
         });
         if (!res.ok) throw new Error('tts fail');
-        const blob = await res.blob();
-        TT.blobs.set(i, blob);
-        return blob;
+        return await res.blob();
+    }
+    async function fetchChunkBlob(i) {
+        if (!TT.blobs.has(i)) TT.blobs.set(i, await ttsBlob(TT.segments[i].text));
+        return TT.blobs.get(i);
     }
     function chunkURL(i) {
         if (!TT.urls.has(i)) TT.urls.set(i, URL.createObjectURL(TT.blobs.get(i)));
         return TT.urls.get(i);
     }
+    function showSegStatus(verb, cls) {
+        const seg = TT.segments[TT.idx];
+        const msg = seg ? `${verb}: ${seg.label}` : verb;
+        setStatus(msg, cls);
+        if (TT.mode === 'book') bkStatus(msg);
+    }
 
     async function playLoop(gen) {
-        while (TT.idx < TT.chunks.length) {
+        while (TT.idx < TT.segments.length) {
             if (gen !== TT.gen) return;
-            setStatus(`Đang tạo âm thanh đoạn ${TT.idx + 1}/${TT.chunks.length}...`, 'text-amber-400');
+            showSegStatus('Đang tạo âm thanh', 'text-amber-400');
             try { await fetchChunkBlob(TT.idx); }
             catch (e) { fallbackSpeak(); return; }
             if (gen !== TT.gen) return;
             TT.audio.src = chunkURL(TT.idx);
             TT.audio.playbackRate = currentRate();
-            setStatus(`Đang đọc đoạn ${TT.idx + 1}/${TT.chunks.length}`, 'text-emerald-400 font-bold');
+            showSegStatus('Đang đọc', 'text-emerald-400 font-bold');
             TT.state = 'playing'; setMainUI('playing');
             try { await TT.audio.play(); } catch (e) {}
+            if (TT.idx + 1 < TT.segments.length) fetchChunkBlob(TT.idx + 1).catch(() => {});
             await new Promise(res => { TT._wake = res; TT.audio.onended = res; TT.audio.onerror = res; });
             if (gen !== TT.gen) return;
             TT.idx++;
         }
         TT.state = 'idle'; setMainUI('idle');
-        setStatus('Hoàn thành', 'text-emerald-400');
+        if (TT.mode === 'book') { setStatus('Đã đọc hết truyện', 'text-emerald-400'); bkStatus('Đã đọc hết toàn bộ truyện 🎉'); }
+        else setStatus('Hoàn thành', 'text-emerald-400');
+    }
+
+    function startSegments(segs, mode) {
+        TT.gen++;
+        TT.mode = mode;
+        TT.segments = segs;
+        TT.idx = 0;
+        TT.blobs.clear();
+        TT.urls.forEach(u => URL.revokeObjectURL(u)); TT.urls.clear();
+        playLoop(TT.gen);
+    }
+    function pauseResume() {
+        if (TT.state === 'playing') {
+            TT.audio.pause();
+            TT.state = 'paused'; setMainUI('paused');
+            setStatus('Đã tạm dừng', 'text-amber-400');
+            if (TT.mode === 'book') bkStatus('Đã tạm dừng');
+            return true;
+        }
+        if (TT.state === 'paused') {
+            TT.state = 'playing'; setMainUI('playing');
+            TT.audio.playbackRate = currentRate();
+            TT.audio.play().catch(() => {});
+            showSegStatus('Đang đọc', 'text-emerald-400 font-bold');
+            return true;
+        }
+        return false;
     }
 
     function fallbackSpeak() {
-        // Phương án dự phòng: giọng máy của trình duyệt (nếu máy chủ bận)
         const synth = window.speechSynthesis;
         const text = document.getElementById('tts-text').value.trim();
         TT.state = 'idle'; setMainUI('idle');
-        if (!synth || !text) { setStatus('Máy chủ giọng đọc đang bận, thử lại sau giây lát.', 'text-red-400'); return; }
+        if (!synth || !text || TT.mode === 'book') { setStatus('Máy chủ giọng đọc đang bận, thử lại sau giây lát.', 'text-red-400'); bkStatus('Máy chủ giọng đọc đang bận — thử lại sau giây lát.'); return; }
         setStatus('Đang đọc bằng giọng dự phòng của máy...', 'text-amber-400');
         synth.cancel();
         const u = new SpeechSynthesisUtterance(text);
@@ -147,31 +221,11 @@
     }
 
     function togglePlayStop() {
-        if (TT.state === 'playing') {
-            TT.audio.pause();
-            TT.state = 'paused'; setMainUI('paused');
-            setStatus('Đã tạm dừng', 'text-amber-400');
-            return;
-        }
-        if (TT.state === 'paused') {
-            TT.state = 'playing'; setMainUI('playing');
-            TT.audio.playbackRate = currentRate();
-            TT.audio.play().catch(() => {});
-            setStatus(`Đang đọc đoạn ${TT.idx + 1}/${TT.chunks.length}`, 'text-emerald-400 font-bold');
-            return;
-        }
+        if (TT.mode === 'text' && pauseResume()) return;
         const text = document.getElementById('tts-text').value.trim();
         if (!text) { alert('Xin hãy nhập nội dung cần đọc!'); return; }
-        const sig = text + '|' + document.getElementById('voice-select').value;
-        if (sig !== TT.sig) {
-            TT.sig = sig;
-            TT.chunks = chunkText(text);
-            TT.blobs.clear();
-            TT.urls.forEach(u => URL.revokeObjectURL(u)); TT.urls.clear();
-        }
-        TT.idx = 0;
-        TT.gen++;
-        playLoop(TT.gen);
+        const parts = chunkText(text);
+        startSegments(parts.map((p, i) => ({ label: `Đoạn ${i + 1}/${parts.length}`, text: p })), 'text');
     }
 
     function changeRateRealTime(val) {
@@ -193,21 +247,16 @@
     }
     const ttsTextEl = document.getElementById('tts-text');
     if (ttsTextEl) { ttsTextEl.addEventListener('input', updateDuration); updateDuration(); }
-    document.getElementById('voice-select').addEventListener('change', () => { TT.sig = ''; });
 
     async function downloadAudioMP3() {
         const text = document.getElementById('tts-text').value.trim();
         if (!text) { alert('Không có nội dung để tải!'); return; }
-        const sig = text + '|' + document.getElementById('voice-select').value;
-        if (sig !== TT.sig) {
-            TT.sig = sig; TT.chunks = chunkText(text);
-            TT.blobs.clear(); TT.urls.forEach(u => URL.revokeObjectURL(u)); TT.urls.clear();
-        }
         try {
+            const chunks = chunkText(text);
             const parts = [];
-            for (let i = 0; i < TT.chunks.length; i++) {
-                setStatus(`Đang tạo file MP3: đoạn ${i + 1}/${TT.chunks.length}...`, 'text-amber-400');
-                parts.push(await fetchChunkBlob(i));
+            for (let i = 0; i < chunks.length; i++) {
+                setStatus(`Đang tạo file MP3: đoạn ${i + 1}/${chunks.length}...`, 'text-amber-400');
+                parts.push(await ttsBlob(chunks[i]));
             }
             const file = new Blob(parts, { type: 'audio/mpeg' });
             const a = document.createElement('a');
@@ -219,5 +268,65 @@
             setStatus('Tải MP3 thất bại — máy chủ giọng đọc đang bận.', 'text-red-400');
         }
     }
+
+    // ===== NGHE TRUYỆN TỪ TÀNG KINH CÁC =====
+    const BK = { chapters: [], title: '' };
+    function bkToggle() {
+        if (TT.mode === 'book' && pauseResume()) return;
+        if (!BK.chapters.length) { alert('Hãy chọn một truyện trước!'); return; }
+        const start = parseInt(document.getElementById('bk-chapter').value) || 0;
+        const segs = [];
+        for (let ci = start; ci < BK.chapters.length; ci++) {
+            const parts = chunkText(BK.chapters[ci].text);
+            parts.forEach(p => segs.push({ label: `${BK.chapters[ci].title} (chương ${ci + 1}/${BK.chapters.length} của «${BK.title}»)`, text: p }));
+        }
+        if (!segs.length) { alert('Chương này chưa có nội dung!'); return; }
+        startSegments(segs, 'book');
+    }
+    async function bkLoadChapters(id) {
+        if (!id) return;
+        const csel = document.getElementById('bk-chapter');
+        csel.innerHTML = '<option value="">Đang tải danh sách chương...</option>';
+        bkStatus('Đang tải chương...');
+        try {
+            const r = await fetch('/api/nghe/book/' + id);
+            const d = await r.json();
+            BK.chapters = d.chapters || [];
+            BK.title = d.title || '';
+            csel.innerHTML = '';
+            BK.chapters.forEach((c, i) => {
+                const o = document.createElement('option');
+                o.value = i; o.textContent = c.title;
+                csel.appendChild(o);
+            });
+            bkStatus(`Sẵn sàng: «${BK.title}» có ${BK.chapters.length} chương. Bấm Nghe Truyện để bắt đầu!`);
+        } catch (e) { bkStatus('Không tải được truyện này.'); }
+    }
+    async function bkInit() {
+        const sel = document.getElementById('bk-select');
+        if (!sel) return;
+        try {
+            const r = await fetch('/api/nghe/books');
+            const d = await r.json();
+            const books = d.books || [];
+            sel.innerHTML = '';
+            if (!books.length) {
+                sel.innerHTML = '<option value="">(Chưa có truyện nào — hãy tải truyện lên Tàng Kinh Các)</option>';
+                bkStatus('Chưa có truyện nào trong Tàng Kinh Các.');
+                return;
+            }
+            books.forEach(b => {
+                const o = document.createElement('option');
+                o.value = b.id;
+                o.textContent = `📖 ${b.title} — ${b.chapters} chương`;
+                sel.appendChild(o);
+            });
+            bkLoadChapters(books[0].id);
+        } catch (e) {
+            sel.innerHTML = '<option value="">Không tải được danh sách truyện</option>';
+        }
+    }
+    bkInit();
 </script>
+
 {% endblock %}

@@ -116,7 +116,9 @@
             <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 12px; color: #71717a; font-weight: bold;">🐉 Chuyển Chương:</span>
                 <select id="chapter-jump-select" onchange="jumpToChapter(this.value)" class="bg-white border border-zinc-300 rounded px-3 py-1.5 text-xs font-bold text-emerald-800 outline-none max-w-[280px]">
-                    <option value="">Đang quét danh sách chương...</option>
+                    <option value="">-- Chọn chương để cuộn đến --</option>
+                    {% for c in chapter_links %}<option value="{{ c.anchor }}">{{ c.t[:60] }}</option>{% endfor %}
+                    {% if not chapter_links %}<option value="">Toàn văn (không có tiêu đề chương)</option>{% endif %}
                 </select>
             </div>
 
@@ -156,6 +158,11 @@
             <option value="1.5">1.5x</option>
             <option value="2">2.0x</option>
         </select>
+        <span style="color: #a7f3d0; font-size: 12px; font-weight: 700;">Nghe từ:</span>
+        <select id="rd-from" style="padding: 7px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 1px solid #10b981;">
+            <option value="">Đầu truyện</option>
+            {% for c in chapter_links %}<option value="{{ c.anchor }}">{{ c.t[:40] }}</option>{% endfor %}
+        </select>
         <span id="rd-status" style="color: #d1fae5; font-size: 12px; font-weight: 600;">Giọng thần âm từ máy chủ — nghe được trên mọi điện thoại 📱</span>
     </div>
 
@@ -169,12 +176,12 @@
                 <p style="font-size: 12px; color: #a1a1aa; margin: 0;">Tông Môn Đọc Truyện • Chế độ toàn văn cao cấp</p>
             </div>
 
-            <!-- DỮ LIỆU GỐC (ẨN) -->
-            <div id="raw-hidden-content" style="display: none;">{{ chapter_content | safe }}</div>
-            
-            <!-- NỘI DUNG CHÍNH -->
+            <!-- NỘI DUNG CHÍNH: render sẵn từ máy chủ, hiện tức thì -->
             <div id="story-content-body" class="story-content-text">
-                Đang xử lý và làm sạch văn bản...
+                {% for p in paragraphs %}
+                {% if p.chap %}<p id="{{ p.anchor }}" class="chapter-anchor" style="margin: 30px 0 10px; font-weight: bold; color: #047857;">{{ p.t }}</p>{% else %}<p style="margin: 10px 0;">{{ p.t }}</p>{% endif %}
+                {% endfor %}
+                {% if not paragraphs %}<p style="margin: 10px 0;">(Chương này chưa có nội dung.)</p>{% endif %}
             </div>
 
             <!-- CHÂN TRANG ĐIỀU HƯỚNG -->
@@ -201,75 +208,6 @@
         function changeFontFamily(font) {
             document.getElementById('story-content-body').style.fontFamily = font;
         }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            let rawHTML = document.getElementById('raw-hidden-content').innerHTML;
-            let tempDiv = document.createElement('div');
-            tempDiv.innerHTML = rawHTML;
-            
-            tempDiv.querySelectorAll('style, script').forEach(el => el.remove());
-            let cleanText = tempDiv.textContent || tempDiv.innerText || "";
-
-            if (cleanText.includes("{") && cleanText.includes("}")) {
-                let lastBraceIdx = cleanText.lastIndexOf("}");
-                if (lastBraceIdx !== -1 && lastBraceIdx < 1500) {
-                    cleanText = cleanText.substring(lastBraceIdx + 1).trim();
-                }
-            }
-
-            let matches = [...cleanText.matchAll(/Chương\s+\d+/gi)];
-            if (matches.length > 5) {
-                let contentStartIndex = 0;
-                for (let i = 0; i < matches.length - 1; i++) {
-                    let distance = matches[i + 1].index - matches[i].index;
-                    if (distance > 500) {
-                        contentStartIndex = matches[i].index;
-                        break;
-                    }
-                }
-                if (contentStartIndex > 0) {
-                    cleanText = cleanText.substring(contentStartIndex);
-                }
-            }
-
-            cleanText = cleanText.replace(/([^\n])(Chương\s+\d+[:\s])/gi, '$1\n\n$2');
-
-            const container = document.getElementById('story-content-body');
-            container.innerText = "";
-
-            let lines = cleanText.split('\n');
-            let selectEl = document.getElementById('chapter-jump-select');
-            selectEl.innerHTML = '<option value="">-- Chọn chương để cuộn đến --</option>';
-
-            let chapterCount = 0;
-
-            lines.forEach((line) => {
-                let p = document.createElement('p');
-                p.style.margin = "10px 0";
-                p.innerText = line;
-
-                if (/^Chương\s+\d+/i.test(line.trim())) {
-                    chapterCount++;
-                    let targetId = `chap-pos-${chapterCount}`;
-                    p.id = targetId;
-                    p.className = "chapter-anchor";
-                    p.style.fontWeight = "bold";
-                    p.style.color = "#047857";
-                    p.style.marginTop = "30px";
-
-                    let opt = document.createElement('option');
-                    opt.value = targetId;
-                    opt.innerText = line.trim().length > 40 ? line.trim().substring(0, 40) + '...' : line.trim();
-                    selectEl.appendChild(opt);
-                }
-
-                container.appendChild(p);
-            });
-
-            if (chapterCount === 0) {
-                selectEl.innerHTML = '<option value="">Toàn văn (Không tìm thấy tiêu đề chương)</option>';
-            }
-        });
 
         function jumpToChapter(targetId) {
             if (!targetId) return;
@@ -317,19 +255,30 @@
             rdStatus(`Đang đọc đoạn ${RD.idx + 1}/${RD.chunks.length}`);
             RD.state = 'playing'; rdBtn('⏸ Tạm Dừng');
             try { await RD.audio.play(); } catch (e) {}
+            if (RD.idx + 1 < RD.chunks.length) rdFetch(RD.idx + 1).catch(() => {});
             await new Promise(res => { RD.audio.onended = res; RD.audio.onerror = res; });
             if (gen !== RD.gen) return;
             RD.idx++;
         }
         RD.state = 'idle'; rdBtn('▶ Nghe Truyện'); rdStatus('Đã đọc xong toàn bộ. 🎉');
     }
+    function rdCollectText() {
+        const container = document.getElementById('story-content-body');
+        if (!container) return '';
+        const from = document.getElementById('rd-from').value;
+        if (!from) return container.innerText.trim();
+        const startEl = document.getElementById(from);
+        const kids = Array.from(container.children);
+        const i = kids.indexOf(startEl);
+        if (i < 0) return container.innerText.trim();
+        return kids.slice(i).map(el => el.innerText).join('\n').trim();
+    }
     function rdToggle() {
         if (RD.state === 'playing') { RD.audio.pause(); RD.state = 'paused'; rdBtn('▶ Tiếp Tục'); rdStatus('Đã tạm dừng'); return; }
         if (RD.state === 'paused') { RD.state = 'playing'; rdBtn('⏸ Tạm Dừng'); RD.audio.playbackRate = rdRate(); RD.audio.play().catch(() => {}); return; }
-        const el = document.getElementById('story-content-body');
-        const text = el ? el.innerText.trim() : '';
-        if (!text || text.length < 30 || text.includes('Đang xử lý')) { alert('Nội dung truyện đang tải — đợi vài giây rồi bấm Nghe Truyện lại nhé!'); return; }
-        const sig = text.slice(0, 200) + '|' + text.length + '|' + document.getElementById('rd-voice').value;
+        const text = rdCollectText();
+        if (!text || text.length < 10) { alert('Chưa có nội dung để nghe ở vị trí này!'); return; }
+        const sig = text.slice(0, 200) + '|' + text.length + '|' + document.getElementById('rd-voice').value + '|' + document.getElementById('rd-from').value;
         if (sig !== RD.sig) {
             RD.sig = sig; RD.chunks = rdChunk(text);
             RD.blobs.clear(); RD.urls.forEach(u => URL.revokeObjectURL(u)); RD.urls.clear();
@@ -342,6 +291,7 @@
         rdBtn('▶ Nghe Truyện'); rdStatus('Đã dừng đọc.');
     }
     document.getElementById('rd-voice').addEventListener('change', () => { rdStop(); RD.sig = ''; });
+    document.getElementById('rd-from').addEventListener('change', () => { rdStop(); RD.sig = ''; });
     </script>
 </body>
 </html>
