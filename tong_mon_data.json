@@ -50,16 +50,6 @@
   ],
   "books": [
     {
-      "id": 1,
-      "category": "truyen-dich",
-      "element": "Kim",
-      "author": "Tai Khoan Test",
-      "username": "test_tieuhac",
-      "icon": "📜",
-      "title": "Truyen Test - Xoa Duoc",
-      "content": "Day la truyen test cua tieu hac de kiem tra tinh nang, chuong mon xoa giup."
-    },
-    {
       "id": 2,
       "category": "truyen-cover",
       "element": "Mộc",
