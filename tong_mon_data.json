@@ -75,7 +75,7 @@
         },
         "linh_khi": 0,
         "linh_thach": {
-          "nguyen": 3,
+          "nguyen": 2,
           "vien": 0,
           "vi": 0,
           "vinh": 0
@@ -105,6 +105,10 @@
           {
             "time": "26/10/2026 15:10",
             "text": "Mua 3 Nguyên Tinh tại Sảnh Chính (-30 Điểm Cống Hiến)"
+          },
+          {
+            "time": "26/10/2026 15:11",
+            "text": "Rao bán Nguyên Tinh ×1 với giá 25 điểm"
           }
         ],
         "streak": {
@@ -451,7 +455,19 @@
   ],
   "market": {
     "seq": 1,
-    "listings": [],
+    "listings": [
+      {
+        "id": "l1792995068691-admin",
+        "seller": "admin",
+        "seller_name": "Chưởng Môn Nhân",
+        "kind": "thach",
+        "key": "nguyen",
+        "label": "Nguyên Tinh",
+        "qty": 1,
+        "price": 25,
+        "created": "26/10/2026 15:11"
+      }
+    ],
     "auctions": [],
     "barters": [],
     "deals": []
