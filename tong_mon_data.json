@@ -66,8 +66,8 @@
         }
       ],
       "game": {
-        "diem": 407,
-        "exp": 36,
+        "diem": 409,
+        "exp": 39,
         "tu_vi": {
           "muc": 1,
           "cap": -1,
@@ -90,14 +90,14 @@
           "total": {
             "diem_danh": 1,
             "doc_chuong": 1,
-            "khai_thac": 2,
+            "khai_thac": 3,
             "lk_ok": 2
           },
           "today": {
             "date": "2026-10-26",
             "diem_danh": 1,
             "doc_chuong": 1,
-            "khai_thac": 2,
+            "khai_thac": 3,
             "lk_ok": 2
           }
         },
@@ -157,6 +157,10 @@
           {
             "time": "26/10/2026 15:40",
             "text": "Bán Pháp Khí Cấp 3 (+135 Điểm Cống Hiến)"
+          },
+          {
+            "time": "26/10/2026 15:41",
+            "text": "Khai thác quặng ở Mỏ Quặng (+2 Điểm Cống Hiến)"
           }
         ],
         "streak": {
@@ -166,7 +170,7 @@
         "locked": false,
         "nghe": {
           "quang": {
-            "3": 0,
+            "3": 1,
             "1": 0
           },
           "dan": {
