@@ -348,7 +348,7 @@
       "bag": [],
       "game": {
         "diem": 122,
-        "exp": 3,
+        "exp": 5,
         "tu_vi": {
           "muc": 1,
           "cap": -1,
@@ -369,11 +369,13 @@
         },
         "stats": {
           "total": {
-            "khai_thac": 1
+            "khai_thac": 1,
+            "cau_ca": 1
           },
           "today": {
             "date": "2026-10-26",
-            "khai_thac": 1
+            "khai_thac": 1,
+            "cau_ca": 1
           }
         },
         "missions": {
@@ -401,7 +403,7 @@
             "tu_linh": 0
           },
           "ca": {
-            "thuong": 0,
+            "thuong": 1,
             "ngon": 0,
             "linh_ngu": 0
           },
