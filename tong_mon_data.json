@@ -193,7 +193,7 @@
       },
       "bag": [],
       "game": {
-        "diem": 120,
+        "diem": 20,
         "exp": 0,
         "tu_vi": {
           "muc": 1,
@@ -202,7 +202,7 @@
         },
         "linh_khi": 0,
         "linh_thach": {
-          "nguyen": 0,
+          "nguyen": 10,
           "vien": 0,
           "vi": 0,
           "vinh": 0
@@ -228,7 +228,12 @@
           "newbie_done": []
         },
         "notifications": [],
-        "history": [],
+        "history": [
+          {
+            "time": "26/10/2026 13:45",
+            "text": "Mua 10 Nguyên Tinh tại Sảnh Chính (-100 Điểm Cống Hiến)"
+          }
+        ],
         "streak": {
           "last": "2026-10-26",
           "count": 1
