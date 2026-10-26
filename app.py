@@ -1,5 +1,6 @@
 import os
 import re
+from html import unescape as _html_unescape
 import json
 import base64
 import threading
@@ -702,12 +703,43 @@ def cho_dau_gia():
 _CHAP_HEAD = re.compile(r'^\s*(Chương|Chapter|Phần|Hồi)\s+\d+', re.I)
 
 
+def _strip_html(text):
+    """Bóc toàn bộ thẻ HTML khỏi nội dung truyện (nhiều truyện tải lên là file
+    HTML/EPUB nguyên bản) để lấy chữ thuần trước khi chia đoạn/chương."""
+    t = re.sub(r'(?is)<(script|style|head).*?>.*?</\1>', '', text)
+    t = re.sub(r'(?i)<br\s*/?>', '\n', t)
+    t = re.sub(r'(?i)</(p|div|h[1-6]|li|tr|section|article)>', '\n', t)
+    t = re.sub(r'<[^>]+>', '', t)
+    return _html_unescape(t)
+
+
+def _prepare_text(content):
+    """Làm sạch nội dung gốc: bóc HTML nếu có, và bỏ qua cụm MỤC LỤC dày đặc
+    ở đầu (danh sách 'Chương N' san sát nhau) để tới thẳng chương thật."""
+    text = content or ''
+    head = text[:4000].lower()
+    if '<html' in head or '<body' in head or '<p>' in head or '<div' in head or '<br' in head or '<a ' in head:
+        text = _strip_html(text)
+    text = text.replace('\r\n', '\n').replace('\r', '\n')
+    # Chỉ xét tiêu đề ở ĐẦU DÒNG; cụm mục lục = nhiều tiêu đề đầu dòng san sát
+    heads = [m.start() for m in re.finditer(r'(?im)^\s*(?:Chương|Chapter)\s+\d+', text)]
+    if len(heads) >= 6:
+        for i in range(len(heads)):
+            nxt = heads[i + 1] if i + 1 < len(heads) else len(text)
+            if nxt - heads[i] > 500:  # tiêu đề này có thân bài thật phía sau
+                dense = sum(1 for j in range(i) if heads[j + 1] - heads[j] <= 200)
+                if dense >= 3:  # phía trước là cụm mục lục dày -> cắt bỏ
+                    text = text[heads[i]:]
+                break
+    return text
+
+
 def _paragraphs(content):
     """Tách nội dung truyện thành từng đoạn ngay trên máy chủ — trang đọc
     hiển thị tức thì bằng HTML thuần, không phụ thuộc JS xử lý trên máy khách
     (nguyên nhân cũ khiến truyện kẹt ở dòng 'Đang xử lý...' trên điện thoại)."""
-    text = (content or '').replace('\r\n', '\n').replace('\r', '\n')
-    text = re.sub(r'([^\n])((?:Chương|Chapter)\s+\d+[:\s])', r'\1\n\2', text, flags=re.I)
+    text = _prepare_text(content)
+    text = re.sub(r'([^\n])((?:Chương|Chapter)\s+\d+[:\s])', r'\1\n\2', text)
     paras, chap = [], 0
     for line in text.split('\n'):
         line = line.strip()
