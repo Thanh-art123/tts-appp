@@ -200,9 +200,9 @@
           "cap": -1,
           "break_missions": 0
         },
-        "linh_khi": 0,
+        "linh_khi": 100,
         "linh_thach": {
-          "nguyen": 10,
+          "nguyen": 0,
           "vien": 0,
           "vi": 0,
           "vinh": 0
@@ -215,11 +215,13 @@
         },
         "stats": {
           "total": {
-            "diem_danh": 1
+            "diem_danh": 1,
+            "doi_linh_thach": 1
           },
           "today": {
             "date": "2026-10-26",
-            "diem_danh": 1
+            "diem_danh": 1,
+            "doi_linh_thach": 1
           }
         },
         "missions": {
@@ -232,6 +234,10 @@
           {
             "time": "26/10/2026 13:45",
             "text": "Mua 10 Nguyên Tinh tại Sảnh Chính (-100 Điểm Cống Hiến)"
+          },
+          {
+            "time": "26/10/2026 13:45",
+            "text": "Đổi 10 Nguyên Tinh -> +100 Linh Khí"
           }
         ],
         "streak": {
