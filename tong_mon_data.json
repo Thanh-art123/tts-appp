@@ -3243,7 +3243,7 @@
       },
       "bag": [],
       "game": {
-        "diem": 100,
+        "diem": 90,
         "vi_yen": 0,
         "exp": 0,
         "tu_vi": {
@@ -3284,6 +3284,10 @@
           {
             "time": "27/10/2026 20:55",
             "text": "Mua 1 Quặng Luyện Khí phẩm Trắng (-10 Điểm Cống Hiến)"
+          },
+          {
+            "time": "27/10/2026 20:56",
+            "text": "Mua 1 Quặng Luyện Khí phẩm Trắng (-10 Điểm Cống Hiến)"
           }
         ],
         "streak": {
@@ -3314,7 +3318,7 @@
           "cay": null,
           "vat_tu": {
             "quang": {
-              "0": 2,
+              "0": 3,
               "1": 0,
               "2": 0,
               "3": 0
