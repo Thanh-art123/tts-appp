@@ -199,6 +199,8 @@ def _normalize_db(data):
     data.setdefault("users", [])
     data.setdefault("books", [])
     data.setdefault("market", {"seq": 1, "listings": [], "auctions": [], "barters": [], "deals": []})
+    data.setdefault("events", {"tuan_le": {"active": False, "ends": 0},
+                               "dai_hoi": {"active": False, "ends": 0}})
     for user in data["users"]:
         if "tu_luyen" not in user:
             user["tu_luyen"] = get_default_tu_luyen()
@@ -208,6 +210,17 @@ def _normalize_db(data):
         # kể cả tài khoản cũ — không mất bất kỳ dữ liệu nào đã có.
         user["game"] = _ensure_game(user)
     return data
+
+
+def _norm_title(t):
+    """Chuẩn hóa tên truyện để so trùng: thường hóa, gộp khoảng trắng."""
+    return " ".join((t or "").strip().lower().split())
+
+
+def _book_title_exists(db, title):
+    """Mỗi truyện trên Tàng Kinh Các chỉ giữ 1 bản duy nhất (theo tên)."""
+    nt = _norm_title(title)
+    return any(_norm_title(b.get("title")) == nt for b in db.get("books", []))
 
 
 def _load_local_file():
@@ -962,6 +975,9 @@ def upload_book():
         return jsonify({"success": False, "message": "Thiếu thông tin bộ truyện!"})
 
     db = load_database()
+    if _book_title_exists(db, title):
+        return jsonify({"success": False, "message": f"❌ Truyện [{title}] đã có trên Tàng Kinh Các rồi — mỗi truyện chỉ giữ 1 bản duy nhất, không đăng trùng nữa!"})
+
     new_id = max([b.get('id', 0) for b in db['books']], default=0) + 1
 
     new_book = {
@@ -1146,9 +1162,58 @@ def api_bag_upload():
     return jsonify({"success": True, "message": f"Đã cất [{title}] vào Túi Trữ Vật. Tài nguyên đang ở chế độ riêng tư, chưa đăng công khai.", "item": _bag_item_meta(item)})
 
 
+def _chuyen_kiem_tra(db, user, item):
+    """Mục KIỂM TRA trước khi chuyển truyện từ Túi Trữ Vật lên Tàng Kinh Các.
+
+    Quy định của ông chủ: phí chuyển = số chương × 1 Nguyên Tinh
+    (Nguyên Tinh là linh thạch 10 điểm linh khí; vd 100 chương = 100 Nguyên Tinh).
+    Không đủ chương (truyện trống) hoặc không đủ Nguyên Tinh -> báo lỗi rõ ràng.
+    Mỗi truyện trên Tàng Kinh Các chỉ giữ 1 bản duy nhất.
+    """
+    content = (item.get("content") or "").strip()
+    so_chuong = len(_split_chapters(item.get("content") or "")) if content else 0
+    g = _ensure_game(user)
+    dang_co = int(g.get("linh_thach", {}).get("nguyen", 0))
+    phi = so_chuong  # 1 chương = 1 Nguyên Tinh
+    loi = None
+    if so_chuong < 1:
+        loi = "Truyện chưa có chương nào (nội dung trống) — không chuyển được!"
+    elif item.get("published_book_id") and any(b.get('id') == item["published_book_id"] for b in db['books']):
+        loi = f"Truyện [{item['title']}] đã có trên Tàng Kinh Các rồi!"
+    elif _book_title_exists(db, item["title"]):
+        loi = f"Trên Tàng Kinh Các đã có 1 bản truyện [{item['title']}] — mỗi truyện chỉ giữ 1 bản duy nhất, không chuyển trùng nữa!"
+    elif dang_co < phi:
+        loi = (f"Không đủ Nguyên Tinh! Truyện có {so_chuong} chương nên phí chuyển là {phi} Nguyên Tinh, "
+               f"đạo hữu đang có {dang_co} (thiếu {phi - dang_co}). Kiếm Nguyên Tinh từ Nhiệm Vụ Tông Môn "
+               f"hoặc mua tại Sảnh Chính (10 Điểm Cống Hiến/viên).")
+    return {"so_chuong": so_chuong, "phi_nguyen_tinh": phi, "dang_co": dang_co,
+            "du": loi is None, "loi": loi}
+
+
+@app.route('/api/bag/kiem-tra-chuyen', methods=['GET'])
+def api_bag_kiem_tra_chuyen():
+    """Cho giao diện hiển thị mục kiểm tra (số chương, phí, số dư) trước khi ấn Chuyển."""
+    username = request.args.get('username', '').strip()
+    item_id = request.args.get('item_id')
+    db = load_database()
+    user = find_user(db, username)
+    if not user:
+        return jsonify({"success": False, "message": "Cần đăng nhập để dùng Túi Trữ Vật!"})
+    item = _find_bag_item(user, item_id)
+    if not item:
+        return jsonify({"success": False, "message": "Không tìm thấy tài nguyên trong túi!"})
+    kt = _chuyen_kiem_tra(db, user, item)
+    return jsonify({"success": True, "title": item["title"], **kt})
+
+
+@app.route('/api/bag/chuyen', methods=['POST'])
 @app.route('/api/bag/publish', methods=['POST'])
-def api_bag_publish():
-    """Đăng một tài nguyên từ Túi Trữ Vật lên Tàng Kinh Các (vào đúng mục truyện đã chọn)."""
+def api_bag_chuyen():
+    """CHUYỂN một tài nguyên từ Túi Trữ Vật sang Tàng Kinh Các (truyện rời túi).
+
+    Phí: 1 chương = 1 Nguyên Tinh. Máy chủ kiểm tra lại toàn bộ (số chương,
+    trùng bản, số dư Nguyên Tinh) trước khi trừ phí — thiếu là báo lỗi, không trừ.
+    """
     data = request.json or {}
     username = data.get('username', '').strip()
     item_id = data.get('item_id')
@@ -1164,13 +1229,17 @@ def api_bag_publish():
     if not item:
         return jsonify({"success": False, "message": "Không tìm thấy tài nguyên trong túi!"})
 
+    kt = _chuyen_kiem_tra(db, user, item)
+    if not kt["du"]:
+        return jsonify({"success": False, "message": "❌ Không chuyển được: " + kt["loi"], "kiem_tra": kt})
+
     cat = cat or item.get("category", "truyen-dich")
     elem = elem or item.get("element", "Kim")
-    item["category"], item["element"] = cat, elem
+    phi = kt["phi_nguyen_tinh"]
+    so_chuong = kt["so_chuong"]
 
-    published_id = item.get("published_book_id")
-    if published_id and any(b.get('id') == published_id for b in db['books']):
-        return jsonify({"success": False, "message": f"Truyện [{item['title']}] đã được đăng ở Tàng Kinh Các rồi!"})
+    _add_stone(user, "nguyen", -phi)
+    _log(user, f"Chuyển truyện [{item['title']}] từ Túi Trữ Vật lên Tàng Kinh Các: {so_chuong} chương × 1 Nguyên Tinh = -{phi} Nguyên Tinh")
 
     new_id = max([b.get('id', 0) for b in db['books']], default=0) + 1
     new_book = {
@@ -1184,17 +1253,17 @@ def api_bag_publish():
         "content": item.get("content", "")
     }
     db['books'].append(new_book)
-    item["published_book_id"] = new_id
-    item["source_book_id"] = item.get("source_book_id") or new_id
+    # CHUYỂN = truyện rời Túi Trữ Vật, sang hẳn Tàng Kinh Các
+    user["bag"] = [i for i in user["bag"] if i["item_id"] != item["item_id"]]
 
     user.setdefault('tu_luyen', get_default_tu_luyen())["diem_tich_tuyem"] += 50
-    _add_diem(user, 50, f"Đăng truyện [{item['title']}] từ Túi lên Tàng Kinh Các")
+    _add_diem(user, 50, f"Chuyển truyện [{item['title']}] từ Túi lên Tàng Kinh Các")
     _add_exp(user, 50)
     _bump(user, "dang_truyen")
-    save_database(db, f"@{username} dang truyen tu tui len Tang Kinh Cac: {item['title']}")
+    save_database(db, f"@{username} chuyen truyen tu tui len Tang Kinh Cac: {item['title']} ({so_chuong} chuong, phi {phi} NT)")
     return jsonify({"success": True,
-                    "message": f"Đã đăng truyện [{item['title']}] lên Tàng Kinh Các (mục {cat} - hệ {elem}) thành công! +50 Điểm Cống Hiến.",
-                    "book": new_book})
+                    "message": f"🔀 Đã chuyển truyện [{item['title']}] lên Tàng Kinh Các (mục {cat} - hệ {elem}): {so_chuong} chương, phí {phi} Nguyên Tinh. Truyện đã rời Túi Trữ Vật. +50 Điểm Cống Hiến.",
+                    "book": new_book, "kiem_tra": kt})
 
 
 @app.route('/api/bag/remove', methods=['POST'])
@@ -1527,7 +1596,8 @@ def api_missions():
             "claimable": state in ("active", "current") and prog >= m["target"],
             "reward": m["reward"],
         })
-    return jsonify({"success": True, "missions": out, "game": game_summary(user)})
+    return jsonify({"success": True, "missions": out, "game": game_summary(user),
+                    "events": _events_view(db)})
 
 
 @app.route('/api/missions/nhan', methods=['POST'])
@@ -1574,13 +1644,15 @@ def api_missions_nhan_thuong():
         return jsonify({"success": False, "message": "Chưa đủ tiến độ để nhận thưởng!"})
     rw = m["reward"]
     parts = []
+    x2 = _event_on(db, "tuan_le")  # Đợt 4: Tuần Lễ Tông Môn x2 Điểm & EXP nhiệm vụ
+    he_so = 2 if x2 else 1
     if rw.get("diem"):
-        gain = int(round(rw["diem"] * (1 + (_treasure_bonus_diem(user) + _beast_bonus_pct(user)) / 100.0)))
-        _add_diem(user, gain, f"Thưởng nhiệm vụ [{m['name']}]")
+        gain = int(round(rw["diem"] * he_so * (1 + (_treasure_bonus_diem(user) + _beast_bonus_pct(user)) / 100.0)))
+        _add_diem(user, gain, f"Thưởng nhiệm vụ [{m['name']}]" + (" (Tuần Lễ Tông Môn x2)" if x2 else ""))
         parts.append(f"+{gain} Điểm Cống Hiến")
     if rw.get("exp"):
-        _add_exp(user, rw["exp"])
-        parts.append(f"+{rw['exp']} Kinh Nghiệm")
+        _add_exp(user, rw["exp"] * he_so)
+        parts.append(f"+{rw['exp'] * he_so} Kinh Nghiệm")
     for loai, n in (rw.get("stones") or {}).items():
         _add_stone(user, loai, n)
         parts.append(f"+{n} {STONE_TYPES[loai]['name']}")
@@ -1601,7 +1673,7 @@ def api_missions_nhan_thuong():
             _notify(user, "🌟 Đạo hữu đã hoàn thành đủ 3 nhiệm vụ ở Viên Mãn — Tông Môn cấp 1 viên Phá Cảnh Đan! Vào Sảnh Chính để đột phá.")
             parts.append("Nhận Phá Cảnh Đan từ Tông Môn!")
     save_database(db, f"@{user['username']} nhan thuong nhiem vu {m['id']}")
-    return jsonify({"success": True, "message": f"Hoàn thành [{m['name']}]: " + ", ".join(parts) + ".", "game": game_summary(user)})
+    return jsonify({"success": True, "message": f"Hoàn thành [{m['name']}]: " + ", ".join(parts) + "." + (" 🎉 Tuần Lễ Tông Môn: Điểm & Kinh Nghiệm nhiệm vụ được x2!" if x2 else ""), "game": game_summary(user)})
 
 
 # --- Nghề Phụ Trợ (Đợt 2) ---
@@ -2014,6 +2086,117 @@ def api_nghe_thu_cho_an():
     return _nghe_resp(user, msg + f" Linh thú hiện cấp {_beast_level(thu)} (+{_beast_bonus_pct(user)}% điểm).")
 
 
+# ============================================================
+# ĐỢT 4 — SỰ KIỆN TÔNG MÔN
+# - Tuần Lễ Tông Môn: Điểm & Kinh Nghiệm thưởng từ Nhiệm Vụ x2 (chạy 7 ngày).
+# - Đại Hội Đấu Giá: phí sàn Chợ 5% -> 2%, giới hạn rao bán 5->10 tin,
+#   phiên đấu giá 3->6, Tông Môn mở 3 lô đấu giá đặc biệt (chạy 72 giờ).
+# Admin bật/tắt tại trang Quản Trị (/api/admin/event).
+# ============================================================
+EVENT_DEFS = {
+    "tuan_le": {"name": "Tuần Lễ Tông Môn", "icon": "🎉", "hours": 24 * 7,
+                "desc": "Toàn bộ Điểm Cống Hiến & Kinh Nghiệm thưởng từ Nhiệm Vụ được NHÂN ĐÔI (x2)."},
+    "dai_hoi": {"name": "Đại Hội Đấu Giá", "icon": "🏆", "hours": 72,
+                "desc": "Phí sàn Chợ Đấu Giá giảm còn 2%, rao bán tối đa 10 tin, mở tối đa 6 phiên đấu giá, và Tông Môn mở 3 lô đấu giá đặc biệt."},
+}
+
+# 3 lô đặc biệt do Tông Môn mở khi Đại Hội bắt đầu: (kind, key, qty, giá khởi điểm điểm)
+DAI_HOI_LOTS = [
+    ("bao_vat", 7, 1, 5000),    # Tiên Ngọc Tỷ (giá quầy 18.000đ)
+    ("thach", "vien", 10, 500),  # 10 Viên Tinh
+    ("bao_vat", 8, 1, 15000),   # Hỗn Nguyên Thạch (giá quầy 45.000đ)
+]
+
+
+def _events(db):
+    ev = db.setdefault("events", {})
+    for k in EVENT_DEFS:
+        e = ev.get(k)
+        if not isinstance(e, dict):
+            e = {}
+        e.setdefault("active", False)
+        e.setdefault("ends", 0)
+        ev[k] = e
+    return ev
+
+
+def _event_on(db, key):
+    e = _events(db).get(key) or {}
+    if not e.get("active"):
+        return False
+    ends = float(e.get("ends") or 0)
+    return ends == 0 or time.time() < ends
+
+
+def _events_view(db):
+    now = time.time()
+    out = {}
+    for k, d in EVENT_DEFS.items():
+        e = _events(db)[k]
+        on = _event_on(db, k)
+        out[k] = {"on": on, "name": d["name"], "icon": d["icon"], "desc": d["desc"],
+                  "con_lai": max(0, int(float(e.get("ends") or 0) - now)) if on else 0}
+    return out
+
+
+def _market_fee(db):
+    """Phí sàn chợ: thường 5%, mùa Đại Hội Đấu Giá chỉ 2%."""
+    return 0.02 if _event_on(db, "dai_hoi") else 0.05
+
+
+@app.route('/api/events', methods=['GET'])
+def api_events():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    return jsonify({"success": True, "events": _events_view(db)})
+
+
+@app.route('/api/admin/event', methods=['POST'])
+def api_admin_event():
+    db = load_database()
+    admin, err = _admin_or_403(db)
+    if err:
+        return err
+    data = request.json or {}
+    key = data.get('key')
+    action = data.get('action')
+    if key not in EVENT_DEFS or action not in ("bat", "tat"):
+        return jsonify({"success": False, "message": "Sự kiện hoặc hành động không hợp lệ!"})
+    ev = _events(db)
+    d = EVENT_DEFS[key]
+    if action == "bat":
+        ev[key]["active"] = True
+        ev[key]["ends"] = time.time() + d["hours"] * 3600
+        if key == "dai_hoi":
+            m = _market(db)
+            # Dọn lô Tông Môn cũ chưa ai trả giá để không bị trùng khi bật lại
+            m["auctions"] = [a for a in m["auctions"]
+                             if not (a.get("seller") == "tong_mon" and not a.get("bidder"))]
+            for kind, kkey, qty, start in DAI_HOI_LOTS:
+                m["auctions"].append({
+                    "id": f"ev{int(time.time() * 1000)}-{kind}-{kkey}",
+                    "seller": "tong_mon", "seller_name": "🏯 Tông Môn (Đại Hội)",
+                    "kind": kind, "key": kkey, "label": _item_label(kind, kkey), "qty": qty,
+                    "currency": "diem", "start": start, "cur": 0, "bidder": None, "bidder_name": "",
+                    "bids": 0, "ends": ev[key]["ends"], "created": now_jst()})
+        for u in db.get("users", []):
+            _notify(u, f"{d['icon']} {d['name']} ĐÃ BẮT ĐẦU! {d['desc']} (Thời gian: {d['hours'] // 24} ngày{' ' if d['hours'] % 24 == 0 else ' — ' + str(d['hours'] % 24) + ' giờ'}).")
+        msg = f"{d['icon']} Đã BẬT sự kiện [{d['name']}] — chạy {d['hours']} giờ kể từ bây giờ."
+    else:
+        ev[key]["active"] = False
+        ev[key]["ends"] = 0
+        if key == "dai_hoi":
+            m = _market(db)
+            # Lô Tông Môn chưa ai trả giá thì thu hồi; lô đã có người trả giá để kết toán bình thường.
+            m["auctions"] = [a for a in m["auctions"]
+                             if not (a.get("seller") == "tong_mon" and not a.get("bidder"))]
+        msg = f"Đã TẮT sự kiện [{d['name']}]."
+    save_database(db, f"Admin @{admin['username']} {action} su kien {key}")
+    return jsonify({"success": True, "message": msg, "events": _events_view(db)})
+
+
 @app.route('/api/leaderboard', methods=['GET'])
 def api_leaderboard():
     db = load_database()
@@ -2022,6 +2205,8 @@ def api_leaderboard():
         return err
     rows = []
     for u in db.get("users", []):
+        if (u.get("game") or {}).get("locked"):
+            continue  # Tài khoản đã khóa không lên Thiên Thư Bảng
         g = _ensure_game(u)
         tv = g["tu_vi"]
         muc, cap = int(tv.get("muc", 1)), int(tv.get("cap", -1))
@@ -2247,10 +2432,11 @@ def _settle_auctions(db):
             seller = find_user(db, a["seller"])
             if a.get("bidder"):
                 winner = find_user(db, a["bidder"])
-                pay = int(a["cur"] * 0.95)
+                fee = _market_fee(db)
+                pay = int(a["cur"] * (1 - fee))
                 if seller:
                     _cur_grant(seller, a["currency"], pay)
-                    _notify(seller, f"🔨 Đấu giá [{a['label']} ×{a['qty']}] đã kết thúc: {a['bidder_name']} thắng với {a['cur']} {_cur_name(a['currency'])} — đạo hữu nhận {pay} (sau phí sàn 5%).")
+                    _notify(seller, f"🔨 Đấu giá [{a['label']} ×{a['qty']}] đã kết thúc: {a['bidder_name']} thắng với {a['cur']} {_cur_name(a['currency'])} — đạo hữu nhận {pay} (sau phí sàn {int(fee * 100)}%).")
                 if winner:
                     _item_add(winner, a["kind"], a["key"], a["qty"])
                     _notify(winner, f"🏆 Đạo hữu đã THẮNG đấu giá [{a['label']} ×{a['qty']}] với giá {a['cur']} {_cur_name(a['currency'])}! Vật phẩm đã về kho.")
@@ -2286,6 +2472,7 @@ def _market_view(db, user):
         "deals": list(reversed(m["deals"][-12:])),
         "my_items": _my_items(user), "catalog": _item_catalog(),
         "can_sell": _can_sell(user), "cap_hoat_dong": 1 + int(g.get("exp", 0)) // 250,
+        "phi_san": int(_market_fee(db) * 100), "su_kien": _events_view(db),
     }
 
 
@@ -2320,8 +2507,9 @@ def api_cho_rao_ban():
     if qty < 1 or price < 1:
         return jsonify({"success": False, "message": "Số lượng và giá bán phải từ 1 trở lên!"})
     m = _market(db)
-    if sum(1 for l in m["listings"] if l["seller"] == user["username"]) >= 5:
-        return jsonify({"success": False, "message": "Mỗi người chỉ được rao tối đa 5 món cùng lúc!"})
+    cap_rao = 10 if _event_on(db, "dai_hoi") else 5
+    if sum(1 for l in m["listings"] if l["seller"] == user["username"]) >= cap_rao:
+        return jsonify({"success": False, "message": f"Mỗi người chỉ được rao tối đa {cap_rao} món cùng lúc!"})
     if not _item_remove(user, kind, key, qty):
         return jsonify({"success": False, "message": "Không đủ vật phẩm trong kho để rao bán!"})
     lid = f"l{int(time.time()*1000)}-{user['username']}"
@@ -2369,10 +2557,11 @@ def api_cho_mua():
     seller = find_user(db, l["seller"])
     _add_diem(user, -l["price"], f"Mua {l['label']} ở Chợ Đấu Giá")
     _item_add(user, l["kind"], l["key"], l["qty"])
-    nhan = int(l["price"] * 0.95)
+    fee = _market_fee(db)
+    nhan = int(l["price"] * (1 - fee))
     if seller:
-        _add_diem(seller, nhan, f"Bán {l['label']} ở Chợ Đấu Giá (sau phí 5%)")
-        _notify(seller, f"🏷️ {user.get('author_name', user['username'])} đã mua [{l['label']} ×{l['qty']}] của đạo hữu ở Chợ Đấu Giá: +{nhan} Điểm Cống Hiến (giá {l['price']}, trừ phí sàn 5%).")
+        _add_diem(seller, nhan, f"Bán {l['label']} ở Chợ Đấu Giá (sau phí {int(fee * 100)}%)")
+        _notify(seller, f"🏷️ {user.get('author_name', user['username'])} đã mua [{l['label']} ×{l['qty']}] của đạo hữu ở Chợ Đấu Giá: +{nhan} Điểm Cống Hiến (giá {l['price']}, trừ phí sàn {int(fee * 100)}%).")
         _log(seller, f"Bán {l['label']} ×{l['qty']} ở chợ (+{nhan} điểm)")
     _deal(db, f"🏷️ {user.get('author_name', user['username'])} mua {l['label']} ×{l['qty']} của {l['seller_name']} với {l['price']} điểm.")
     m["listings"].remove(l)
@@ -2400,8 +2589,9 @@ def api_cho_dau_gia_tao():
     if qty < 1 or start < 1:
         return jsonify({"success": False, "message": "Số lượng và giá khởi điểm phải từ 1 trở lên!"})
     m = _market(db)
-    if sum(1 for a in m["auctions"] if a["seller"] == user["username"]) >= 3:
-        return jsonify({"success": False, "message": "Mỗi người chỉ được mở tối đa 3 phiên đấu giá cùng lúc!"})
+    cap_phien = 6 if _event_on(db, "dai_hoi") else 3
+    if sum(1 for a in m["auctions"] if a["seller"] == user["username"]) >= cap_phien:
+        return jsonify({"success": False, "message": f"Mỗi người chỉ được mở tối đa {cap_phien} phiên đấu giá cùng lúc!"})
     if not _item_remove(user, kind, key, qty):
         return jsonify({"success": False, "message": "Không đủ vật phẩm trong kho để đấu giá!"})
     aid = f"a{int(time.time()*1000)}-{user['username']}"
