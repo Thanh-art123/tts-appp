@@ -3243,9 +3243,9 @@
       },
       "bag": [],
       "game": {
-        "diem": 5,
+        "diem": 7,
         "vi_yen": 0,
-        "exp": 0,
+        "exp": 3,
         "tu_vi": {
           "muc": 1,
           "cap": -1,
@@ -3265,9 +3265,12 @@
           "pha_canh_dan": 0
         },
         "stats": {
-          "total": {},
+          "total": {
+            "khai_thac": 1
+          },
           "today": {
-            "date": "2026-10-27"
+            "date": "2026-10-27",
+            "khai_thac": 1
           }
         },
         "missions": {
@@ -3304,6 +3307,10 @@
           {
             "time": "27/10/2026 20:56",
             "text": "Mua 1 bình Nước (-5 Điểm Cống Hiến)"
+          },
+          {
+            "time": "27/10/2026 20:57",
+            "text": "Khai thác quặng ở Mỏ Quặng (+2 Điểm Cống Hiến)"
           }
         ],
         "streak": {
@@ -3334,7 +3341,7 @@
           "cay": null,
           "vat_tu": {
             "quang": {
-              "0": 3,
+              "0": 4,
               "1": 0,
               "2": 0,
               "3": 0
