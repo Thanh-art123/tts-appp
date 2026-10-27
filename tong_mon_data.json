@@ -1377,5 +1377,31 @@
       "active": true,
       "ends": 1793325564.065991
     }
-  }
+  },
+  "news": [
+    {
+      "id": 1,
+      "ts": 0,
+      "time": "",
+      "loai": "he_thong",
+      "text": "📰 Bảng Tin Tông Môn chính thức khai trương! Sự kiện, cống hiến, thăng cấp của đệ tử và thông báo của Chưởng Môn Nhân sẽ hiện lên bảng này."
+    }
+  ],
+  "chat": [
+    {
+      "id": 1,
+      "ts": 1793073468.0819356,
+      "time": "27/10/2026 12:57",
+      "username": "mothaiba",
+      "author_name": "một con vịt",
+      "role": "member",
+      "chibi": {
+        "toc": 0,
+        "mau_toc": 2,
+        "ao": 2,
+        "phap_bao": "quat"
+      },
+      "text": "1"
+    }
+  ]
 }
