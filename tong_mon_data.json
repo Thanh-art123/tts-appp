@@ -1547,6 +1547,21 @@
         "phap_bao": "quat"
       },
       "text": "màu vàng"
+    },
+    {
+      "id": 6,
+      "ts": 1793073812.2653253,
+      "time": "27/10/2026 13:03",
+      "username": "test_dot7",
+      "author_name": "De Tu Dot 7",
+      "role": "member",
+      "chibi": {
+        "toc": 0,
+        "mau_toc": 0,
+        "ao": 0,
+        "phap_bao": "kiem"
+      },
+      "text": "De tu dot 7 chao ca nha"
     }
   ]
 }
