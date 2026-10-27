@@ -1295,7 +1295,7 @@
           "luot_tao_anh": 0,
           "phu_open": false
         },
-        "locked": false,
+        "locked": true,
         "chibi": {
           "toc": 0,
           "mau_toc": 0,
