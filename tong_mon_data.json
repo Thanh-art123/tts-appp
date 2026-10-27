@@ -2259,6 +2259,92 @@
           "phap_bao": "sach"
         }
       }
+    },
+    {
+      "username": "test_dot19",
+      "password": "test12345",
+      "role": "member",
+      "author_name": "De Tu Dot 19",
+      "tu_luyen": {
+        "diem_tich_tuyem": 120,
+        "cap_hien_tai": 1,
+        "tieu_canh": 0,
+        "vat_pham": {
+          "hoa": 2,
+          "lua": 1,
+          "cay": 3
+        }
+      },
+      "bag": [],
+      "game": {
+        "diem": 120,
+        "vi_yen": 0,
+        "exp": 0,
+        "tu_vi": {
+          "muc": 1,
+          "cap": -1,
+          "break_missions": 0
+        },
+        "linh_khi": 0,
+        "linh_thach": {
+          "nguyen": 0,
+          "vien": 0,
+          "vi": 0,
+          "vinh": 0
+        },
+        "capacity": 10,
+        "inventory": {
+          "treasures": [],
+          "herbs": {},
+          "pha_canh_dan": 0
+        },
+        "stats": {
+          "total": {},
+          "today": {
+            "date": "2026-10-27"
+          }
+        },
+        "missions": {
+          "active": {},
+          "claimed_today": [],
+          "newbie_done": []
+        },
+        "notifications": [],
+        "history": [],
+        "streak": {
+          "last": "",
+          "count": 0
+        },
+        "nghe": {
+          "quang": {},
+          "dan": {
+            "hoi_linh": 0,
+            "tu_linh": 0
+          },
+          "ca": {
+            "thuong": 0,
+            "ngon": 0,
+            "linh_ngu": 0
+          },
+          "phap_khi": [],
+          "thu": null,
+          "vuon": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "luot_tao_anh": 0,
+          "phu_open": false
+        },
+        "locked": false,
+        "chibi": {
+          "toc": 0,
+          "mau_toc": 0,
+          "ao": 0,
+          "phap_bao": "kiem"
+        }
+      }
     }
   ],
   "books": [
