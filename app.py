@@ -53,6 +53,9 @@ GH_API = "https://api.github.com"
 
 _db_lock = threading.Lock()
 _db_cache = {"data": None, "commit": None, "gh_loaded": False}
+_save_lock = threading.Lock()
+_save_timer = None
+_save_timer_lock = threading.Lock()
 
 
 def _gh_request(method, path, payload=None):
@@ -280,16 +283,51 @@ def load_database():
 
 
 def save_database(data, message="Cap nhat du lieu Tong Mon"):
-    """Lưu dữ liệu: ghi bản sao cục bộ + đẩy lên GitHub (nếu đã nạp được từ GitHub)."""
+    """Lưu dữ liệu: ghi bản sao cục bộ + đẩy lên GitHub (nếu đã nạp được từ GitHub).
+
+    Có khóa _save_lock để 2 lần lưu không bao giờ đẩy lên GitHub cùng lúc
+    (tránh xung đột khi cập nhật nhánh data)."""
+    with _save_lock:
+        _db_cache["data"] = data
+        try:
+            with open(DB_FILE, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
+        except Exception:
+            pass
+        if GITHUB_TOKEN and _db_cache.get("gh_loaded"):
+            if not _gh_write_db(data, message):
+                print("[GITHUB] CANH BAO: ghi du lieu len GitHub that bai, se thu lai o lan luu sau.")
+
+
+def schedule_save_database(data, message="Luu tre du lieu Tong Mon", delay=5):
+    """Lưu TRỄ + GỘP nhiều lần thành 1 lần lưu — dùng cho thao tác nhẹ, tần suất cao (chat).
+
+    Mỗi lần lưu đầy đủ phải đẩy cả tệp dữ liệu ~7MB lên GitHub, tốn ~9 giây; nếu bắt
+    người dùng chờ lưu xong mới thấy tin nhắn của mình thì chat rất lag ("ấn mãi mới
+    chạy"). Hàm này cho API trả lời NGAY, còn việc lưu dồn lại vài giây sau mới chạy
+    nền 1 lần (gộp mọi thay đổi phát sinh trong lúc chờ, lấy bản dữ liệu mới nhất
+    trong bộ nhớ đệm). Đánh đổi: nếu máy chủ sập đúng trong vài giây chờ thì chỉ mất
+    mấy tin chat cuối — chấp nhận được với khu vực trò chuyện."""
+    global _save_timer
     _db_cache["data"] = data
-    try:
-        with open(DB_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
-    except Exception:
-        pass
-    if GITHUB_TOKEN and _db_cache.get("gh_loaded"):
-        if not _gh_write_db(data, message):
-            print("[GITHUB] CANH BAO: ghi du lieu len GitHub that bai, se thu lai o lan luu sau.")
+    with _save_timer_lock:
+        if _save_timer is not None:
+            try:
+                _save_timer.cancel()
+            except Exception:
+                pass
+
+        def _fire():
+            try:
+                latest = _db_cache.get("data")
+                if latest is not None:
+                    save_database(latest, message)
+            except Exception:
+                pass
+
+        _save_timer = threading.Timer(delay, _fire)
+        _save_timer.daemon = True
+        _save_timer.start()
 
 
 # ============================================================
@@ -2667,7 +2705,7 @@ def api_chat_post():
         "text": text,
     })
     db["chat"] = chat[-200:]
-    save_database(db, f"@{user['username']} chat tong mon")
+    schedule_save_database(db, f"@{user['username']} chat tong mon")
     return jsonify({"success": True, "messages": db["chat"][-60:]})
 
 
