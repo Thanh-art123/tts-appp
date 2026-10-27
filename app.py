@@ -464,6 +464,7 @@ def default_game(user):
                  "phap_khi": [], "thu": None,
                  "vuon": [None, None, None, None], "luot_tao_anh": 0, "phu_open": False},
         "locked": False,
+        "chibi": None,
     }
 
 
@@ -586,6 +587,7 @@ def game_summary(user):
         "inventory": g.get("inventory", {}),
         "streak": g.get("streak", {}),
         "checked_in_today": bool(g["stats"].get("today", {}).get("diem_danh")),
+        "chibi": g.get("chibi"),
         "unread": sum(1 for n in g.get("notifications", []) if not n.get("read")),
     }
 
@@ -853,6 +855,9 @@ def api_register():
         "bag": []
     }
     new_user["game"] = default_game(new_user)
+    cb = _chibi_valid(data.get('chibi'))
+    if cb:
+        new_user["game"]["chibi"] = cb
     db['users'].append(new_user)
     save_database(db, f"Dang ky tai khoan moi: {username}")
 
@@ -1316,6 +1321,45 @@ def _game_or_401(db):
     if not u:
         return None, (jsonify({"success": False, "message": "Cần đăng nhập!"}), 401)
     return u, None
+
+
+# --- Nhân vật chibi (Đợt 5): mỗi tài khoản 1 nhân vật, gắn vĩnh viễn với danh xưng ---
+CHIBI_PHAP_BAO = ("kiem", "quat", "ho_lo", "sach", "truong", "khong")
+
+
+def _chibi_valid(c):
+    """Kiểm tra & chuẩn hóa cấu hình chibi {toc 0-5, mau_toc 0-5, ao 0-7, phap_bao}."""
+    if not isinstance(c, dict):
+        return None
+    try:
+        toc = int(c.get("toc", 0))
+        mau_toc = int(c.get("mau_toc", 0))
+        ao = int(c.get("ao", 0))
+    except (TypeError, ValueError):
+        return None
+    pb = c.get("phap_bao", "sach")
+    if not (0 <= toc <= 5 and 0 <= mau_toc <= 5 and 0 <= ao <= 7 and pb in CHIBI_PHAP_BAO):
+        return None
+    return {"toc": toc, "mau_toc": mau_toc, "ao": ao, "phap_bao": pb}
+
+
+@app.route('/api/chibi/chon', methods=['POST'])
+def api_chibi_chon():
+    """Chọn nhân vật chibi — chỉ được chọn 1 lần duy nhất cho mỗi tài khoản."""
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    g = _ensure_game(user)
+    if g.get("chibi"):
+        return jsonify({"success": False, "message": "Đạo hữu đã có nhân vật chibi gắn với danh xưng rồi! Mỗi tài khoản chỉ có 1 nhân vật duy nhất — muốn nhân vật khác, hãy tạo tài khoản mới."})
+    cb = _chibi_valid((request.json or {}).get('chibi'))
+    if not cb:
+        return jsonify({"success": False, "message": "Thông tin nhân vật chưa hợp lệ (kiểu tóc / màu tóc / áo / pháp bảo)!"})
+    g["chibi"] = cb
+    _notify(user, "🧒 Nhân vật chibi đã gắn vĩnh viễn với danh xưng của đạo hữu. Chúc đạo hữu tu luyện vui vẻ tại Đại Thiên Tông!")
+    save_database(db, f"@{user['username']} chon nhan vat chibi")
+    return jsonify({"success": True, "message": "🧒 Đã chốt nhân vật chibi — nhân vật này gắn vĩnh viễn với danh xưng của đạo hữu!", "game": game_summary(user)})
 
 
 # --- Điểm danh & chuỗi ngày ---
@@ -2212,6 +2256,7 @@ def api_leaderboard():
         muc, cap = int(tv.get("muc", 1)), int(tv.get("cap", -1))
         rows.append({
             "name": u.get("author_name", u["username"]),
+            "chibi": g.get("chibi"),
             "tv_label": f"{REALM_NAMES[muc - 1]} · {STAGE_NAMES[cap] if cap >= 0 else 'Chưa Nhập Môn'}",
             "tv_key": (muc, cap, int(g.get("linh_khi", 0))),
             "diem": int(g.get("diem", 0)),
@@ -2220,7 +2265,7 @@ def api_leaderboard():
         })
     def fmt(n):
         return f"{n:,}".replace(",", ".")
-    top = lambda key, label: [{"name": r["name"], "label": label(r)} for r in sorted(rows, key=key, reverse=True)[:5]]
+    top = lambda key, label: [{"name": r["name"], "label": label(r), "chibi": r.get("chibi")} for r in sorted(rows, key=key, reverse=True)[:5]]
     boards = {
         "tu_vi": top(lambda r: r["tv_key"], lambda r: r["tv_label"]),
         "diem": top(lambda r: r["diem"], lambda r: f"{fmt(r['diem'])} điểm"),
@@ -2859,6 +2904,24 @@ def api_admin_user_action():
     elif action == "set_capacity":
         g["capacity"] = int(value)
         msg = f"Đã đặt dung lượng túi của [{target['username']}] = {value} (-1 là không giới hạn)."
+    elif action == "reset_chibi":
+        g["chibi"] = None
+        _notify(target, "🧒 Chưởng Môn Nhân đã mở khóa chọn lại nhân vật chibi cho đạo hữu. Vào Động Phủ để chọn nhân vật mới (chọn xong sẽ khóa vĩnh viễn như cũ).")
+        msg = f"Đã mở khóa chọn lại nhân vật chibi cho [{target['username']}]."
+    elif action == "max_full":
+        # Nâng FULL cho tài khoản chủ theo yêu cầu ông chủ: điểm, cấp độ, linh thạch, bảo vật, linh sủng
+        _add_diem(target, 999999999 - int(g.get("diem", 0)), "Nâng cấp FULL tài khoản chủ")
+        g["exp"] = 1000000
+        g["tu_vi"] = {"muc": 12, "cap": 3, "break_missions": 0}
+        g["linh_khi"] = 999999999
+        for loai in STONE_TYPES:
+            g["linh_thach"][loai] = 99999
+        g["inventory"]["treasures"] = [t["id"] for t in TREASURES]
+        _nghe(target)["thu"] = {"ten": "Hắc Kỳ Lân Con", "exp": 999}
+        g["capacity"] = -1
+        _log(target, "Tài khoản chủ được nâng FULL: Điểm Cống Hiến / Linh Thạch / Tu Vi / Bảo Vật / Linh Sủng tối đa")
+        _notify(target, "🚀 Tài khoản của đạo hữu đã được nâng FULL: Điểm Cống Hiến, Linh Thạch, Tu Vi Đại Chúa Tể, đủ 9 bảo vật và Linh Sủng cấp tối đa!")
+        msg = f"Đã nâng FULL cho [{target['username']}]: 999.999.999 điểm · Tu Vi Đại Chúa Tể · Viên Mãn · linh thạch 99.999 mỗi loại · đủ 9 bảo vật · linh sủng cấp 10 · túi không giới hạn."
     else:
         return jsonify({"success": False, "message": "Hành động không hợp lệ!"})
     save_database(db, f"Admin @{admin['username']} action {action} -> @{target['username']}")
