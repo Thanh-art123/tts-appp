@@ -117,6 +117,11 @@
             "time": "26/10/2026 15:42",
             "text": "🐣 Trứng nở thành Hỏa Hồ Ly! Linh thú cộng % điểm nghề và sản xuất điểm khi điểm danh.",
             "read": true
+          },
+          {
+            "time": "27/10/2026 10:59",
+            "text": "🎉 Tuần Lễ Tông Môn ĐÃ BẮT ĐẦU! Toàn bộ Điểm Cống Hiến & Kinh Nghiệm thưởng từ Nhiệm Vụ được NHÂN ĐÔI (x2). (Thời gian: 7 ngày ).",
+            "read": false
           }
         ],
         "history": [
@@ -301,7 +306,13 @@
           "claimed_today": [],
           "newbie_done": []
         },
-        "notifications": [],
+        "notifications": [
+          {
+            "time": "27/10/2026 10:59",
+            "text": "🎉 Tuần Lễ Tông Môn ĐÃ BẮT ĐẦU! Toàn bộ Điểm Cống Hiến & Kinh Nghiệm thưởng từ Nhiệm Vụ được NHÂN ĐÔI (x2). (Thời gian: 7 ngày ).",
+            "read": false
+          }
+        ],
         "history": [],
         "streak": {
           "last": "",
@@ -387,7 +398,13 @@
             "nb1"
           ]
         },
-        "notifications": [],
+        "notifications": [
+          {
+            "time": "27/10/2026 10:59",
+            "text": "🎉 Tuần Lễ Tông Môn ĐÃ BẮT ĐẦU! Toàn bộ Điểm Cống Hiến & Kinh Nghiệm thưởng từ Nhiệm Vụ được NHÂN ĐÔI (x2). (Thời gian: 7 ngày ).",
+            "read": false
+          }
+        ],
         "history": [
           {
             "time": "26/10/2026 13:45",
@@ -486,7 +503,13 @@
           "claimed_today": [],
           "newbie_done": []
         },
-        "notifications": [],
+        "notifications": [
+          {
+            "time": "27/10/2026 10:59",
+            "text": "🎉 Tuần Lễ Tông Môn ĐÃ BẮT ĐẦU! Toàn bộ Điểm Cống Hiến & Kinh Nghiệm thưởng từ Nhiệm Vụ được NHÂN ĐÔI (x2). (Thời gian: 7 ngày ).",
+            "read": false
+          }
+        ],
         "history": [
           {
             "time": "26/10/2026 14:36",
@@ -572,7 +595,13 @@
           "claimed_today": [],
           "newbie_done": []
         },
-        "notifications": [],
+        "notifications": [
+          {
+            "time": "27/10/2026 10:59",
+            "text": "🎉 Tuần Lễ Tông Môn ĐÃ BẮT ĐẦU! Toàn bộ Điểm Cống Hiến & Kinh Nghiệm thưởng từ Nhiệm Vụ được NHÂN ĐÔI (x2). (Thời gian: 7 ngày ).",
+            "read": false
+          }
+        ],
         "history": [
           {
             "time": "26/10/2026 15:11",
@@ -656,7 +685,13 @@
           "claimed_today": [],
           "newbie_done": []
         },
-        "notifications": [],
+        "notifications": [
+          {
+            "time": "27/10/2026 10:59",
+            "text": "🎉 Tuần Lễ Tông Môn ĐÃ BẮT ĐẦU! Toàn bộ Điểm Cống Hiến & Kinh Nghiệm thưởng từ Nhiệm Vụ được NHÂN ĐÔI (x2). (Thời gian: 7 ngày ).",
+            "read": false
+          }
+        ],
         "history": [],
         "streak": {
           "last": "",
@@ -745,6 +780,11 @@
             "time": "27/10/2026 10:58",
             "text": "💎 Chưởng Môn Nhân đã tặng đạo hữu 5 Nguyên Tinh.",
             "read": false
+          },
+          {
+            "time": "27/10/2026 10:59",
+            "text": "🎉 Tuần Lễ Tông Môn ĐÃ BẮT ĐẦU! Toàn bộ Điểm Cống Hiến & Kinh Nghiệm thưởng từ Nhiệm Vụ được NHÂN ĐÔI (x2). (Thời gian: 7 ngày ).",
+            "read": false
           }
         ],
         "history": [
@@ -823,8 +863,8 @@
   },
   "events": {
     "tuan_le": {
-      "active": false,
-      "ends": 0
+      "active": true,
+      "ends": 1793671156.8073726
     },
     "dai_hoi": {
       "active": false,
