@@ -6,11 +6,23 @@
 <div class="panel-3d rounded-2xl p-6 relative space-y-4">
     <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
         <i class="fa-solid fa-newspaper text-amber-500"></i>
-        <span>📰 Bảng Tin Tông Môn</span>
+        <span>📣 Thông Báo Tông Môn</span>
     </h2>
     <div class="guide"><button type="button" class="guide-chip">ⓘ Hướng dẫn</button><div class="guide-body"><p class="text-xs text-amber-200/80 leading-relaxed">Mọi tin tức của Tông Môn đều hiện lên bảng này: <strong class="text-amber-300">sự kiện</strong>, <strong class="text-amber-300">cập nhật</strong>, đệ tử <strong class="text-amber-300">cống hiến truyện</strong>, đệ tử <strong class="text-amber-300">thăng cấp</strong> và <strong class="text-amber-300">thông báo của Chưởng Môn Nhân</strong>. Cần nghe truyện hay chuyển chữ thành giọng đọc thì vào <strong class="text-amber-300">Tàng Kinh Các</strong> nhé.</p></div></div>
     <div id="news-list" class="space-y-2 overflow-y-auto pr-1" style="max-height: 486px;">
         <p class="text-sm text-slate-500">Đang tải bảng tin...</p>
+    </div>
+</div>
+
+<div class="space-y-6">
+<div class="panel-3d rounded-2xl p-6 relative space-y-4">
+    <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
+        <i class="fa-solid fa-bell text-amber-500"></i>
+        <span>🔔 Thông Báo Cá Nhân</span>
+        <span id="notif-new-count" class="hidden bg-red-600 text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full"></span>
+    </h2>
+    <div id="my-notifs" class="space-y-2 overflow-y-auto pr-1" style="max-height: 300px;">
+        <p class="text-sm text-slate-500">Đang tải thông báo...</p>
     </div>
 </div>
 
@@ -31,6 +43,7 @@
         </button>
     </div>
     <p id="chat-hint" class="text-xs text-slate-500"></p>
+</div>
 </div>
 </div>
 {% endblock %}
@@ -76,6 +89,37 @@
                     <p class="text-[11px] text-slate-500 mt-0.5">${esc(n.time || '')}${n.ts ? ' • ' + timeAgo(n.ts) : ''}</p>
                 </div>`).join('');
         } catch (e) { /* giữ nguyên danh sách cũ khi mạng chập chờn */ }
+    }
+
+    // ===== THÔNG BÁO CÁ NHÂN (việc của riêng từng đệ tử — trước nằm ở chuông đầu trang) =====
+    let NOTIF_SIG = '';
+    async function loadMyNotifs() {
+        const box = document.getElementById('my-notifs');
+        if (!box) return;
+        try {
+            const r = await fetch('/api/notifications');
+            const d = await r.json();
+            const items = d.notifications || [];
+            const sig = items.length + ':' + (items.length ? (items[0].time + items[0].text) : '');
+            if (sig === NOTIF_SIG) return;
+            NOTIF_SIG = sig;
+            const unread = items.filter(n => !n.read).length;
+            const chip = document.getElementById('notif-new-count');
+            if (chip) {
+                if (unread > 0) { chip.innerText = unread + ' mới'; chip.classList.remove('hidden'); }
+                else chip.classList.add('hidden');
+            }
+            if (!items.length) {
+                box.innerHTML = '<p class="text-sm text-slate-500">Chưa có thông báo nào — việc của bạn (duyệt truyện, giao dịch chợ, nhiệm vụ...) sẽ hiện ở đây.</p>';
+                return;
+            }
+            box.innerHTML = items.map(n => `
+                <div class="border-l-4 ${n.read ? 'border-slate-300 bg-white' : 'border-red-400 bg-amber-50'} rounded-lg px-3 py-2">
+                    <p class="text-sm leading-relaxed text-slate-800">${esc(n.text)}</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">${esc(n.time || '')}${n.read ? '' : ' • <strong class="text-red-600">MỚI</strong>'}</p>
+                </div>`).join('');
+            if (unread > 0) fetch('/api/notifications/read', { method: 'POST' }).catch(() => {});
+        } catch (e) { /* giữ nguyên khi mạng chập chờn */ }
     }
 
     // ===== CHAT: vẽ TĂNG DẦN (chỉ thêm tin mới, không vẽ lại cả danh sách) + cache hình chibi
@@ -175,7 +219,11 @@
         if (CHAT_LOADING) return;
         CHAT_LOADING = true;
         try {
-            const r = await fetch('/api/chat');
+            // Hẹn giờ hủy 10 giây: 1 lần mạng treo không được làm đơ luôn việc tải tin
+            const ctl = new AbortController();
+            const killer = setTimeout(() => ctl.abort(), 10000);
+            const r = await fetch('/api/chat', { signal: ctl.signal });
+            clearTimeout(killer);
             const d = await r.json();
             const msgs = d.messages || [];
             const lastId = msgs.length ? (msgs[msgs.length - 1].id || 0) : 0;
@@ -232,8 +280,13 @@
     }
 
     loadNews();
+    loadMyNotifs();
     loadChat(true);
-    setInterval(() => { if (!document.hidden) loadChat(false); }, 8000);
-    setInterval(() => { if (!document.hidden) loadNews(); }, 30000);
+    setInterval(() => { if (!document.hidden) loadChat(false); }, 5000);
+    setInterval(() => { if (!document.hidden) { loadNews(); loadMyNotifs(); } }, 30000);
+    // Vừa quay lại trang (mở lại app / chuyển tab về) là tải ngay, không phải chờ tới lượt
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) { loadChat(false); loadNews(); loadMyNotifs(); }
+    });
 </script>
 {% endblock %}
