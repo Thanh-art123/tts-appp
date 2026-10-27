@@ -1091,7 +1091,7 @@
         }
       ],
       "game": {
-        "diem": 154,
+        "diem": 151,
         "exp": 30,
         "tu_vi": {
           "muc": 1,
@@ -1144,6 +1144,10 @@
           {
             "time": "27/10/2026 11:52",
             "text": "Mua hạt giống Thảo Mộc Cấp 1 (-3 Điểm Cống Hiến)"
+          },
+          {
+            "time": "27/10/2026 11:52",
+            "text": "Mua hạt giống Thảo Mộc Cấp 1 (-3 Điểm Cống Hiến)"
           }
         ],
         "streak": {
@@ -1173,7 +1177,10 @@
               "ready": 1793069680.2578962
             },
             null,
-            null
+            {
+              "cap": 1,
+              "ready": 1793069688.3938332
+            }
           ],
           "luot_tao_anh": 0,
           "phu_open": false
