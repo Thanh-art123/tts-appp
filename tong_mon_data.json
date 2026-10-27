@@ -207,7 +207,7 @@
           "last": "2026-10-26",
           "count": 1
         },
-        "locked": false,
+        "locked": true,
         "nghe": {
           "quang": {
             "3": 1,
@@ -247,7 +247,8 @@
           ],
           "luot_tao_anh": 0,
           "phu_open": false
-        }
+        },
+        "chibi": null
       }
     },
     {
@@ -350,7 +351,8 @@
           ],
           "luot_tao_anh": 0,
           "phu_open": false
-        }
+        },
+        "chibi": null
       }
     },
     {
@@ -464,7 +466,8 @@
           ],
           "luot_tao_anh": 0,
           "phu_open": false
-        }
+        },
+        "chibi": null
       }
     },
     {
@@ -564,7 +567,8 @@
           "luot_tao_anh": 0,
           "phu_open": false
         },
-        "locked": true
+        "locked": true,
+        "chibi": null
       }
     },
     {
@@ -659,7 +663,8 @@
           "luot_tao_anh": 0,
           "phu_open": false
         },
-        "locked": true
+        "locked": true,
+        "chibi": null
       }
     },
     {
@@ -749,7 +754,8 @@
           "luot_tao_anh": 0,
           "phu_open": false
         },
-        "locked": false
+        "locked": false,
+        "chibi": null
       }
     },
     {
@@ -858,7 +864,8 @@
           "luot_tao_anh": 0,
           "phu_open": false
         },
-        "locked": true
+        "locked": true,
+        "chibi": null
       }
     },
     {
@@ -937,7 +944,8 @@
           "luot_tao_anh": 0,
           "phu_open": false
         },
-        "locked": false
+        "locked": false,
+        "chibi": null
       }
     }
   ],
