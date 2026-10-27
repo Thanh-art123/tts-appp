@@ -89,7 +89,6 @@
         .panel-3d .bg-amber-950\/30, .panel-3d .bg-amber-950\/40 { background-color: #fff6da !important; }
         .panel-3d .bg-amber-950\/60, .panel-3d .bg-amber-950\/70,
         .panel-3d .bg-amber-950\/80, .panel-3d .bg-amber-950\/90 { background-color: #fdeec3 !important; }
-        #notif-panel { background-color: #ffffff !important; }
 
         .panel-3d .text-amber-100, header .text-amber-100, #main-content .text-amber-100,
         .panel-3d .text-amber-100\/90, header .text-amber-100\/90 { color: #22304f !important; }
@@ -121,7 +120,6 @@
         .panel-3d .text-sm { font-size: 16px !important; line-height: 1.55 !important; }
         header .text-\[10px\] { font-size: 12px !important; }
         header .text-xs { font-size: 13.5px !important; }
-        #notif-list { font-size: 13.5px !important; }
 
         /* Chữ hướng dẫn: ẩn vào nút ⓘ — di chuột vào hoặc chạm mới hiện */
         .guide { display: block; margin: 4px 0 2px; }
@@ -200,15 +198,8 @@
                         <div id="pf-name" class="text-xs font-extrabold text-amber-100 whitespace-nowrap"></div>
                         <div id="pf-stats" class="text-[10px] text-amber-300/90 whitespace-nowrap"></div>
                     </div>
-                    <button onclick="toggleNotifs(event)" class="relative text-amber-200 hover:text-white text-base px-1 cursor-pointer" title="Thông báo Tông Môn">
-                        🔔<span id="pf-bell-count" class="hidden absolute -top-1.5 -right-2 bg-red-600 text-white text-[9px] font-bold px-1 rounded-full"></span>
-                    </button>
                     <a id="pf-admin" href="/quan-tri" class="hidden text-[10px] bg-purple-700 hover:bg-purple-600 text-white font-extrabold px-2 py-1 rounded-full whitespace-nowrap">⚡ Quản Trị</a>
                     <button onclick="globalLogout()" class="text-[10px] bg-red-700 hover:bg-red-600 text-white font-extrabold px-2 py-1 rounded-full whitespace-nowrap cursor-pointer">Đăng Xuất</button>
-                </div>
-                <div id="notif-panel" class="hidden absolute right-0 top-full mt-2 w-80 max-w-[85vw] bg-[#141824] border border-amber-500/60 rounded-2xl shadow-2xl z-50 p-3 space-y-2">
-                    <p class="text-xs font-extrabold text-amber-300">🔔 Thông Báo Tông Môn</p>
-                    <div id="notif-list" class="space-y-1.5 max-h-64 overflow-y-auto text-[11px] text-amber-100/90"></div>
                 </div>
             </div>
         </div>
@@ -503,9 +494,6 @@
                 if (!box) return;
                 document.getElementById('pf-name').innerText = `${u.role === 'admin' ? '⚡' : '👤'} ${u.author_name} — ${tv.ten_muc || ''} · ${tv.ten_cap || ''}`;
                 document.getElementById('pf-stats').innerText = `💠 ${fmtNum(g.diem)} điểm · ⭐ Cấp ${g.cap_hoat_dong || 1} · 🌀 ${fmtNum(tv.linh_khi)} linh khí`;
-                const bell = document.getElementById('pf-bell-count');
-                if (g.unread > 0) { bell.innerText = g.unread; bell.classList.remove('hidden'); }
-                else bell.classList.add('hidden');
                 if (u.role === 'admin') document.getElementById('pf-admin').classList.remove('hidden');
                 box.classList.remove('hidden');
                 box.classList.add('flex');
@@ -515,30 +503,6 @@
             }).catch(() => {});
         }
 
-        function toggleNotifs(ev) {
-            if (ev) ev.stopPropagation();
-            const panel = document.getElementById('notif-panel');
-            const list = document.getElementById('notif-list');
-            if (!panel.classList.contains('hidden')) { panel.classList.add('hidden'); return; }
-            panel.classList.remove('hidden');
-            list.innerHTML = '<p class="text-amber-300/60">Đang nạp thông báo...</p>';
-            fetch('/api/notifications').then(r => r.json()).then(res => {
-                if (!res.success || !res.notifications.length) {
-                    list.innerHTML = '<p class="text-amber-300/60">Chưa có thông báo nào.</p>';
-                } else {
-                    list.innerHTML = res.notifications.map(n => `<div class="bg-black/50 border border-amber-700/40 rounded-lg px-2 py-1.5"><span class="text-amber-400/70 text-[10px]">${n.time}</span><br>${n.text}</div>`).join('');
-                }
-                fetch('/api/notifications/read', { method: 'POST' }).then(() => {
-                    const bell = document.getElementById('pf-bell-count');
-                    if (bell) bell.classList.add('hidden');
-                });
-            }).catch(() => { list.innerHTML = '<p class="text-red-300">Không nạp được thông báo.</p>'; });
-        }
-
-        document.addEventListener('click', function(e) {
-            const panel = document.getElementById('notif-panel');
-            if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target)) panel.classList.add('hidden');
-        });
         document.addEventListener('DOMContentLoaded', loadProfileBox);
 
         // THIÊN THƯ BẢNG: nạp bảng xếp hạng thật từ /api/leaderboard (mở từ cây giữa bản đồ)
