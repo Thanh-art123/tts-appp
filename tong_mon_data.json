@@ -3243,7 +3243,7 @@
       },
       "bag": [],
       "game": {
-        "diem": 10,
+        "diem": 5,
         "vi_yen": 0,
         "exp": 0,
         "tu_vi": {
@@ -3300,6 +3300,10 @@
           {
             "time": "27/10/2026 20:56",
             "text": "Mua 1 Mồi Câu phẩm Trắng (-10 Điểm Cống Hiến)"
+          },
+          {
+            "time": "27/10/2026 20:56",
+            "text": "Mua 1 bình Nước (-5 Điểm Cống Hiến)"
           }
         ],
         "streak": {
@@ -3359,7 +3363,7 @@
               "2": 0,
               "3": 0
             },
-            "nuoc": 0,
+            "nuoc": 1,
             "bao_tay": 0
           }
         },
