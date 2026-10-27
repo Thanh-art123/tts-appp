@@ -1079,7 +1079,7 @@
       "bag": [],
       "game": {
         "diem": 120,
-        "exp": 0,
+        "exp": 10,
         "tu_vi": {
           "muc": 1,
           "cap": -1,
@@ -1099,9 +1099,14 @@
           "pha_canh_dan": 0
         },
         "stats": {
-          "total": {},
+          "total": {
+            "doc_chuong": 1,
+            "diem_danh": 1
+          },
           "today": {
-            "date": "2026-10-27"
+            "date": "2026-10-27",
+            "doc_chuong": 1,
+            "diem_danh": 1
           }
         },
         "missions": {
@@ -1112,8 +1117,8 @@
         "notifications": [],
         "history": [],
         "streak": {
-          "last": "",
-          "count": 0
+          "last": "2026-10-27",
+          "count": 1
         },
         "nghe": {
           "quang": {},
