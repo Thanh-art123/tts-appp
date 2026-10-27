@@ -1309,7 +1309,7 @@
       "bag": [],
       "game": {
         "diem": 120,
-        "exp": 0,
+        "exp": 10,
         "tu_vi": {
           "muc": 1,
           "cap": -1,
@@ -1329,9 +1329,12 @@
           "pha_canh_dan": 0
         },
         "stats": {
-          "total": {},
+          "total": {
+            "doc_chuong": 1
+          },
           "today": {
-            "date": "2026-10-27"
+            "date": "2026-10-27",
+            "doc_chuong": 1
           }
         },
         "missions": {
@@ -1367,7 +1370,7 @@
           "luot_tao_anh": 0,
           "phu_open": false
         },
-        "locked": false,
+        "locked": true,
         "chibi": {
           "toc": 0,
           "mau_toc": 0,
