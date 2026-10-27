@@ -7,13 +7,15 @@
         <i class="fa-solid fa-gavel text-amber-500"></i>
         <span>Chợ Đấu Giá Tông Môn — Buôn Bán · Đấu Giá · Trao Đổi</span>
     </h2>
-    <p class="text-xs text-amber-200/80 leading-relaxed">Nơi đệ tử toàn Tông Môn giao thương bằng <b class="text-amber-300">Điểm Cống Hiến</b>: rao bán giá cố định, đấu giá vật hiếm (trả bằng Điểm hoặc Nguyên Tinh), hoặc rao đổi vật lấy vật. Mọi giao dịch đều <b>ký quỹ tại chợ</b> nên không lo bị lừa; chợ thu <b class="text-amber-300">phí sàn 5%</b> khi bán thành công. Điều kiện rao bán/mở đấu giá: <b class="text-amber-300">Cấp Hoạt Động ≥ 5</b> (chống tài khoản rác).</p>
+    <p class="text-xs text-amber-200/80 leading-relaxed">Nơi đệ tử toàn Tông Môn giao thương bằng <b class="text-amber-300">Điểm Cống Hiến</b>: rao bán giá cố định, đấu giá vật hiếm (trả bằng Điểm hoặc Nguyên Tinh), hoặc rao đổi vật lấy vật. Mọi giao dịch đều <b>ký quỹ tại chợ</b> nên không lo bị lừa; chợ thu <b class="text-amber-300">phí sàn <span id="cho-fee">5</span>%</b> khi bán thành công. Điều kiện rao bán/mở đấu giá: <b class="text-amber-300">Cấp Hoạt Động ≥ 5</b> (chống tài khoản rác).</p>
     <div class="flex flex-wrap gap-2 text-[11px] font-bold">
         <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">💠 Điểm: <b id="cho-diem" class="text-amber-300">…</b></span>
         <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">💎 Nguyên Tinh: <b id="cho-nt" class="text-amber-300">…</b></span>
         <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">⭐ Cấp Hoạt Động: <b id="cho-cap" class="text-amber-300">…</b></span>
         <span id="cho-quyen" class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">…</span>
     </div>
+
+    <div id="cho-event" class="hidden text-xs font-bold rounded-2xl px-4 py-3 border"></div>
 
     <div class="flex flex-wrap gap-1.5 text-[11px] font-extrabold" id="cho-tabs">
         <button data-tab="rao" class="cho-tab bg-amber-600 text-black px-3 py-2 rounded-xl cursor-pointer">🏷️ Rao Bán</button>
@@ -30,7 +32,7 @@
 
     <!-- ĐẤU GIÁ -->
     <div id="ctab-dau" class="cho-panel hidden space-y-3">
-        <p class="text-[11px] text-amber-200/70">Đặt giá là tiền được <b>ký quỹ ngay</b> — bị trả cao hơn sẽ <b>hoàn 100%</b> kèm thông báo. Trả giá trong 2 phút cuối thì phiên <b>tự kéo dài thêm 2 phút</b>. Hết giờ: người cao nhất thắng, người bán nhận 95% (phí sàn 5%).</p>
+        <p class="text-[11px] text-amber-200/70">Đặt giá là tiền được <b>ký quỹ ngay</b> — bị trả cao hơn sẽ <b>hoàn 100%</b> kèm thông báo. Trả giá trong 2 phút cuối thì phiên <b>tự kéo dài thêm 2 phút</b>. Hết giờ: người cao nhất thắng, <span id="cho-fee-note">người bán nhận 95% (phí sàn 5%)</span>.</p>
         <div id="dau-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs"></div>
     </div>
 
@@ -46,7 +48,7 @@
         </div>
         <div id="dang-forms" class="space-y-4">
             <div class="bg-black/50 border border-amber-700/40 rounded-2xl p-4 space-y-3 text-xs">
-                <p class="font-black text-amber-300 text-sm">🏷️ Rao Bán Giá Cố Định (tối đa 5 tin)</p>
+                <p class="font-black text-amber-300 text-sm">🏷️ Rao Bán Giá Cố Định (tối đa <span id="cap-rao">5</span> tin)</p>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
                     <select id="rb-item" class="item-select p-2.5 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none"></select>
                     <input id="rb-qty" type="number" min="1" value="1" placeholder="Số lượng" class="p-2.5 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none">
@@ -55,7 +57,7 @@
                 </div>
             </div>
             <div class="bg-black/50 border border-amber-700/40 rounded-2xl p-4 space-y-3 text-xs">
-                <p class="font-black text-amber-300 text-sm">🔨 Mở Phiên Đấu Giá (tối đa 3 phiên)</p>
+                <p class="font-black text-amber-300 text-sm">🔨 Mở Phiên Đấu Giá (tối đa <span id="cap-dau">3</span> phiên)</p>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                     <select id="dg-item" class="item-select p-2.5 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none"></select>
                     <input id="dg-qty" type="number" min="1" value="1" placeholder="Số lượng" class="p-2.5 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none">
@@ -141,6 +143,21 @@
         document.getElementById('cho-nt').innerText = fmtNum((GAME.linh_thach || {}).nguyen || 0);
         document.getElementById('cho-cap').innerText = CHO.cap_hoat_dong;
         document.getElementById('cho-quyen').innerHTML = CHO.can_sell ? '✔ Đạo hữu <b class="text-emerald-300">được phép</b> rao bán / mở đấu giá' : '🔒 Cần Cấp Hoạt Động 5 để bán (mua &amp; trả giá tự do)';
+        // Đợt 4: phí sàn + sự kiện Đại Hội Đấu Giá
+        const fee = CHO.phi_san || 5;
+        const dhOn = CHO.su_kien && CHO.su_kien.dai_hoi && CHO.su_kien.dai_hoi.on;
+        document.getElementById('cho-fee').innerText = fee;
+        document.getElementById('cho-fee-note').innerText = `người bán nhận ${100 - fee}% (phí sàn ${fee}%)`;
+        document.getElementById('cap-rao').innerText = dhOn ? 10 : 5;
+        document.getElementById('cap-dau').innerText = dhOn ? 6 : 3;
+        const evBox = document.getElementById('cho-event');
+        if (dhOn) {
+            evBox.className = 'text-xs font-bold rounded-2xl px-4 py-3 border bg-purple-950/70 border-purple-500/60 text-purple-100';
+            evBox.innerHTML = `🏆 <b>ĐẠI HỘI ĐẤU GIÁ ĐANG MỞ!</b> Phí sàn giảm còn <b>2%</b> · rao bán tối đa 10 tin · mở tối đa 6 phiên · Tông Môn đã mở <b>3 lô đặc biệt</b> ở tab Đấu Giá — lô nào có nhãn 🏯 thì vào trả giá ngay!`;
+        } else {
+            evBox.className = 'hidden text-xs font-bold rounded-2xl px-4 py-3 border';
+            evBox.innerHTML = '';
+        }
         // Rao bán
         document.getElementById('rao-list').innerHTML = CHO.listings.length ? CHO.listings.map(l => `
             <div class="bg-black/50 border ${l.mine ? 'border-sky-500/60' : 'border-amber-700/40'} rounded-xl p-3 space-y-2">
@@ -153,8 +170,8 @@
             </div>`).join('') : '<p class="text-amber-300/50">Chợ đang vắng — chưa có tin rao bán nào. Sang tab Đăng Bán để mở hàng!</p>';
         // Đấu giá
         document.getElementById('dau-list').innerHTML = CHO.auctions.length ? CHO.auctions.map(a => `
-            <div class="bg-black/50 border ${a.dang_thang ? 'border-emerald-500/70' : a.mine ? 'border-sky-500/60' : 'border-amber-700/40'} rounded-xl p-3 space-y-2">
-                <p class="font-black text-amber-200">${a.label} <span class="text-amber-400">× ${a.qty}</span></p>
+            <div class="bg-black/50 border ${a.seller === 'tong_mon' ? 'border-purple-400' : a.dang_thang ? 'border-emerald-500/70' : a.mine ? 'border-sky-500/60' : 'border-amber-700/40'} rounded-xl p-3 space-y-2">
+                <p class="font-black text-amber-200">${a.label} <span class="text-amber-400">× ${a.qty}</span>${a.seller === 'tong_mon' ? ' <span class="text-[10px] bg-purple-700 text-white px-2 py-0.5 rounded-full">🏯 LÔ ĐẶC BIỆT ĐẠI HỘI</span>' : ''}</p>
                 <p class="text-amber-100/75">Người bán: ${a.seller_name} · ${a.bids} lượt trả giá</p>
                 <p class="text-amber-100/85">${a.bidder ? `Giá hiện tại: <b class="text-base text-emerald-300">${fmtNum(a.cur)} ${curName(a.currency)}</b> — dẫn đầu: <b class="text-amber-300">${a.bidder_name}</b>` : `Giá khởi điểm: <b class="text-base text-emerald-300">${fmtNum(a.start)} ${curName(a.currency)}</b> — chưa ai trả giá`}</p>
                 <p class="text-amber-100/75">⏳ Còn lại: <b class="text-amber-300" data-left="${a.con_lai}">${fmtTime(a.con_lai)}</b></p>
