@@ -142,6 +142,11 @@
             "time": "27/10/2026 14:45",
             "text": "📝 Có bản thảo truyện mới chờ duyệt: «Truyen Kiem Chung Dot 8» của De Tu Dot 10.",
             "read": false
+          },
+          {
+            "time": "27/10/2026 14:53",
+            "text": "💳 Lệnh nạp tiền mới: 1.000¥ của một con vịt (mã NAP2) — chờ đệ tử chuyển khoản & Tông Chủ duyệt.",
+            "read": false
           }
         ],
         "history": [
@@ -968,6 +973,11 @@
             "time": "27/10/2026 14:45",
             "text": "📝 Có bản thảo truyện mới chờ duyệt: «Truyen Kiem Chung Dot 8» của De Tu Dot 10.",
             "read": false
+          },
+          {
+            "time": "27/10/2026 14:53",
+            "text": "💳 Lệnh nạp tiền mới: 1.000¥ của một con vịt (mã NAP2) — chờ đệ tử chuyển khoản & Tông Chủ duyệt.",
+            "read": false
           }
         ],
         "history": [
@@ -1159,7 +1169,13 @@
             "nb1"
           ]
         },
-        "notifications": [],
+        "notifications": [
+          {
+            "time": "27/10/2026 14:53",
+            "text": "💳 Đã tạo lệnh nạp 1.000¥ (mã NAP2). Hãy chuyển khoản đúng số tiền với nội dung chuyển khoản là «NAP2», rồi quay lại trang Ví bấm «Đã Chuyển Khoản». Tông Chủ duyệt xong, tiền sẽ vào Ví của đạo hữu.",
+            "read": false
+          }
+        ],
         "history": [
           {
             "time": "27/10/2026 11:46",
@@ -1809,6 +1825,17 @@
       "yen": 1000,
       "code": "NAP1",
       "status": "approved",
+      "reject_reason": ""
+    },
+    {
+      "id": 2,
+      "ts": 1793080412.2306042,
+      "time": "27/10/2026 14:53",
+      "username": "mothaiba",
+      "author_name": "một con vịt",
+      "yen": 1000,
+      "code": "NAP2",
+      "status": "cho_chuyen",
       "reject_reason": ""
     }
   ],
