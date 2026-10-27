@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+{% block title %}Túi Trữ Vật - Đại Thiên Tông{% endblock %}
+
+{% block content %}
+<div class="panel-3d rounded-2xl p-6 space-y-5">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-amber-600/40 pb-3 gap-3">
+        <h2 class="text-lg font-bold text-amber-400 flex items-center space-x-2">
+            <span class="text-2xl">🎒</span>
+            <span id="bag-page-title">Túi Trữ Vật (Đang nạp...)</span>
+        </h2>
+        <span class="text-[10px] text-emerald-400 bg-emerald-950/80 px-2 py-1 rounded border border-emerald-600/40 font-bold">🔒 Gắn theo tài khoản — đăng nhập đúng tên là còn nguyên</span>
+    </div>
+
+    <p class="text-xs text-amber-200/70 leading-relaxed">
+        Mỗi tài nguyên đạo hữu đã cất vào túi là một <b class="text-amber-300">biểu tượng công pháp</b> ở dưới.
+        <b class="text-amber-300">Ấn vào biểu tượng</b> để hiện tên truyện và các nút Đọc / Chuyển lên Tàng Kinh Các / Xóa.
+    </p>
+
+    <!-- LƯỚI BIỂU TƯỢNG CÔNG PHÁP TRONG TÚI -->
+    <div id="bag-grid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
+        <p class="text-xs text-amber-300/50 col-span-full text-center py-6">Đang mở túi trữ vật từ hư không...</p>
+    </div>
+
+    <!-- CHI TIẾT MÓN ĐANG CHỌN -->
+    <div id="bag-detail" class="bg-black/60 border border-amber-600/40 rounded-2xl p-4">
+        <p class="text-xs text-amber-300/60 text-center py-2">👆 Ấn vào một biểu tượng ở trên để xem tên và thao tác.</p>
+    </div>
+
+    <!-- THÊM TÀI NGUYÊN MỚI VÀO TÚI -->
+    <div class="bg-black/50 border border-amber-700/40 rounded-2xl p-4 space-y-3">
+        <p class="text-xs font-bold text-amber-300 flex items-center space-x-2">
+            <i class="fa-solid fa-file-arrow-up text-amber-400"></i>
+            <span>Thêm Tài Nguyên Mới Vào Túi (riêng tư, chưa đăng công khai)</span>
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+            <div>
+                <label class="block font-bold text-amber-300 mb-1">Tên truyện / tài nguyên:</label>
+                <input type="text" id="bag-new-title" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 focus:outline-none" placeholder="Ví dụ: Phàm Nhân Tu Tiên...">
+            </div>
+            <div>
+                <label class="block font-bold text-amber-300 mb-1">Chọn tệp (.txt hoặc .html):</label>
+                <input type="file" id="bag-new-file" accept=".txt,.html,.htm" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl p-2 cursor-pointer file:mr-4 file:py-1 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-extrabold file:bg-amber-600 file:text-black">
+            </div>
+            <div>
+                <label class="block font-bold text-amber-300 mb-1">Chuyên mục (khi đăng lên Tàng Kinh Các):</label>
+                <select id="bag-new-category" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 outline-none">
+                    <option value="truyen-dich">📜 Truyện Dịch</option>
+                    <option value="truyen-cover">✨ Truyện Cover</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-bold text-amber-300 mb-1">Hệ (khi đăng lên Tàng Kinh Các):</label>
+                <select id="bag-new-element" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 outline-none">
+                    <option>Kim</option><option>Mộc</option><option>Thủy</option><option>Hỏa</option><option>Thổ</option>
+                    <option>Lôi</option><option>Phong</option><option>Băng</option><option>Không Gian</option><option>Thời Gian</option>
+                </select>
+            </div>
+        </div>
+        <button onclick="uploadToBag()" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold text-xs py-2.5 px-5 rounded-xl shadow transition cursor-pointer inline-flex items-center space-x-1">
+            <i class="fa-solid fa-box-archive"></i>
+            <span>Cất Vào Túi Trữ Vật</span>
+        </button>
+    </div>
+</div>
+
+<!-- Form ẩn để mở trang đọc truyện (giống Tàng Kinh Các) -->
+<form action="/doc-truyen" method="POST" target="_blank" id="read-form">
+    <input type="hidden" name="title" id="form-title">
+    <input type="hidden" name="content" id="form-content">
+</form>
+
+<!-- Modal CHUYỂN từ Túi Trữ Vật lên Tàng Kinh Các (phí: 1 chương = 1 Nguyên Tinh) -->
+<div id="publish-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="panel-3d rounded-2xl max-w-md w-full mx-4 p-6 relative border border-amber-500/80 shadow-2xl space-y-4">
+        <button onclick="closePublishModal()" class="absolute top-4 right-4 text-amber-400 hover:text-white text-lg cursor-pointer">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <h3 class="text-base font-extrabold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
+            <i class="fa-solid fa-right-left text-amber-500"></i>
+            <span>Chuyển Lên Tàng Kinh Các</span>
+        </h3>
+        <p class="text-xs text-amber-200/80">Truyện: <b id="publish-book-title" class="text-amber-300"></b></p>
+        <div id="publish-check" class="bg-black/60 border border-amber-700/40 rounded-xl p-3 text-xs space-y-1 text-amber-100/90">
+            <p>🔍 Đang kiểm tra truyện...</p>
+        </div>
+        <p class="text-[11px] text-amber-300/70">Quy định: phí chuyển = <b>số chương × 1 Nguyên Tinh</b> (Nguyên Tinh = linh thạch 10 điểm linh khí). Chuyển xong truyện sẽ <b>rời Túi Trữ Vật</b> và chỉ có <b>1 bản duy nhất</b> trên Tàng Kinh Các.</p>
+        <div class="space-y-3 text-xs">
+            <div>
+                <label class="block font-bold text-amber-300 mb-1">Chuyên mục:</label>
+                <select id="publish-category" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 outline-none">
+                    <option value="truyen-dich">📜 Truyện Dịch</option>
+                    <option value="truyen-cover">✨ Truyện Cover</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-bold text-amber-300 mb-1">Hệ:</label>
+                <select id="publish-element" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2 outline-none">
+                    <option>Kim</option><option>Mộc</option><option>Thủy</option><option>Hỏa</option><option>Thổ</option>
+                    <option>Lôi</option><option>Phong</option><option>Băng</option><option>Không Gian</option><option>Thời Gian</option>
+                </select>
+            </div>
+        </div>
+        <div class="flex justify-end space-x-2 pt-1">
+            <button onclick="closePublishModal()" class="bg-black/70 hover:bg-black text-amber-200 border border-amber-600/50 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer">Hủy</button>
+            <button id="publish-submit" onclick="submitPublish()" class="bg-emerald-600 hover:bg-emerald-500 text-black px-4 py-2 rounded-xl text-xs font-extrabold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">🔀 Ấn Chuyển Ngay</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const currentUser = JSON.parse(localStorage.getItem('tongan_current_user')) || null;
+    let bagItems = [];
+    let selectedBagId = null;
+    let currentPublishItemId = null;
+
+    function catLabel(cat) {
+        return { 'truyen-dich': 'Truyện Dịch', 'truyen-cover': 'Truyện Cover' }[cat] || cat || 'Truyện';
+    }
+
+    function openReader(title, content) {
+        document.getElementById('form-title').value = title;
+        document.getElementById('form-content').value = content;
+        document.getElementById('read-form').submit();
+    }
+
+    function loadBagTiles() {
+        const grid = document.getElementById('bag-grid');
+        const title = document.getElementById('bag-page-title');
+        if (!currentUser) {
+            title.innerText = 'Túi Trữ Vật (Chưa đăng nhập)';
+            grid.innerHTML = '<p class="text-xs text-amber-400/50 col-span-full text-center py-6">Đạo hữu chưa đăng nhập.</p>';
+            return;
+        }
+        fetch(`/api/bag?username=${encodeURIComponent(currentUser.username)}`)
+        .then(res => res.json())
+        .then(res => {
+            if (!res.success) {
+                grid.innerHTML = `<p class="text-xs text-amber-400/50 col-span-full text-center py-6">${res.message}</p>`;
+                return;
+            }
+            bagItems = res.items || [];
+            title.innerText = `🎒 Túi Trữ Vật Của [${currentUser.author_name}] — ${res.count}/${res.capacity === null ? '∞' : res.capacity} truyện`;
+            if (bagItems.length === 0) {
+                grid.innerHTML = '<p class="text-xs text-amber-400/50 col-span-full text-center py-6">Túi trữ vật trống rỗng. Hãy đọc truyện ở Tàng Kinh Các rồi bấm "Lưu Túi Trữ Vật", hoặc thêm tài nguyên mới ở form bên dưới.</p>';
+                document.getElementById('bag-detail').innerHTML = '<p class="text-xs text-amber-300/60 text-center py-2">Túi đang trống.</p>';
+                return;
+            }
+            grid.innerHTML = bagItems.map(item => `
+                <button type="button" onclick="selectBagItem(${item.item_id})" title="${(item.title || '').replace(/"/g, '&quot;')}"
+                    class="bag-tile relative aspect-square rounded-2xl border ${selectedBagId === item.item_id ? 'border-amber-300 bg-amber-800/70 ring-2 ring-amber-400' : 'border-amber-600/50 bg-black/60 hover:bg-amber-950/70'} flex items-center justify-center text-4xl cursor-pointer transition shadow">
+                    ${item.icon || '📜'}
+                    ${item.published_book_id ? '<span class="absolute top-1 right-1 text-[10px]" title="Đã đăng Tàng Kinh Các">☁️</span>' : ''}
+                </button>`).join('');
+            if (selectedBagId !== null && !bagItems.some(i => i.item_id === selectedBagId)) selectedBagId = null;
+            if (selectedBagId !== null) renderBagDetail();
+        });
+    }
+
+    function selectBagItem(itemId) {
+        selectedBagId = itemId;
+        loadBagTiles();
+        renderBagDetail();
+    }
+
+    function renderBagDetail() {
+        const item = bagItems.find(i => i.item_id === selectedBagId);
+        const box = document.getElementById('bag-detail');
+        if (!item) {
+            box.innerHTML = '<p class="text-xs text-amber-300/60 text-center py-2">👆 Ấn vào một biểu tượng ở trên để xem tên và thao tác.</p>';
+            return;
+        }
+        const status = item.published_book_id
+            ? '<span class="text-emerald-400 font-semibold bg-emerald-950/80 px-2 py-1 rounded border border-emerald-600/40">☁️ Đã đăng Tàng Kinh Các</span>'
+            : '<span class="text-amber-300/80 font-semibold bg-black/50 px-2 py-1 rounded border border-amber-600/30">🔒 Riêng tư trong túi</span>';
+        const publishBtn = item.published_book_id ? '' : `<button onclick="openPublishModal(${item.item_id})" class="bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold px-3 py-2 rounded-lg cursor-pointer">🔀 Chuyển → Tàng Kinh Các</button>`;
+        box.innerHTML = `
+            <div class="flex flex-col md:flex-row md:items-center gap-3">
+                <div class="text-5xl shrink-0">${item.icon || '📜'}</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-extrabold text-amber-200 break-words">${item.title}</p>
+                    <p class="text-[11px] text-amber-400/70 mt-0.5">Tác giả: ${item.author} | ${catLabel(item.category)} - Hệ ${item.element} | Cất ngày: ${item.created_at || '—'}</p>
+                    <div class="mt-1.5">${status}</div>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap text-xs shrink-0">
+                    <button onclick="readBagItem(${item.item_id})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-2 rounded-lg cursor-pointer">📖 Đọc</button>
+                    ${publishBtn}
+                    <button onclick="removeBagItem(${item.item_id})" class="bg-red-950/60 hover:bg-red-900/60 text-red-300 font-bold px-3 py-2 rounded-lg border border-red-600/40 cursor-pointer">🗑️ Xóa</button>
+                </div>
+            </div>`;
+    }
+
+    function readBagItem(itemId) {
+        fetch(`/api/bag/content?username=${encodeURIComponent(currentUser.username)}&item_id=${itemId}`)
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) openReader(`${res.title} - Tác giả: ${res.author}`, res.content);
+            else alert(res.message);
+        });
+    }
+
+    function uploadToBag() {
+        if (!currentUser) { alert('Đạo hữu chưa đăng nhập!'); return; }
+        const title = document.getElementById('bag-new-title').value.trim();
+        const fileInput = document.getElementById('bag-new-file');
+        const cat = document.getElementById('bag-new-category').value;
+        const elem = document.getElementById('bag-new-element').value;
+        if (!title || fileInput.files.length === 0) { alert('Vui lòng điền tên truyện và chọn tệp!'); return; }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            fetch('/api/bag/upload', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username: currentUser.username, title: title, content: e.target.result, author: currentUser.author_name, category: cat, element: elem })
+            })
+            .then(res => res.json())
+            .then(res => {
+                alert(res.message);
+                if (res.success) {
+                    document.getElementById('bag-new-title').value = '';
+                    fileInput.value = '';
+                    selectedBagId = null;
+                    loadBagTiles();
+                }
+            });
+        };
+        reader.readAsText(fileInput.files[0]);
+    }
+
+    function openPublishModal(itemId) {
+        currentPublishItemId = itemId;
+        const btn = document.getElementById('publish-submit');
+        btn.disabled = true;
+        document.getElementById('publish-check').innerHTML = '<p>🔍 Đang kiểm tra truyện...</p>';
+        const item = bagItems.find(i => i.item_id === itemId);
+        if (item) {
+            document.getElementById('publish-book-title').innerText = item.title;
+            document.getElementById('publish-category').value = item.category;
+            document.getElementById('publish-element').value = item.element;
+        }
+        document.getElementById('publish-modal').classList.remove('hidden');
+        fetch(`/api/bag/kiem-tra-chuyen?username=${encodeURIComponent(currentUser.username)}&item_id=${itemId}`)
+        .then(res => res.json())
+        .then(res => {
+            const box = document.getElementById('publish-check');
+            if (!res.success) { box.innerHTML = `<p class="text-red-300 font-bold">❌ ${res.message}</p>`; return; }
+            box.innerHTML = `
+                <p>📖 Số chương của truyện: <b class="text-amber-300">${res.so_chuong} chương</b></p>
+                <p>💎 Phí chuyển: <b class="text-amber-300">${res.phi_nguyen_tinh} Nguyên Tinh</b> (1 chương = 1 Nguyên Tinh)</p>
+                <p>👛 Nguyên Tinh đạo hữu đang có: <b class="text-amber-300">${res.dang_co}</b></p>
+                ${res.du
+                    ? '<p class="text-emerald-300 font-bold">✔ KIỂM TRA ĐẠT — đủ điều kiện, ấn "Chuyển Ngay" để chuyển truyện lên Tàng Kinh Các.</p>'
+                    : `<p class="text-red-300 font-bold">❌ CHƯA ĐẠT: ${res.loi}</p>`}`;
+            btn.disabled = !res.du;
+        })
+        .catch(() => { document.getElementById('publish-check').innerHTML = '<p class="text-red-300 font-bold">❌ Không kiểm tra được — thử lại sau!</p>'; });
+    }
+
+    function closePublishModal() { document.getElementById('publish-modal').classList.add('hidden'); }
+
+    function submitPublish() {
+        if (currentPublishItemId === null) return;
+        fetch('/api/bag/chuyen', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                username: currentUser.username,
+                item_id: currentPublishItemId,
+                category: document.getElementById('publish-category').value,
+                element: document.getElementById('publish-element').value
+            })
+        })
+        .then(res => res.json())
+        .then(res => {
+            alert(res.message);
+            if (res.success) {
+                closePublishModal();
+                selectedBagId = null;
+                loadBagTiles();
+                document.getElementById('bag-detail').innerHTML = '<p class="text-xs text-amber-300/60 text-center py-2">👆 Ấn vào một biểu tượng ở trên để xem tên và thao tác.</p>';
+            }
+        });
+    }
+
+    function removeBagItem(itemId) {
+        fetch('/api/bag/remove', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ username: currentUser.username, item_id: itemId })
+        })
+        .then(res => res.json())
+        .then(res => {
+            alert(res.message);
+            if (res.success) {
+                if (selectedBagId === itemId) selectedBagId = null;
+                loadBagTiles();
+                if (selectedBagId === null) document.getElementById('bag-detail').innerHTML = '<p class="text-xs text-amber-300/60 text-center py-2">👆 Ấn vào một biểu tượng ở trên để xem tên và thao tác.</p>';
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadBagTiles);
+</script>
+{% endblock %}

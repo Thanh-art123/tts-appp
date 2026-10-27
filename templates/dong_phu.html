@@ -198,6 +198,16 @@
     }
 
     // ---------- TÚI TRỮ VẬT ----------
+    function catLabel(cat) {
+        return { 'truyen-dich': 'Truyện Dịch', 'truyen-cover': 'Truyện Cover' }[cat] || cat || 'Truyện';
+    }
+
+    function openReader(title, content) {
+        document.getElementById('form-title').value = title;
+        document.getElementById('form-content').value = content;
+        document.getElementById('read-form').submit();
+    }
+
     function loadBag() {
         const tuiContainer = document.getElementById('tui-tru-vat-list');
         const tuiTitle = document.getElementById('tui-tru-vat-title');
