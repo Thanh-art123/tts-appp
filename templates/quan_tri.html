@@ -19,6 +19,14 @@
     </div>
 
     <div class="panel-3d rounded-2xl p-5 space-y-3">
+        <h3 class="text-sm font-extrabold text-amber-300 uppercase tracking-wider">🎉 Sự Kiện Tông Môn (Đợt 4)</h3>
+        <div id="events-box" class="space-y-2 text-xs">
+            <p class="text-amber-300/50">Đang nạp sự kiện...</p>
+        </div>
+        <p class="text-[11px] text-amber-300/70">🎉 Tuần Lễ Tông Môn: chạy 7 ngày — Điểm &amp; Kinh Nghiệm thưởng nhiệm vụ x2. 🏆 Đại Hội Đấu Giá: chạy 72 giờ — phí sàn chợ còn 2%, tăng giới hạn rao bán/đấu giá, Tông Môn mở 3 lô đặc biệt. Bật sự kiện sẽ gửi thông báo cho toàn bộ đệ tử.</p>
+    </div>
+
+    <div class="panel-3d rounded-2xl p-5 space-y-3">
         <h3 class="text-sm font-extrabold text-amber-300 uppercase tracking-wider">👥 Danh Sách Tài Khoản</h3>
         <div id="users-box" class="space-y-2 text-xs">
             <p class="text-amber-300/50">Đang nạp danh sách...</p>
@@ -101,6 +109,34 @@
         });
     }
 
-    document.addEventListener('DOMContentLoaded', loadUsers);
+    function qtFmtLeft(sec) {
+        sec = Math.max(0, sec | 0);
+        const d = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60);
+        return (d > 0 ? d + ' ngày ' : '') + (h > 0 ? h + ' giờ ' : '') + m + ' phút';
+    }
+
+    function loadEventsAdmin() {
+        fetch('/api/events').then(r => r.json()).then(res => {
+            const box = document.getElementById('events-box');
+            if (!res.success) { box.innerHTML = '<p class="text-red-300">Không nạp được sự kiện.</p>'; return; }
+            box.innerHTML = ['tuan_le', 'dai_hoi'].map(k => {
+                const e = res.events[k];
+                return `<div class="bg-black/50 border ${e.on ? 'border-emerald-500/70' : 'border-amber-700/40'} rounded-xl px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
+                    <div><b class="text-amber-200">${e.icon} ${e.name}</b><br><span class="text-amber-100/75">${e.desc}</span><br>
+                    <span class="${e.on ? 'text-emerald-300' : 'text-amber-300/50'} font-bold">${e.on ? `🟢 Đang chạy — còn ${qtFmtLeft(e.con_lai)}` : '⚪ Đang tắt'}</span></div>
+                    ${e.on
+                        ? `<button onclick="eventAction('${k}','tat')" class="bg-red-800 hover:bg-red-700 text-white font-extrabold px-3 py-2 rounded-lg cursor-pointer">Tắt Sự Kiện</button>`
+                        : `<button onclick="eventAction('${k}','bat')" class="bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold px-3 py-2 rounded-lg cursor-pointer">▶ Bật Sự Kiện</button>`}
+                </div>`;
+            }).join('');
+        }).catch(() => { document.getElementById('events-box').innerHTML = '<p class="text-red-300">Không nạp được sự kiện.</p>'; });
+    }
+
+    function eventAction(key, action) {
+        if (action === 'bat' && !confirm('Bật sự kiện này? Toàn bộ đệ tử sẽ nhận thông báo.')) return;
+        post('/api/admin/event', {key, action}).then(res => { alert(res.message); loadEventsAdmin(); });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => { loadUsers(); loadEventsAdmin(); });
 </script>
 {% endblock %}
