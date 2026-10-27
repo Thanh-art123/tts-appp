@@ -1,6 +1,6 @@
 {
   "background_color": "#dceeff",
-  "description": "Ứng dụng nghe giảng kinh, chuyển văn bản thành giọng đọc và tu luyện Tông Môn (điểm, nhiệm vụ, nghề phụ trợ, chợ đấu giá).",
+  "description": "Đại Thiên Tông — ứng dụng đọc truyện, nghe truyện bằng giọng đọc máy chủ và tu luyện (điểm cống hiến, nhiệm vụ, nghề phụ trợ, chợ đấu giá, nhân vật chibi).",
   "display": "standalone",
   "icons": [
     {
@@ -23,10 +23,10 @@
     }
   ],
   "lang": "vi",
-  "name": "Nghe Giảng Kinh — Tông Môn Tu Luyện",
+  "name": "Đại Thiên Tông",
   "orientation": "portrait",
   "scope": "/",
-  "short_name": "Tông Môn",
+  "short_name": "Đại Thiên Tông",
   "start_url": "/",
   "theme_color": "#a9d1f7",
   "id": "/",
