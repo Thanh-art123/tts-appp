@@ -4001,5 +4001,31 @@
   "payouts": [],
   "settings": {
     "bank_info": ""
+  },
+  "thu_dau_gia": {
+    "ngay": "2026-10-27",
+    "lots": [
+      {
+        "id": 1,
+        "ten": "Tuyết Lang Con",
+        "pham": 1,
+        "gia_khoi_diem": 800,
+        "cao_nhat": null
+      },
+      {
+        "id": 2,
+        "ten": "Hắc Kỳ Lân Con",
+        "pham": 0,
+        "gia_khoi_diem": 200,
+        "cao_nhat": null
+      },
+      {
+        "id": 3,
+        "ten": "Hỏa Hồ Ly",
+        "pham": 1,
+        "gia_khoi_diem": 800,
+        "cao_nhat": null
+      }
+    ]
   }
 }
