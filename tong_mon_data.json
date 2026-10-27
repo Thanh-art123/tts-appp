@@ -137,6 +137,11 @@
             "time": "27/10/2026 14:44",
             "text": "💳 De Tu Dot 10 báo ĐÃ CHUYỂN KHOẢN lệnh nạp 1.000¥ (mã NAP1) — chờ Tông Chủ đối chiếu & duyệt.",
             "read": false
+          },
+          {
+            "time": "27/10/2026 14:45",
+            "text": "📝 Có bản thảo truyện mới chờ duyệt: «Truyen Kiem Chung Dot 8» của De Tu Dot 10.",
+            "read": false
           }
         ],
         "history": [
@@ -958,6 +963,11 @@
             "time": "27/10/2026 14:44",
             "text": "💳 De Tu Dot 10 báo ĐÃ CHUYỂN KHOẢN lệnh nạp 1.000¥ (mã NAP1) — chờ Tông Chủ đối chiếu & duyệt.",
             "read": false
+          },
+          {
+            "time": "27/10/2026 14:45",
+            "text": "📝 Có bản thảo truyện mới chờ duyệt: «Truyen Kiem Chung Dot 8» của De Tu Dot 10.",
+            "read": false
           }
         ],
         "history": [
@@ -1465,6 +1475,11 @@
             "time": "27/10/2026 14:44",
             "text": "💳 Đã tạo lệnh nạp 1.000¥ (mã NAP1). Hãy chuyển khoản đúng số tiền với nội dung chuyển khoản là «NAP1», rồi quay lại trang Ví bấm «Đã Chuyển Khoản». Tông Chủ duyệt xong, tiền sẽ vào Ví của đạo hữu.",
             "read": false
+          },
+          {
+            "time": "27/10/2026 14:45",
+            "text": "📝 Bản thảo truyện «Truyen Kiem Chung Dot 8» đã gửi Tông Chủ duyệt. Được duyệt, truyện sẽ lên Tàng Kinh Các và đạo hữu nhận +50 Điểm Cống Hiến.",
+            "read": false
           }
         ],
         "history": [],
@@ -1686,7 +1701,24 @@
       "text": "De tu dot 7 chao ca nha"
     }
   ],
-  "submissions": [],
+  "submissions": [
+    {
+      "id": 1,
+      "ts": 1793079913.3604379,
+      "time": "27/10/2026 14:45",
+      "username": "test_dot10",
+      "author_name": "De Tu Dot 10",
+      "title": "Truyen Kiem Chung Dot 8",
+      "content": "Chuong 1: Mo dau cau chuyen kiem chung. Chuong 2: Dien bien tiep theo cua truyen.",
+      "category": "truyen-dich",
+      "element": "Kim",
+      "source": "upload",
+      "bag_item_id": null,
+      "phi_nguyen": 0,
+      "status": "pending",
+      "reject_reason": ""
+    }
+  ],
   "topups": [
     {
       "id": 1,
