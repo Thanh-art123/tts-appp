@@ -17,6 +17,17 @@
         </div>
     </div>
 
+    <!-- NHÂN VẬT CHIBI (Đợt 5): 1 tài khoản 1 nhân vật, gắn vĩnh viễn với đạo hào -->
+    <div class="bg-black/70 border-2 border-fuchsia-500/50 rounded-2xl p-5 space-y-3 shadow-lg shadow-fuchsia-950/40">
+        <h3 class="text-base font-extrabold text-fuchsia-300 uppercase tracking-wider border-b border-fuchsia-600/30 pb-2 flex items-center space-x-2">
+            <i class="fa-solid fa-child-reaching text-fuchsia-400"></i>
+            <span>Nhân Vật Chibi Của Đạo Hữu</span>
+        </h3>
+        <div id="chibi-section">
+            <p class="text-xs text-amber-300/50 text-center py-3">Đang gọi nhân vật chibi...</p>
+        </div>
+    </div>
+
     <!-- KHU VỰC TÚI TRỮ VẬT CÁ NHÂN (GẮN THEO TÀI KHOẢN - ĐĂNG NHẬP ĐÚNG TÊN LÀ CÒN MÃI MÃI) -->
     <div id="tui-tru-vat" class="bg-black/70 border-2 border-amber-500/70 rounded-2xl p-5 space-y-4 shadow-lg shadow-amber-950/50">
         <h3 class="text-base font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2 flex items-center justify-between">
@@ -445,6 +456,63 @@
         }).catch(() => { box.innerHTML = '<p class="text-red-300">Không nạp được nhật ký.</p>'; });
     }
 
-    document.addEventListener('DOMContentLoaded', () => { updateBadge(); loadDongPhuData(); loadGameProfile(); loadHistory(); });
+    // NHÂN VẬT CHIBI (Đợt 5): đã có thì trưng bày; chưa có (tài khoản cũ) thì chọn 1 lần rồi khóa
+    let _chibiPick = null;
+    function loadChibiSection() {
+        const box = document.getElementById('chibi-section');
+        if (!box || !currentUser) return;
+        fetch('/api/me').then(r => r.json()).then(res => {
+            if (!res.success) { box.innerHTML = '<p class="text-xs text-red-300">Không nạp được hồ sơ nhân vật.</p>'; return; }
+            const u = res.user;
+            const g = u.game || {};
+            if (g.chibi && window.chibiSVG) {
+                const names = (window.CHIBI || {});
+                const toc = names.HAIR_STYLES ? names.HAIR_STYLES[g.chibi.toc] : '';
+                const mau = names.HAIR_COLORS ? names.HAIR_COLORS[g.chibi.mau_toc].name : '';
+                const ao = names.ROBE_COLORS ? names.ROBE_COLORS[g.chibi.ao].name : '';
+                const pb = names.ITEMS ? (names.ITEMS.find(i => i.key === g.chibi.phap_bao) || {}).name : '';
+                box.innerHTML = `
+                <div class="flex flex-col sm:flex-row items-center gap-4">
+                    <div class="bg-gradient-to-b from-sky-950/80 to-black/60 border border-fuchsia-500/50 rounded-2xl px-5 pt-2 pb-1 shrink-0">${chibiSVG(g.chibi, 140)}</div>
+                    <div class="text-xs text-amber-100/90 space-y-1.5 text-center sm:text-left">
+                        <p class="text-sm font-extrabold text-fuchsia-200">${u.author_name}</p>
+                        <p>💇 Tóc: <b>${toc}</b> · 🎨 Màu tóc: <b>${mau}</b></p>
+                        <p>👘 ${ao} · ✨ Pháp bảo: <b>${pb}</b></p>
+                        <p class="text-amber-300/70 leading-relaxed">Nhân vật này gắn vĩnh viễn với đạo hào của đạo hữu: chạy trên mọi trang web,
+                        xuất hiện cạnh tên đạo hữu ở Thiên Thư Bảng và đầu trang. Mỗi tài khoản chỉ có 1 nhân vật duy nhất —
+                        muốn nhân vật khác, đạo hữu hãy tạo tài khoản mới.</p>
+                    </div>
+                </div>`;
+            } else {
+                box.innerHTML = `
+                <p class="text-[11px] text-amber-200/75 leading-relaxed">Tài khoản của đạo hữu chưa có nhân vật chibi. Hãy tự phối 1 nhân vật thật ưng ý —
+                <b class="text-fuchsia-300">chọn xong là gắn vĩnh viễn với đạo hào, không đổi lại được</b> (chỉ Chưởng Môn Nhân mới mở khóa chọn lại được khi lỡ tay).</p>
+                <div id="dp-chibi-picker" class="mt-2"></div>
+                <button onclick="submitChibiPick()" class="mt-3 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-extrabold text-xs py-2.5 px-5 rounded-xl shadow transition cursor-pointer">🔒 Chốt Nhân Vật Này — Gắn Vĩnh Viễn Với Đạo Hào</button>`;
+                if (window.buildChibiPicker) {
+                    _chibiPick = chibiDefault();
+                    buildChibiPicker(document.getElementById('dp-chibi-picker'), _chibiPick, (s) => { _chibiPick = s; });
+                }
+            }
+        }).catch(() => { box.innerHTML = '<p class="text-xs text-red-300">Không kết nối được máy chủ.</p>'; });
+    }
+
+    function submitChibiPick() {
+        if (!_chibiPick) { alert('Bộ chọn nhân vật chưa sẵn sàng, đạo hữu thử tải lại trang!'); return; }
+        if (!confirm('Đạo hữu chắc chắn chốt nhân vật chibi này chứ? Chọn xong sẽ gắn VĨNH VIỄN với đạo hào và không tự đổi lại được.')) return;
+        fetch('/api/chibi/chon', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chibi: _chibiPick })
+        })
+        .then(r => r.json())
+        .then(res => {
+            alert(res.message);
+            if (res.success) { loadChibiSection(); if (typeof loadProfileBox === 'function') loadProfileBox(); }
+        })
+        .catch(() => alert('Không kết nối được máy chủ, xin thử lại!'));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => { updateBadge(); loadDongPhuData(); loadGameProfile(); loadHistory(); loadChibiSection(); });
 </script>
 {% endblock %}

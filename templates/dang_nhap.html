@@ -1,13 +1,13 @@
 {% extends "base.html" %}
-{% block title %}Cổng Tông Môn - Đăng Nhập / Đăng Ký{% endblock %}
+{% block title %}Cổng Đại Thiên Tông - Đăng Nhập / Đăng Ký{% endblock %}
 
 {% block content %}
 <div class="panel-3d rounded-2xl p-6 space-y-5 max-w-xl mx-auto">
     <div class="text-center space-y-2">
         <i class="fa-solid fa-torii-gate text-amber-400 text-4xl"></i>
-        <h2 class="text-xl font-black text-amber-400 tracking-wide">CỔNG TÔNG MÔN</h2>
+        <h2 class="text-xl font-black text-amber-400 tracking-wide">CỔNG ĐẠI THIÊN TÔNG</h2>
         <p class="text-xs text-amber-200/70 leading-relaxed">
-            Muốn vào Tông Môn Tu Luyện, đạo hữu phải <b class="text-amber-300">đăng nhập</b> trước.
+            Muốn vào Đại Thiên Tông, đạo hữu phải <b class="text-amber-300">đăng nhập</b> trước.
             Chưa có tài khoản thì <b class="text-amber-300">đăng ký đạo tịch mới</b> ngay tại đây —
             tài khoản và mọi tài nguyên đạo hữu đăng lên sẽ được <b class="text-amber-300">lưu giữ vĩnh viễn</b>,
             đăng nhập đúng tên là còn nguyên tất cả.
@@ -27,6 +27,11 @@
             <label class="block font-bold text-amber-300 mb-1">Đạo Hào (Tên hiển thị khi đăng bài):</label>
             <input type="text" id="dn-author" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl px-3 py-2.5 focus:outline-none" placeholder="Ví dụ: Thiên Tôn...">
         </div>
+        <div id="dn-chibi-field" class="hidden bg-black/50 border border-amber-600/40 rounded-2xl p-3 space-y-2">
+            <p class="font-extrabold text-amber-300">🧒 Tạo Nhân Vật Chibi Của Bạn</p>
+            <p class="text-[11px] text-amber-200/70 leading-relaxed">Tự phối tóc, áo và pháp bảo. Nhân vật này <b class="text-amber-300">gắn vĩnh viễn với đạo hào</b> của đạo hữu — mỗi tài khoản chỉ có 1 nhân vật duy nhất, muốn nhân vật khác phải tạo tài khoản mới.</p>
+            <div id="dn-chibi-picker"></div>
+        </div>
     </div>
 
     <div class="flex flex-col space-y-2 pt-2 border-t border-amber-800/60">
@@ -39,10 +44,15 @@
 {% block scripts %}
 <script>
     let registerMode = false;
+    let dnChibi = (window.chibiDefault ? chibiDefault() : { toc: 0, mau_toc: 0, ao: 0, phap_bao: 'sach' });
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.buildChibiPicker) buildChibiPicker(document.getElementById('dn-chibi-picker'), dnChibi, (s) => { dnChibi = s; });
+    });
 
     function toggleMode() {
         registerMode = !registerMode;
         document.getElementById('dn-register-field').classList.toggle('hidden', !registerMode);
+        document.getElementById('dn-chibi-field').classList.toggle('hidden', !registerMode);
         document.getElementById('dn-action-btn').innerText = registerMode ? "Đăng Ký & Vào Tông Môn" : "Đăng Nhập Vào Tông Môn";
         document.getElementById('dn-toggle-btn').innerText = registerMode ? "Đã có tài khoản? Quay lại đăng nhập" : "Chưa có tài khoản? Đăng ký đạo tịch mới";
     }
@@ -56,7 +66,7 @@
         if (registerMode && !author_name) { alert("Vui lòng nhập đạo hào (tên hiển thị)!"); return; }
 
         const endpoint = registerMode ? '/api/register' : '/api/login';
-        const payload = registerMode ? {username, password, author_name} : {username, password};
+        const payload = registerMode ? {username, password, author_name, chibi: dnChibi} : {username, password};
 
         fetch(endpoint, {
             method: 'POST',

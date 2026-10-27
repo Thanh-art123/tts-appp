@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>{% block title %}Tông Môn Tu Luyện{% endblock %}</title>
+    <title>{% block title %}Đại Thiên Tông{% endblock %}</title>
     
     <!-- Khai báo cấu hình PWA để biến Web thành App -->
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
@@ -12,9 +12,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon-192.png') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Tông Môn">
+    <meta name="apple-mobile-web-app-title" content="Đại Thiên Tông">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='chibi.js') }}"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
@@ -84,7 +85,7 @@
             <div class="flex items-center space-x-3">
                 <i class="fa-solid fa-dharmachakra text-amber-400 text-3xl animate-spin" style="animation-duration: 20s;"></i>
                 <div>
-                    <h1 class="text-xl md:text-2xl font-black tracking-widest text-amber-400">TÔNG MÔN TU LUYỆN</h1>
+                    <h1 class="text-xl md:text-2xl font-black tracking-widest text-amber-400">ĐẠI THIÊN TÔNG</h1>
                     <p class="text-[10px] text-amber-200/70">Cổ Phong Kiếm Hiệp • Tiên Cảnh Diệu Âm</p>
                 </div>
             </div>
@@ -119,7 +120,7 @@
             <!-- HỒ SƠ NGƯỜI ĐĂNG NHẬP: danh tính / Điểm Cống Hiến / Kinh Nghiệm / Tu Vi -->
             <div class="relative">
                 <div id="profile-box" class="hidden items-center space-x-2.5 bg-amber-950/90 pl-1.5 pr-2 py-1.5 rounded-2xl border border-amber-500/60 shadow-xl">
-                    <a href="/dong-phu" title="Mở Động Phủ / Túi Trữ Vật" class="w-9 h-9 rounded-full bg-amber-600 hover:bg-amber-500 text-black flex items-center justify-center text-base shrink-0 transition">👤</a>
+                    <a href="/dong-phu" title="Mở Động Phủ / Túi Trữ Vật" class="w-9 h-9 rounded-full bg-amber-600 hover:bg-amber-500 text-black flex items-center justify-center text-base shrink-0 transition overflow-hidden"><span id="pf-avatar-inner">👤</span></a>
                     <div class="leading-tight">
                         <div id="pf-name" class="text-xs font-extrabold text-amber-100 whitespace-nowrap"></div>
                         <div id="pf-stats" class="text-[10px] text-amber-300/90 whitespace-nowrap"></div>
@@ -231,7 +232,7 @@
     <!-- FOOTER -->
     <footer class="relative z-20 bg-[#070e17]/95 text-amber-200/70 text-center py-4 text-xs border-t border-amber-900/60">
         <button id="install-app-btn" onclick="installApp()" class="hidden mb-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-extrabold px-4 py-2 rounded-full shadow">📲 CÀI APP TÔNG MÔN VỀ MÁY</button>
-        <p>© 2026 Tông Môn Truyện - Tông Môn Đọc Truyện & Tu Luyện TTS.</p>
+        <p>© 2026 Đại Thiên Tông - Đọc Truyện, Nghe Truyện & Tu Luyện.</p>
     </footer>
 
     <!-- Kích hoạt Service Worker để cho phép Cài đặt App (PWA) -->
@@ -425,6 +426,9 @@
                 if (u.role === 'admin') document.getElementById('pf-admin').classList.remove('hidden');
                 box.classList.remove('hidden');
                 box.classList.add('flex');
+                const av = document.getElementById('pf-avatar-inner');
+                if (av && g.chibi && window.chibiSVG) av.innerHTML = chibiSVG(g.chibi, 34);
+                initChibiRunner(u);
             }).catch(() => {});
         }
 
@@ -472,6 +476,7 @@
                 <div class="flex items-center justify-between p-2.5 bg-[#0f2027]/90 border ${i === 0 ? 'border-amber-400' : 'border-amber-500/40'} rounded-xl">
                     <div class="flex items-center space-x-2">
                         <span class="w-6 h-6 rounded-full ${i < 3 ? 'bg-amber-500 text-black' : 'bg-black/70 text-amber-300 border border-amber-600/50'} flex items-center justify-center font-black text-xs">${medals[i] || (i + 1)}</span>
+                        ${r.chibi && window.chibiSVG ? `<span class="shrink-0">${chibiSVG(r.chibi, 30)}</span>` : ''}
                         <div>
                             <p class="text-xs font-bold text-amber-200">${r.name}</p>
                             <p class="text-[10px] text-amber-400">${board === 'tu_vi' ? 'Cảnh giới' : board === 'diem' ? 'Điểm Cống Hiến' : board === 'dang' ? 'Cống hiến truyện' : 'Cấp Hoạt Động'}</p>
@@ -506,7 +511,65 @@
             }).catch(() => {});
         }
         document.addEventListener('DOMContentLoaded', loadEventBanner);
+
+        // NHÂN VẬT CHIBI CHẠY TRÊN WEB (Đợt 5)
+        let CHIBI_RUN = null;
+        function initChibiRunner(user) {
+            const wrap = document.getElementById('chibi-runner');
+            if (!wrap || !window.chibiSVG || !user) return;
+            if (localStorage.getItem('tm_chibi_hidden') === '1') return;
+            const g = user.game || {};
+            const cfg = g.chibi || window.chibiDefault();
+            const body = document.getElementById('chibi-body');
+            body.innerHTML = chibiSVG(cfg, 62);
+            wrap.style.display = 'block';
+            const bubble = document.getElementById('chibi-bubble');
+            function say(text, ms) {
+                bubble.innerText = text;
+                bubble.classList.remove('hidden');
+                clearTimeout(bubble._h);
+                bubble._h = setTimeout(() => bubble.classList.add('hidden'), ms || 2600);
+            }
+            if (!g.chibi) say('Vào Động Phủ tạo nhân vật chibi của riêng bạn nhé! 🧒', 4500);
+            let x = Math.random() * Math.max(60, window.innerWidth - 180), dir = 1;
+            clearInterval(CHIBI_RUN);
+            CHIBI_RUN = setInterval(() => {
+                x += dir * 1.5;
+                const maxX = window.innerWidth - 84;
+                if (x >= maxX) { x = maxX; dir = -1; }
+                if (x <= 0) { x = 0; dir = 1; }
+                wrap.style.left = x + 'px';
+                const svg = body.querySelector('svg');
+                if (svg) svg.style.transform = `scaleX(${dir})`;
+            }, 16);
+            body.onclick = () => {
+                body.classList.remove('chibi-bob');
+                body.classList.add('chibi-jump');
+                setTimeout(() => { body.classList.remove('chibi-jump'); body.classList.add('chibi-bob'); }, 580);
+                if (g.chibi) say(`Chào đạo hữu! Ta là ${user.author_name} 🧒`, 2200);
+                else say('Vào Động Phủ tạo nhân vật chibi của riêng bạn nhé! 🧒', 2800);
+            };
+            document.getElementById('chibi-hide').onclick = (e) => {
+                e.stopPropagation();
+                localStorage.setItem('tm_chibi_hidden', '1');
+                wrap.style.display = 'none';
+                clearInterval(CHIBI_RUN);
+            };
+        }
     </script>
+    <!-- NHÂN VẬT CHIBI CHẠY TRÊN WEB (Đợt 5): nhân vật của chính người đang đăng nhập -->
+    <style>
+        @keyframes chibiBob { from { transform: translateY(0); } to { transform: translateY(-5px); } }
+        @keyframes chibiJump { 0% { transform: translateY(0); } 35% { transform: translateY(-26px); } 70% { transform: translateY(0); } 100% { transform: translateY(0); } }
+        #chibi-runner .chibi-bob { animation: chibiBob 0.34s ease-in-out infinite alternate; }
+        #chibi-runner .chibi-jump { animation: chibiJump 0.55s ease-out; }
+    </style>
+    <div id="chibi-runner" class="fixed bottom-1 z-40 select-none" style="display:none; left:0;">
+        <div id="chibi-bubble" class="hidden absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/85 text-amber-100 text-[11px] font-bold px-2.5 py-1 rounded-full border border-amber-500/60 shadow-xl"></div>
+        <button id="chibi-hide" title="Ẩn nhân vật" class="absolute -top-1 -right-2 w-5 h-5 rounded-full bg-black/70 text-amber-200 text-[11px] leading-none border border-amber-600/50 cursor-pointer z-10">×</button>
+        <div id="chibi-body" class="chibi-bob cursor-pointer" title="Nhân vật chibi của bạn — bấm vào để chào!"></div>
+    </div>
+
     {% block scripts %}{% endblock %}
 </body>
 </html>

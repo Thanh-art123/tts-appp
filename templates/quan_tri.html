@@ -64,13 +64,14 @@
                         <button onclick="addDiem('${u.username}')" class="bg-slate-700 hover:bg-slate-600 text-amber-100 font-bold px-2.5 py-1 rounded-lg cursor-pointer">Cộng/Trừ điểm</button>
                         <button onclick="addStone('${u.username}')" class="bg-slate-700 hover:bg-slate-600 text-amber-100 font-bold px-2.5 py-1 rounded-lg cursor-pointer">Tặng linh thạch</button>
                         <button onclick="setCap('${u.username}')" class="bg-slate-700 hover:bg-slate-600 text-amber-100 font-bold px-2.5 py-1 rounded-lg cursor-pointer">Đặt dung lượng túi</button>
+                        <button onclick="maxFull('${u.username}')" class="bg-fuchsia-700 hover:bg-fuchsia-600 text-white font-bold px-2.5 py-1 rounded-lg cursor-pointer">🚀 Max Full</button>
+                        <button onclick="resetChibi('${u.username}')" class="bg-slate-700 hover:bg-slate-600 text-amber-100 font-bold px-2.5 py-1 rounded-lg cursor-pointer">↩️ Reset Chibi</button>
                     </p>
                 </div>`).join('');
         }).catch(() => { document.getElementById('users-box').innerHTML = '<p class="text-red-300">Không nạp được danh sách.</p>'; });
     }
 
     function userAction(username, action) {
-        if (action === 'lock' && !confirm(`Khóa tài khoản ${username}? Người này sẽ không đăng nhập được nữa.`)) return;
         post('/api/admin/user-action', {username, action}).then(res => { alert(res.message); loadUsers(); });
     }
 
@@ -96,6 +97,14 @@
         const v = prompt(`Dung lượng túi mới cho ${username} (nhập -1 = không giới hạn):`, '10');
         if (v === null) return;
         post('/api/admin/user-action', {username, action:'set_capacity', value: parseInt(v)}).then(res => { alert(res.message); loadUsers(); });
+    }
+
+    function maxFull(username) {
+        post('/api/admin/user-action', {username, action:'max_full'}).then(res => { alert(res.message); loadUsers(); });
+    }
+
+    function resetChibi(username) {
+        post('/api/admin/user-action', {username, action:'reset_chibi'}).then(res => { alert(res.message); loadUsers(); });
     }
 
     function createUser() {
