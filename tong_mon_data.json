@@ -702,7 +702,20 @@
           "cay": 3
         }
       },
-      "bag": [],
+      "bag": [
+        {
+          "item_id": 1,
+          "title": "Truyen Test Dot 4 - Xoa Duoc",
+          "content": "Chương 1: Phan 1\nNoi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. \n\nChương 2: Phan 2\nNoi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. Noi dung truyen test dot bon. ",
+          "author": "Test Dot Bon Live",
+          "category": "truyen-dich",
+          "element": "Kim",
+          "icon": "📜",
+          "source_book_id": null,
+          "published_book_id": null,
+          "created_at": "27/10/2026 10:58"
+        }
+      ],
       "game": {
         "diem": 120,
         "exp": 0,
@@ -725,9 +738,12 @@
           "pha_canh_dan": 0
         },
         "stats": {
-          "total": {},
+          "total": {
+            "cat_tui": 1
+          },
           "today": {
-            "date": "2026-10-27"
+            "date": "2026-10-27",
+            "cat_tui": 1
           }
         },
         "missions": {
