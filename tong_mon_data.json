@@ -1432,6 +1432,21 @@
         "phap_bao": "quat"
       },
       "text": "1"
+    },
+    {
+      "id": 4,
+      "ts": 1793073494.876521,
+      "time": "27/10/2026 12:58",
+      "username": "mothaiba",
+      "author_name": "một con vịt",
+      "role": "member",
+      "chibi": {
+        "toc": 0,
+        "mau_toc": 2,
+        "ao": 2,
+        "phap_bao": "quat"
+      },
+      "text": "1"
     }
   ]
 }
