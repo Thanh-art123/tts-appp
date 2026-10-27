@@ -19,15 +19,15 @@
         <i class="fa-solid fa-comments text-amber-500"></i>
         <span>💬 Trò Chuyện Đệ Tử</span>
     </h2>
-    <div id="chat-list" class="space-y-3 overflow-y-auto pr-1" style="max-height: 420px;">
+    <div id="chat-list" class="space-y-3 overflow-y-auto p-3 rounded-2xl border border-slate-200 bg-[#f2f7ff]" style="max-height: 420px;">
         <p class="text-sm text-slate-500">Đang tải cuộc trò chuyện...</p>
     </div>
     <div class="flex items-center gap-2 pt-1">
         <input id="chat-input" type="text" maxlength="300" placeholder="Nhắn gì đó với các đệ tử..."
-            class="flex-1 p-3 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm"
+            class="flex-1 px-4 py-3 rounded-full border border-slate-300 bg-white shadow-inner focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none text-sm"
             onkeydown="if(event.key==='Enter'){event.preventDefault();sendChat();}">
-        <button onclick="sendChat()" class="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-extrabold px-5 py-3 rounded-xl shadow transition text-sm whitespace-nowrap">
-            Gửi 💬
+        <button id="chat-send-btn" onclick="sendChat()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold w-12 h-12 rounded-full shadow transition text-base shrink-0 cursor-pointer" title="Gửi tin nhắn">
+            <span id="chat-send-label">➤</span>
         </button>
     </div>
     <p id="chat-hint" class="text-xs text-slate-500"></p>
@@ -80,6 +80,10 @@
 
     // ===== CHAT: vẽ TĂNG DẦN (chỉ thêm tin mới, không vẽ lại cả danh sách) + cache hình chibi
     // Cách cũ mỗi 8 giây vẽ lại toàn bộ 60 tin kèm hình SVG -> thủ phạm làm chat giật/lag.
+    // Giao diện bong bóng hiện đại: tin của mình nằm phải (xanh), của người khác nằm trái (trắng),
+    // hình đại diện thu nhỏ 24px cho gọn mắt. Mỗi người 3 giây mới gửi được tin mới (máy chủ
+    // cũng chặn 3 giây — nút Gửi đếm ngược cho khớp).
+    const MY_USERNAME = (() => { try { return (JSON.parse(localStorage.getItem('tongan_current_user')) || {}).username || ''; } catch (e) { return ''; } })();
     let CHAT_LAST_ID = -1;
     let CHAT_IDS = new Set();
     let CHAT_LOADING = false;
@@ -87,20 +91,52 @@
     function chatAvatar(m) {
         if (m.chibi && window.chibiSVG) {
             const key = JSON.stringify(m.chibi);
-            if (!AV_CACHE[key]) AV_CACHE[key] = chibiSVG(m.chibi);
-            return `<span class="inline-block shrink-0" style="width:34px;height:40px;">${AV_CACHE[key]}</span>`;
+            if (!AV_CACHE[key]) AV_CACHE[key] = chibiSVG(m.chibi, 24);
+            return `<span class="inline-block shrink-0" style="width:24px;">${AV_CACHE[key]}</span>`;
         }
-        return '<span class="inline-block shrink-0 text-2xl" style="width:34px;text-align:center;">👤</span>';
+        return '<span class="inline-block shrink-0 text-lg" style="width:24px;text-align:center;">👤</span>';
     }
     function chatRow(m) {
-        return `
-            <div class="flex items-start gap-2" data-mid="${m.id}">
-                ${chatAvatar(m)}
-                <div class="min-w-0">
-                    <p class="text-xs font-bold ${m.role === 'admin' ? 'text-red-700' : 'text-slate-700'}">${m.role === 'admin' ? '⚡ ' : ''}${esc(m.author_name)} <span class="font-normal text-slate-400">• ${esc((m.time || '').slice(6) || '')}</span></p>
-                    <p class="text-sm text-slate-800 leading-snug break-words">${esc(m.text)}</p>
+        const time = esc((m.time || '').slice(6) || '');
+        if (m.username && m.username === MY_USERNAME) {
+            return `
+            <div class="flex items-end justify-end" data-mid="${m.id}">
+                <div class="max-w-[82%]">
+                    <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl rounded-br-md px-3.5 py-2 shadow-sm">
+                        <p class="text-sm leading-snug break-words">${esc(m.text)}</p>
+                    </div>
+                    <p class="text-[10px] text-slate-400 text-right mt-0.5 mr-1">${time}</p>
                 </div>
             </div>`;
+        }
+        return `
+            <div class="flex items-end gap-1.5" data-mid="${m.id}">
+                ${chatAvatar(m)}
+                <div class="max-w-[82%] min-w-0">
+                    <p class="text-[10px] font-bold ${m.role === 'admin' ? 'text-red-600' : 'text-slate-500'} mb-0.5 ml-1">${m.role === 'admin' ? '⚡ ' : ''}${esc(m.author_name)}</p>
+                    <div class="bg-white border border-slate-200 rounded-2xl rounded-bl-md px-3.5 py-2 shadow-sm">
+                        <p class="text-sm text-slate-800 leading-snug break-words">${esc(m.text)}</p>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-0.5 ml-1">${time}</p>
+                </div>
+            </div>`;
+    }
+    let CHAT_CD_TIMER = null;
+    function startChatCooldown() {
+        const btn = document.getElementById('chat-send-btn');
+        const label = document.getElementById('chat-send-label');
+        let left = 3;
+        const show = () => {
+            if (label) label.innerText = left > 0 ? left + 's' : '➤';
+            if (btn) { btn.disabled = left > 0; btn.classList.toggle('opacity-60', left > 0); btn.classList.toggle('cursor-not-allowed', left > 0); }
+        };
+        show();
+        if (CHAT_CD_TIMER) clearInterval(CHAT_CD_TIMER);
+        CHAT_CD_TIMER = setInterval(() => {
+            left--;
+            show();
+            if (left <= 0) { clearInterval(CHAT_CD_TIMER); CHAT_CD_TIMER = null; }
+        }, 1000);
     }
     function renderChatFull(messages, forceScroll) {
         const box = document.getElementById('chat-list');
@@ -148,6 +184,7 @@
         CHAT_LOADING = false;
     }
     async function sendChat() {
+        if (CHAT_CD_TIMER) return; // đang đếm ngược 3 giây giữa 2 tin
         const inp = document.getElementById('chat-input');
         const hint = document.getElementById('chat-hint');
         const text = (inp.value || '').trim();
@@ -158,10 +195,15 @@
                 body: JSON.stringify({ text })
             });
             const d = await r.json();
-            if (!d.success) { hint.innerText = d.message || 'Gửi không được, thử lại sau.'; return; }
+            if (!d.success) {
+                hint.innerText = d.message || 'Gửi không được, thử lại sau.';
+                if (d.message && d.message.includes('3 giây')) startChatCooldown();
+                return;
+            }
             hint.innerText = '';
             inp.value = '';
             mergeChat(d.messages || [], true);
+            startChatCooldown();
         } catch (e) { hint.innerText = 'Mạng chập chờn — chưa gửi được tin nhắn.'; }
     }
 
