@@ -1972,6 +1972,21 @@
         "phap_bao": "quat"
       },
       "text": "ai đấy"
+    },
+    {
+      "id": 9,
+      "ts": 1793083119.584639,
+      "time": "27/10/2026 15:38",
+      "username": "test_dot13",
+      "author_name": "De Tu Dot 13",
+      "role": "member",
+      "chibi": {
+        "toc": 0,
+        "mau_toc": 0,
+        "ao": 0,
+        "phap_bao": "sach"
+      },
+      "text": "De tu dot 13 chao ca nha"
     }
   ],
   "submissions": [
