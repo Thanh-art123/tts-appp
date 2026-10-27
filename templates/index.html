@@ -183,28 +183,52 @@
         } catch (e) { /* bỏ qua lỗi mạng tạm thời */ }
         CHAT_LOADING = false;
     }
+    let CHAT_SENDING = false;
     async function sendChat() {
-        if (CHAT_CD_TIMER) return; // đang đếm ngược 3 giây giữa 2 tin
+        if (CHAT_CD_TIMER || CHAT_SENDING) return; // đang đếm ngược 3 giây / đang gửi dở
         const inp = document.getElementById('chat-input');
         const hint = document.getElementById('chat-hint');
+        const box = document.getElementById('chat-list');
         const text = (inp.value || '').trim();
         if (!text) return;
+        CHAT_SENDING = true;
+        // HIỆN TIN NGAY khi bấm Gửi (không chờ máy chủ phản hồi) — bấm là thấy, hết "ấn mãi mới chạy"
+        const tmpId = 'tmp' + Date.now();
+        if (box) {
+            if (!box.querySelector('[data-mid]')) box.innerHTML = '';
+            box.insertAdjacentHTML('beforeend', chatRow({ id: tmpId, username: MY_USERNAME, author_name: '', role: 'member', chibi: null, text, time: '' }));
+            const tmpEl = box.querySelector(`[data-mid="${tmpId}"]`);
+            if (tmpEl) {
+                const ps = tmpEl.querySelectorAll('p');
+                if (ps.length) ps[ps.length - 1].innerText = 'Đang gửi…';
+            }
+            box.scrollTop = box.scrollHeight;
+        }
+        inp.value = '';
         try {
             const r = await fetch('/api/chat', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text })
             });
             const d = await r.json();
+            const tmpEl = box ? box.querySelector(`[data-mid="${tmpId}"]`) : null;
+            if (tmpEl) tmpEl.remove();
             if (!d.success) {
+                inp.value = text;
                 hint.innerText = d.message || 'Gửi không được, thử lại sau.';
                 if (d.message && d.message.includes('3 giây')) startChatCooldown();
                 return;
             }
             hint.innerText = '';
-            inp.value = '';
             mergeChat(d.messages || [], true);
             startChatCooldown();
-        } catch (e) { hint.innerText = 'Mạng chập chờn — chưa gửi được tin nhắn.'; }
+        } catch (e) {
+            const tmpEl = box ? box.querySelector(`[data-mid="${tmpId}"]`) : null;
+            if (tmpEl) tmpEl.remove();
+            inp.value = text;
+            hint.innerText = 'Mạng chập chờn — chưa gửi được tin nhắn.';
+        }
+        CHAT_SENDING = false;
     }
 
     loadNews();
