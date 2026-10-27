@@ -4,24 +4,32 @@
 {% block content %}
 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
 <div class="panel-3d rounded-2xl p-6 relative space-y-4">
-    <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
-        <i class="fa-solid fa-newspaper text-amber-500"></i>
-        <span>📣 Thông Báo Tông Môn</span>
-    </h2>
+    <button type="button" onclick="toggleBoard('news')" class="w-full text-left cursor-pointer" title="Bấm để mở / thu gọn bảng báo">
+        <span class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
+            <i class="fa-solid fa-newspaper text-amber-500"></i>
+            <span>📣 Thông Báo Tông Môn</span>
+            <span id="news-chev" class="ml-auto text-base">▾</span>
+        </span>
+    </button>
+    <div id="news-body" class="space-y-4">
     <div class="guide"><button type="button" class="guide-chip">ⓘ Hướng dẫn</button><div class="guide-body"><p class="text-xs text-amber-200/80 leading-relaxed">Mọi tin tức của Tông Môn đều hiện lên bảng này: <strong class="text-amber-300">sự kiện</strong>, <strong class="text-amber-300">cập nhật</strong>, đệ tử <strong class="text-amber-300">cống hiến truyện</strong>, đệ tử <strong class="text-amber-300">thăng cấp</strong> và <strong class="text-amber-300">thông báo của Chưởng Môn Nhân</strong>. Cần nghe truyện hay chuyển chữ thành giọng đọc thì vào <strong class="text-amber-300">Tàng Kinh Các</strong> nhé.</p></div></div>
     <div id="news-list" class="space-y-2 overflow-y-auto pr-1" style="max-height: 486px;">
         <p class="text-sm text-slate-500">Đang tải bảng tin...</p>
+    </div>
     </div>
 </div>
 
 <div class="space-y-6">
 <div class="panel-3d rounded-2xl p-6 relative space-y-4">
-    <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
-        <i class="fa-solid fa-bell text-amber-500"></i>
-        <span>🔔 Thông Báo Cá Nhân</span>
-        <span id="notif-new-count" class="hidden bg-red-600 text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full"></span>
-    </h2>
-    <div id="my-notifs" class="space-y-2 overflow-y-auto pr-1" style="max-height: 300px;">
+    <button type="button" onclick="toggleBoard('notif')" class="w-full text-left cursor-pointer" title="Bấm để mở / thu gọn bảng báo">
+        <span class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
+            <i class="fa-solid fa-bell text-amber-500"></i>
+            <span>🔔 Thông Báo Cá Nhân</span>
+            <span id="notif-new-count" class="hidden bg-red-600 text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full"></span>
+            <span id="notif-chev" class="ml-auto text-base">▸</span>
+        </span>
+    </button>
+    <div id="my-notifs" class="hidden space-y-2 overflow-y-auto pr-1" style="max-height: 300px;">
         <p class="text-sm text-slate-500">Đang tải thông báo...</p>
     </div>
 </div>
@@ -29,7 +37,7 @@
 <div class="panel-3d rounded-2xl p-6 relative space-y-4">
     <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
         <i class="fa-solid fa-comments text-amber-500"></i>
-        <span>💬 Trò Chuyện Đệ Tử</span>
+        <span>💬 Nhóm Chat Tông Môn</span>
     </h2>
     <div id="chat-list" class="space-y-3 overflow-y-auto p-3 rounded-2xl border border-slate-200 bg-[#f2f7ff]" style="max-height: 420px;">
         <p class="text-sm text-slate-500">Đang tải cuộc trò chuyện...</p>
@@ -91,6 +99,35 @@
         } catch (e) { /* giữ nguyên danh sách cũ khi mạng chập chờn */ }
     }
 
+    // ===== 2 THANH THÔNG BÁO BẤM-MỞ (Đợt 17): cả 2 thanh bấm vào mới mở/thu bảng báo ở dưới.
+    // Tông Môn MỞ SẴN khi vào trang; Cá Nhân ẨN — muốn xem phải bấm vào thanh của nó.
+    // Tin cá nhân chỉ tính là ĐÃ ĐỌC khi người dùng bấm mở ra xem (chip đỏ "X mới" trên thanh). =====
+    let NOTIF_UNREAD = 0;
+    let NOTIF_OPEN = false;
+    function toggleBoard(which) {
+        if (which === 'news') {
+            const body = document.getElementById('news-body');
+            const chev = document.getElementById('news-chev');
+            if (!body) return;
+            const open = body.classList.toggle('hidden') === false;
+            if (chev) chev.innerText = open ? '▾' : '▸';
+        } else {
+            const box = document.getElementById('my-notifs');
+            const chev = document.getElementById('notif-chev');
+            if (!box) return;
+            NOTIF_OPEN = box.classList.toggle('hidden') === false;
+            if (chev) chev.innerText = NOTIF_OPEN ? '▾' : '▸';
+            if (NOTIF_OPEN && NOTIF_UNREAD > 0) {
+                NOTIF_UNREAD = 0;
+                const chip = document.getElementById('notif-new-count');
+                if (chip) chip.classList.add('hidden');
+                fetch('/api/notifications/read', { method: 'POST' })
+                    .then(() => { NOTIF_SIG = ''; loadMyNotifs(); })
+                    .catch(() => {});
+            }
+        }
+    }
+
     // ===== THÔNG BÁO CÁ NHÂN (việc của riêng từng đệ tử — trước nằm ở chuông đầu trang) =====
     let NOTIF_SIG = '';
     async function loadMyNotifs() {
@@ -104,6 +141,7 @@
             if (sig === NOTIF_SIG) return;
             NOTIF_SIG = sig;
             const unread = items.filter(n => !n.read).length;
+            NOTIF_UNREAD = unread;
             const chip = document.getElementById('notif-new-count');
             if (chip) {
                 if (unread > 0) { chip.innerText = unread + ' mới'; chip.classList.remove('hidden'); }
@@ -118,7 +156,6 @@
                     <p class="text-sm leading-relaxed text-slate-800">${esc(n.text)}</p>
                     <p class="text-[11px] text-slate-500 mt-0.5">${esc(n.time || '')}${n.read ? '' : ' • <strong class="text-red-600">MỚI</strong>'}</p>
                 </div>`).join('');
-            if (unread > 0) fetch('/api/notifications/read', { method: 'POST' }).catch(() => {});
         } catch (e) { /* giữ nguyên khi mạng chập chờn */ }
     }
 
