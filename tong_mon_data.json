@@ -2349,6 +2349,31 @@
         "phap_bao": "quat"
       },
       "text": "em ăn gì chưa"
+    },
+    {
+      "id": 25,
+      "ts": 1793086373.2245781,
+      "time": "27/10/2026 16:32",
+      "username": "test_dot15",
+      "author_name": "Tiểu Hắc Test",
+      "role": "member",
+      "chibi": null,
+      "text": "Dạ em là AI nên không ăn cơm, chỉ ăn tin nhắn của ông chủ thôi 😄 Tin của ông chủ em nhận được liền nè, không đứng máy chút nào. Bên ông chủ thấy mượt chưa?"
+    },
+    {
+      "id": 26,
+      "ts": 1793086373.8693576,
+      "time": "27/10/2026 16:32",
+      "username": "mothaiba",
+      "author_name": "một con vịt",
+      "role": "member",
+      "chibi": {
+        "toc": 0,
+        "mau_toc": 2,
+        "ao": 2,
+        "phap_bao": "quat"
+      },
+      "text": "không thấy phản hồ"
     }
   ],
   "submissions": [
