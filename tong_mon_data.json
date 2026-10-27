@@ -2362,7 +2362,7 @@
       "role": "member",
       "author_name": "De Tu Dot 20",
       "tu_luyen": {
-        "diem_tich_tuyem": 120,
+        "diem_tich_tuyem": 140,
         "cap_hien_tai": 1,
         "tieu_canh": 0,
         "vat_pham": {
@@ -2373,9 +2373,9 @@
       },
       "bag": [],
       "game": {
-        "diem": 120,
+        "diem": 140,
         "vi_yen": 0,
-        "exp": 0,
+        "exp": 50,
         "tu_vi": {
           "muc": 1,
           "cap": -1,
@@ -2383,7 +2383,7 @@
         },
         "linh_khi": 0,
         "linh_thach": {
-          "nguyen": 0,
+          "nguyen": 50,
           "vien": 0,
           "vi": 0,
           "vinh": 0
@@ -2395,9 +2395,12 @@
           "pha_canh_dan": 0
         },
         "stats": {
-          "total": {},
+          "total": {
+            "dang_truyen": 1
+          },
           "today": {
-            "date": "2026-10-27"
+            "date": "2026-10-27",
+            "dang_truyen": 1
           }
         },
         "missions": {
@@ -2410,9 +2413,19 @@
             "time": "27/10/2026 17:24",
             "text": "📝 Bản thảo truyện «Truyen Kiem Chung Dot 20» đã gửi Tông Chủ duyệt. Được duyệt, truyện sẽ lên Tàng Kinh Các và đạo hữu nhận +20 Điểm Cống Hiến (5 điểm × 4 chương) + 50 Nguyên Tinh.",
             "read": false
+          },
+          {
+            "time": "27/10/2026 17:25",
+            "text": "✅ Bản thảo truyện «Truyen Kiem Chung Dot 20» ĐÃ ĐƯỢC Tông Chủ DUYỆT — truyện đã lên Tàng Kinh Các! Thưởng: +20 Điểm Cống Hiến (5 điểm × 4 chương) + 50 Nguyên Tinh.",
+            "read": false
           }
         ],
-        "history": [],
+        "history": [
+          {
+            "time": "27/10/2026 17:25",
+            "text": "Đăng truyện [Truyen Kiem Chung Dot 20] lên Tàng Kinh Các (4 chương x 5 điểm) (+20 Điểm Cống Hiến)"
+          }
+        ],
         "streak": {
           "last": "",
           "count": 0
@@ -2469,6 +2482,16 @@
       "icon": "📜",
       "title": "Truyen Kiem Chung Dot 8",
       "content": "Chuong 1: Mo dau cau chuyen kiem chung. Chuong 2: Dien bien tiep theo cua truyen."
+    },
+    {
+      "id": 4,
+      "category": "truyen-dich",
+      "element": "Kim",
+      "author": "De Tu Dot 20",
+      "username": "test_dot20",
+      "icon": "📜",
+      "title": "Truyen Kiem Chung Dot 20",
+      "content": "Chương 1: Hồi thứ 1\nNội dung chương 1 của truyện kiểm chứng đợt 20. Đệ tử đọc đến đây thì gật gù khen hay, linh khí trong người cũng rục rịch muốn đột phá.\n\nChương 2: Hồi thứ 2\nNội dung chương 2 của truyện kiểm chứng đợt 20. Đệ tử đọc đến đây thì gật gù khen hay, linh khí trong người cũng rục rịch muốn đột phá.\n\nChương 3: Hồi thứ 3\nNội dung chương 3 của truyện kiểm chứng đợt 20. Đệ tử đọc đến đây thì gật gù khen hay, linh khí trong người cũng rục rịch muốn đột phá.\n\nChương 4: Hồi thứ 4\nNội dung chương 4 của truyện kiểm chứng đợt 20. Đệ tử đọc đến đây thì gật gù khen hay, linh khí trong người cũng rục rịch muốn đột phá."
     }
   ],
   "market": {
@@ -2580,6 +2603,13 @@
       "time": "27/10/2026 16:51",
       "loai": "thong_bao",
       "text": "📣 THÔNG BÁO TỪ CHƯỞNG MÔN NHÂN: Đợt 17: thanh Thông Báo Cá Nhân nay để ẩn — bấm vào mới xem được; mục trò chuyện đổi tên thành Nhóm Chat Tông Môn."
+    },
+    {
+      "id": 6,
+      "ts": 1793089524.8844516,
+      "time": "27/10/2026 17:25",
+      "loai": "truyen",
+      "text": "📚 De Tu Dot 20 vừa cống hiến truyện mới «Truyen Kiem Chung Dot 20» lên Tàng Kinh Các!"
     }
   ],
   "chat": [
@@ -3044,7 +3074,7 @@
       "source": "upload",
       "bag_item_id": null,
       "phi_nguyen": 0,
-      "status": "pending",
+      "status": "approved",
       "reject_reason": ""
     }
   ],
