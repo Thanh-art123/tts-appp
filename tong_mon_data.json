@@ -3243,7 +3243,7 @@
       },
       "bag": [],
       "game": {
-        "diem": 90,
+        "diem": 30,
         "vi_yen": 0,
         "exp": 0,
         "tu_vi": {
@@ -3288,6 +3288,10 @@
           {
             "time": "27/10/2026 20:56",
             "text": "Mua 1 Quặng Luyện Khí phẩm Trắng (-10 Điểm Cống Hiến)"
+          },
+          {
+            "time": "27/10/2026 20:56",
+            "text": "Mua 1 Linh Dược Luyện Đan phẩm Lục (-60 Điểm Cống Hiến)"
           }
         ],
         "streak": {
@@ -3325,7 +3329,7 @@
             },
             "duoc": {
               "0": 0,
-              "1": 0,
+              "1": 1,
               "2": 0,
               "3": 0
             },
