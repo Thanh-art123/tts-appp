@@ -885,23 +885,33 @@
       },
       "bag": [],
       "game": {
-        "diem": 120,
-        "exp": 0,
+        "diem": 999999999,
+        "exp": 1000000,
         "tu_vi": {
-          "muc": 1,
-          "cap": -1,
+          "muc": 12,
+          "cap": 3,
           "break_missions": 0
         },
-        "linh_khi": 0,
+        "linh_khi": 999999999,
         "linh_thach": {
-          "nguyen": 0,
-          "vien": 0,
-          "vi": 0,
-          "vinh": 0
+          "nguyen": 99999,
+          "vien": 99999,
+          "vi": 99999,
+          "vinh": 99999
         },
-        "capacity": 10,
+        "capacity": -1,
         "inventory": {
-          "treasures": [],
+          "treasures": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
           "herbs": {},
           "pha_canh_dan": 0
         },
@@ -916,8 +926,23 @@
           "claimed_today": [],
           "newbie_done": []
         },
-        "notifications": [],
-        "history": [],
+        "notifications": [
+          {
+            "time": "27/10/2026 11:27",
+            "text": "🚀 Tài khoản của đạo hữu đã được nâng FULL: Điểm Cống Hiến, Linh Thạch, Tu Vi Đại Chúa Tể, đủ 9 bảo vật và Linh Sủng cấp tối đa!",
+            "read": false
+          }
+        ],
+        "history": [
+          {
+            "time": "27/10/2026 11:27",
+            "text": "Nâng cấp FULL tài khoản chủ (+999999879 Điểm Cống Hiến)"
+          },
+          {
+            "time": "27/10/2026 11:27",
+            "text": "Tài khoản chủ được nâng FULL: Điểm Cống Hiến / Linh Thạch / Tu Vi / Bảo Vật / Linh Sủng tối đa"
+          }
+        ],
         "streak": {
           "last": "",
           "count": 0
@@ -934,7 +959,10 @@
             "linh_ngu": 0
           },
           "phap_khi": [],
-          "thu": null,
+          "thu": {
+            "ten": "Hắc Kỳ Lân Con",
+            "exp": 999
+          },
           "vuon": [
             null,
             null,
