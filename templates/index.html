@@ -2,18 +2,19 @@
 {% block title %}Bảng Tin Tông Môn - Đại Thiên Tông{% endblock %}
 
 {% block content %}
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
 <div class="panel-3d rounded-2xl p-6 relative space-y-4">
     <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
         <i class="fa-solid fa-newspaper text-amber-500"></i>
         <span>📰 Bảng Tin Tông Môn</span>
     </h2>
     <div class="guide"><button type="button" class="guide-chip">ⓘ Hướng dẫn</button><div class="guide-body"><p class="text-xs text-amber-200/80 leading-relaxed">Mọi tin tức của Tông Môn đều hiện lên bảng này: <strong class="text-amber-300">sự kiện</strong>, <strong class="text-amber-300">cập nhật</strong>, đệ tử <strong class="text-amber-300">cống hiến truyện</strong>, đệ tử <strong class="text-amber-300">thăng cấp</strong> và <strong class="text-amber-300">thông báo của Chưởng Môn Nhân</strong>. Cần nghe truyện hay chuyển chữ thành giọng đọc thì vào <strong class="text-amber-300">Tàng Kinh Các</strong> nhé.</p></div></div>
-    <div id="news-list" class="space-y-2">
+    <div id="news-list" class="space-y-2 overflow-y-auto pr-1" style="max-height: 486px;">
         <p class="text-sm text-slate-500">Đang tải bảng tin...</p>
     </div>
 </div>
 
-<div class="panel-3d rounded-2xl p-6 relative space-y-4 mt-6">
+<div class="panel-3d rounded-2xl p-6 relative space-y-4">
     <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
         <i class="fa-solid fa-comments text-amber-500"></i>
         <span>💬 Trò Chuyện Đệ Tử</span>
@@ -30,6 +31,7 @@
         </button>
     </div>
     <p id="chat-hint" class="text-xs text-slate-500"></p>
+</div>
 </div>
 {% endblock %}
 
@@ -55,6 +57,7 @@
         he_thong: 'border-sky-400 bg-sky-50',
         nap_tien: 'border-teal-400 bg-teal-50'
     };
+    let NEWS_SIG = '';
     async function loadNews() {
         const box = document.getElementById('news-list');
         if (!box) return;
@@ -62,6 +65,10 @@
             const r = await fetch('/api/news');
             const d = await r.json();
             const items = d.news || [];
+            // Chỉ vẽ lại khi bảng tin thật sự thay đổi — tránh giật trang mỗi 30 giây
+            const sig = items.length + ':' + (items.length ? (items[0].ts || items[0].text) : '');
+            if (sig === NEWS_SIG) return;
+            NEWS_SIG = sig;
             if (!items.length) { box.innerHTML = '<p class="text-sm text-slate-500">Chưa có tin nào trên bảng.</p>'; return; }
             box.innerHTML = items.map(n => `
                 <div class="border-l-4 rounded-lg px-3 py-2 ${NEWS_STYLE[n.loai] || NEWS_STYLE.he_thong}">
@@ -71,41 +78,74 @@
         } catch (e) { /* giữ nguyên danh sách cũ khi mạng chập chờn */ }
     }
 
+    // ===== CHAT: vẽ TĂNG DẦN (chỉ thêm tin mới, không vẽ lại cả danh sách) + cache hình chibi
+    // Cách cũ mỗi 8 giây vẽ lại toàn bộ 60 tin kèm hình SVG -> thủ phạm làm chat giật/lag.
     let CHAT_LAST_ID = -1;
+    let CHAT_IDS = new Set();
+    let CHAT_LOADING = false;
+    const AV_CACHE = {};
     function chatAvatar(m) {
         if (m.chibi && window.chibiSVG) {
-            return `<span class="inline-block shrink-0" style="width:34px;height:40px;">${chibiSVG(m.chibi)}</span>`;
+            const key = JSON.stringify(m.chibi);
+            if (!AV_CACHE[key]) AV_CACHE[key] = chibiSVG(m.chibi);
+            return `<span class="inline-block shrink-0" style="width:34px;height:40px;">${AV_CACHE[key]}</span>`;
         }
         return '<span class="inline-block shrink-0 text-2xl" style="width:34px;text-align:center;">👤</span>';
     }
-    function renderChat(messages, forceScroll) {
-        const box = document.getElementById('chat-list');
-        if (!box) return;
-        const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 120;
-        if (!messages.length) {
-            box.innerHTML = '<p class="text-sm text-slate-500">Chưa có đệ tử nào lên tiếng — hãy là người đầu tiên! 👋</p>';
-            CHAT_LAST_ID = 0;
-            return;
-        }
-        box.innerHTML = messages.map(m => `
-            <div class="flex items-start gap-2">
+    function chatRow(m) {
+        return `
+            <div class="flex items-start gap-2" data-mid="${m.id}">
                 ${chatAvatar(m)}
                 <div class="min-w-0">
                     <p class="text-xs font-bold ${m.role === 'admin' ? 'text-red-700' : 'text-slate-700'}">${m.role === 'admin' ? '⚡ ' : ''}${esc(m.author_name)} <span class="font-normal text-slate-400">• ${esc((m.time || '').slice(6) || '')}</span></p>
                     <p class="text-sm text-slate-800 leading-snug break-words">${esc(m.text)}</p>
                 </div>
-            </div>`).join('');
+            </div>`;
+    }
+    function renderChatFull(messages, forceScroll) {
+        const box = document.getElementById('chat-list');
+        if (!box) return;
+        if (!messages.length) {
+            box.innerHTML = '<p class="text-sm text-slate-500">Chưa có đệ tử nào lên tiếng — hãy là người đầu tiên! 👋</p>';
+            CHAT_LAST_ID = 0; CHAT_IDS = new Set();
+            return;
+        }
+        box.innerHTML = messages.map(chatRow).join('');
+        CHAT_IDS = new Set(messages.map(m => m.id));
         CHAT_LAST_ID = messages[messages.length - 1].id || 0;
+        if (forceScroll) box.scrollTop = box.scrollHeight;
+    }
+    function mergeChat(messages, forceScroll) {
+        const box = document.getElementById('chat-list');
+        if (!box) return;
+        if (!messages.length) { renderChatFull(messages, forceScroll); return; }
+        const lastId = messages[messages.length - 1].id || 0;
+        // Lần đầu, hoặc lịch sử đã xoay vòng (tin đầu không còn khớp) -> vẽ lại toàn bộ 1 lần
+        if (CHAT_LAST_ID === -1 || !CHAT_IDS.has(messages[0].id)) { renderChatFull(messages, forceScroll); return; }
+        const fresh = messages.filter(m => !CHAT_IDS.has(m.id));
+        CHAT_LAST_ID = lastId;
+        if (!fresh.length) return;
+        const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 120;
+        box.insertAdjacentHTML('beforeend', fresh.map(chatRow).join(''));
+        fresh.forEach(m => CHAT_IDS.add(m.id));
+        while (box.children.length > 60) {
+            const first = box.firstElementChild;
+            if (first && first.dataset && first.dataset.mid) CHAT_IDS.delete(+first.dataset.mid);
+            first.remove();
+        }
         if (forceScroll || nearBottom) box.scrollTop = box.scrollHeight;
     }
     async function loadChat(forceScroll) {
+        if (CHAT_LOADING) return;
+        CHAT_LOADING = true;
         try {
             const r = await fetch('/api/chat');
             const d = await r.json();
             const msgs = d.messages || [];
             const lastId = msgs.length ? (msgs[msgs.length - 1].id || 0) : 0;
-            if (forceScroll || lastId !== CHAT_LAST_ID) renderChat(msgs, forceScroll);
+            if (forceScroll || lastId !== CHAT_LAST_ID) mergeChat(msgs, forceScroll);
         } catch (e) { /* bỏ qua lỗi mạng tạm thời */ }
+        CHAT_LOADING = false;
     }
     async function sendChat() {
         const inp = document.getElementById('chat-input');
@@ -121,7 +161,7 @@
             if (!d.success) { hint.innerText = d.message || 'Gửi không được, thử lại sau.'; return; }
             hint.innerText = '';
             inp.value = '';
-            renderChat(d.messages || [], true);
+            mergeChat(d.messages || [], true);
         } catch (e) { hint.innerText = 'Mạng chập chờn — chưa gửi được tin nhắn.'; }
     }
 
