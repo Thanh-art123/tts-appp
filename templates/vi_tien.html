@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Ví Nạp Tiền - Đại Thiên Tông{% endblock %}
+
+{% block content %}
+<div class="panel-3d rounded-2xl p-6 relative space-y-4">
+    <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
+        <i class="fa-solid fa-wallet text-amber-500"></i>
+        <span>💳 Ví Tiền Của Ta</span>
+    </h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="rounded-xl border border-emerald-500/50 bg-emerald-950/40 p-4 text-center">
+            <p class="text-xs font-bold text-emerald-300">SỐ DƯ VÍ (YÊN)</p>
+            <p id="vi-yen" class="text-3xl font-extrabold text-emerald-300 mt-1">—</p>
+        </div>
+        <div class="rounded-xl border border-amber-500/50 bg-amber-950/40 p-4 text-center">
+            <p class="text-xs font-bold text-amber-300">ĐIỂM CỐNG HIẾN</p>
+            <p id="vi-diem" class="text-3xl font-extrabold text-amber-300 mt-1">—</p>
+        </div>
+    </div>
+    <div class="guide"><button type="button" class="guide-chip">ⓘ Hướng dẫn</button><div class="guide-body"><p class="text-xs text-amber-200/80 leading-relaxed">Tỷ giá: <strong class="text-amber-300">100¥ = 1.000 Điểm Cống Hiến</strong> (1¥ = 10 điểm). Nạp tiền vào Ví trước, khi nào cần thì đổi sang Điểm Cống Hiến ở mục bên dưới. Tiền trong Ví không bị trừ hao, đổi bao nhiêu tùy ý (mỗi lần đổi tối thiểu 100¥).</p></div></div>
+</div>
+
+<div class="panel-3d rounded-2xl p-6 relative space-y-4 mt-6">
+    <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
+        <i class="fa-solid fa-circle-plus text-amber-500"></i>
+        <span>💴 Nạp Tiền Vào Ví</span>
+    </h2>
+    <div>
+        <label class="block text-xs font-bold text-amber-300 mb-2">Chọn nhanh số yên muốn nạp:</label>
+        <div class="flex flex-wrap gap-2" id="quick-amounts">
+            <button type="button" onclick="setNap(100)" class="nap-quick bg-black/60 border border-amber-600/50 text-amber-200 font-extrabold px-4 py-2 rounded-lg text-sm cursor-pointer">100¥</button>
+            <button type="button" onclick="setNap(500)" class="nap-quick bg-black/60 border border-amber-600/50 text-amber-200 font-extrabold px-4 py-2 rounded-lg text-sm cursor-pointer">500¥</button>
+            <button type="button" onclick="setNap(1000)" class="nap-quick bg-black/60 border border-amber-600/50 text-amber-200 font-extrabold px-4 py-2 rounded-lg text-sm cursor-pointer">1.000¥</button>
+            <button type="button" onclick="setNap(5000)" class="nap-quick bg-black/60 border border-amber-600/50 text-amber-200 font-extrabold px-4 py-2 rounded-lg text-sm cursor-pointer">5.000¥</button>
+            <button type="button" onclick="setNap(10000)" class="nap-quick bg-black/60 border border-amber-600/50 text-amber-200 font-extrabold px-4 py-2 rounded-lg text-sm cursor-pointer">10.000¥</button>
+            <button type="button" onclick="setNap(30000)" class="nap-quick bg-black/60 border border-amber-600/50 text-amber-200 font-extrabold px-4 py-2 rounded-lg text-sm cursor-pointer">30.000¥</button>
+        </div>
+    </div>
+    <div class="flex flex-wrap items-end gap-3">
+        <div class="flex-1 min-w-[180px]">
+            <label class="block text-xs font-bold text-amber-300 mb-1">Hoặc nhập số yên (bội số của 100¥):</label>
+            <input id="nap-yen" type="number" min="100" step="100" value="1000" class="w-full p-3 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm font-bold">
+        </div>
+        <button onclick="taoLenhNap()" class="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-extrabold px-5 py-3 rounded-xl shadow transition text-sm">💳 Tạo Lệnh Nạp</button>
+    </div>
+    <p class="text-xs text-amber-200/90">Số điểm sẽ nhận khi đổi hết: <strong id="nap-preview" class="text-amber-300">10.000 điểm</strong></p>
+    <div id="nap-guide-box" class="hidden rounded-xl border border-sky-500/50 bg-sky-950/40 p-4 space-y-2">
+        <p class="text-sm font-extrabold text-sky-300">📌 Cách chuyển khoản cho lệnh nạp <span id="nap-code-label"></span>:</p>
+        <div id="bank-info" class="text-sm text-sky-100 whitespace-pre-line"></div>
+        <p class="text-sm text-sky-100">⚠️ Nội dung chuyển khoản ghi đúng mã: <strong id="nap-code-strong" class="text-amber-300"></strong> — chuyển xong quay lại danh sách lệnh bên dưới bấm <strong>«Đã Chuyển Khoản»</strong>. Tông Chủ đối chiếu & duyệt xong, tiền sẽ vào Ví.</p>
+    </div>
+    <div>
+        <h3 class="text-sm font-extrabold text-amber-300 mb-2">🧾 Lệnh Nạp Của Ta</h3>
+        <div id="topup-list" class="space-y-2 text-sm">
+            <p class="text-slate-500 text-xs">Đang tải...</p>
+        </div>
+    </div>
+</div>
+
+<div class="panel-3d rounded-2xl p-6 relative space-y-4 mt-6">
+    <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
+        <i class="fa-solid fa-right-left text-amber-500"></i>
+        <span>🔄 Đổi Yên Sang Điểm Cống Hiến</span>
+    </h2>
+    <div class="flex flex-wrap items-end gap-3">
+        <div class="flex-1 min-w-[180px]">
+            <label class="block text-xs font-bold text-amber-300 mb-1">Số yên muốn đổi (tối thiểu 100¥):</label>
+            <input id="doi-yen" type="number" min="100" step="100" value="100" oninput="doiPreview()" class="w-full p-3 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm font-bold">
+        </div>
+        <button onclick="doiDiem()" class="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold px-5 py-3 rounded-xl shadow transition text-sm">🔄 Đổi Ngay</button>
+    </div>
+    <p class="text-xs text-amber-200/90">Sẽ nhận: <strong id="doi-preview" class="text-amber-300">1.000 Điểm Cống Hiến</strong></p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // ===== ĐỢT 9: VÍ TIỀN YÊN & NẠP TIỀN =====
+    let W = { vi_yen: 0, diem: 0, rate: 10, bank_info: '' };
+    function escW(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function fmtYen(n) { return Number(n || 0).toLocaleString('vi-VN') + '¥'; }
+    function setNap(v) {
+        document.getElementById('nap-yen').value = v;
+        napPreview();
+    }
+    function napPreview() {
+        const yen = parseInt(document.getElementById('nap-yen').value) || 0;
+        document.getElementById('nap-preview').innerText = (yen * W.rate).toLocaleString('vi-VN') + ' điểm';
+    }
+    function doiPreview() {
+        const yen = parseInt(document.getElementById('doi-yen').value) || 0;
+        document.getElementById('doi-preview').innerText = (yen * W.rate).toLocaleString('vi-VN') + ' Điểm Cống Hiến';
+    }
+    const TOPUP_STATUS = {
+        cho_chuyen: '<span class="font-extrabold text-amber-600">⏳ Chờ chuyển khoản</span>',
+        da_chuyen: '<span class="font-extrabold text-sky-600">📨 Đã chuyển — chờ Tông Chủ duyệt</span>',
+        approved: '<span class="font-extrabold text-emerald-600">✅ Đã duyệt — tiền đã vào Ví</span>',
+        rejected: '<span class="font-extrabold text-red-600">❌ Bị từ chối</span>'
+    };
+    async function loadWallet() {
+        try {
+            const r = await fetch('/api/wallet');
+            const d = await r.json();
+            if (!d.success) return;
+            W = d;
+            document.getElementById('vi-yen').innerText = fmtYen(d.vi_yen);
+            document.getElementById('vi-diem').innerText = Number(d.diem || 0).toLocaleString('vi-VN');
+            napPreview(); doiPreview();
+            const box = document.getElementById('topup-list');
+            const tops = d.topups || [];
+            if (!tops.length) { box.innerHTML = '<p class="text-slate-500 text-xs">Chưa có lệnh nạp nào.</p>'; return; }
+            box.innerHTML = tops.map(t => `
+                <div class="rounded-lg border border-amber-600/30 bg-black/20 px-3 py-2 flex flex-wrap items-center gap-2 justify-between">
+                    <span class="text-amber-200"><strong>${fmtYen(t.yen)}</strong> • Mã <strong class="text-amber-300">${escW(t.code)}</strong> • ${escW(t.time || '')}</span>
+                    <span>${TOPUP_STATUS[t.status] || escW(t.status)}${t.status === 'rejected' && t.reject_reason ? ` — ${escW(t.reject_reason)}` : ''}</span>
+                    ${t.status === 'cho_chuyen' ? `<button onclick="daChuyen(${t.id})" class="bg-sky-600 hover:bg-sky-500 text-white font-extrabold px-3 py-1.5 rounded-lg text-xs cursor-pointer">📨 Đã Chuyển Khoản</button>` : ''}
+                </div>`).join('');
+        } catch (e) { /* bỏ qua lỗi mạng tạm thời */ }
+    }
+    async function taoLenhNap() {
+        const yen = parseInt(document.getElementById('nap-yen').value) || 0;
+        const r = await fetch('/api/wallet/topup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ yen }) });
+        const d = await r.json();
+        alert(d.message || 'Xong!');
+        if (d.success) {
+            document.getElementById('nap-guide-box').classList.remove('hidden');
+            document.getElementById('nap-code-label').innerText = d.code;
+            document.getElementById('nap-code-strong').innerText = d.code;
+            document.getElementById('bank-info').innerText = W.bank_info || '(Tông Chủ chưa cài thông tin nhận tiền — hãy nhắn Tông Chủ để được hướng dẫn chuyển khoản.)';
+            loadWallet();
+        }
+    }
+    async function daChuyen(id) {
+        const r = await fetch('/api/wallet/topup-done', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+        const d = await r.json();
+        alert(d.message || 'Xong!');
+        if (d.success) loadWallet();
+    }
+    async function doiDiem() {
+        const yen = parseInt(document.getElementById('doi-yen').value) || 0;
+        const r = await fetch('/api/wallet/doi-diem', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ yen }) });
+        const d = await r.json();
+        alert(d.message || 'Xong!');
+        if (d.success) loadWallet();
+    }
+    document.getElementById('nap-yen').addEventListener('input', napPreview);
+    loadWallet();
+</script>
+{% endblock %}
