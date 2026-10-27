@@ -127,6 +127,11 @@
             "time": "27/10/2026 10:59",
             "text": "🏆 Đại Hội Đấu Giá ĐÃ BẮT ĐẦU! Phí sàn Chợ Đấu Giá giảm còn 2%, rao bán tối đa 10 tin, mở tối đa 6 phiên đấu giá, và Tông Môn mở 3 lô đấu giá đặc biệt. (Thời gian: 3 ngày ).",
             "read": false
+          },
+          {
+            "time": "27/10/2026 14:44",
+            "text": "📝 Có bản thảo truyện mới chờ duyệt: «Truyen Kiem Chung Dot 8» của De Tu Dot 10.",
+            "read": false
           }
         ],
         "history": [
@@ -938,6 +943,11 @@
             "time": "27/10/2026 11:27",
             "text": "🚀 Tài khoản của đạo hữu đã được nâng FULL: Điểm Cống Hiến, Linh Thạch, Tu Vi Đại Chúa Tể, đủ 9 bảo vật và Linh Sủng cấp tối đa!",
             "read": false
+          },
+          {
+            "time": "27/10/2026 14:44",
+            "text": "📝 Có bản thảo truyện mới chờ duyệt: «Truyen Kiem Chung Dot 8» của De Tu Dot 10.",
+            "read": false
           }
         ],
         "history": [
@@ -1440,7 +1450,13 @@
           "claimed_today": [],
           "newbie_done": []
         },
-        "notifications": [],
+        "notifications": [
+          {
+            "time": "27/10/2026 14:44",
+            "text": "📝 Bản thảo truyện «Truyen Kiem Chung Dot 8» đã gửi Tông Chủ duyệt. Được duyệt, truyện sẽ lên Tàng Kinh Các và đạo hữu nhận +50 Điểm Cống Hiến.",
+            "read": false
+          }
+        ],
         "history": [],
         "streak": {
           "last": "",
@@ -1660,7 +1676,24 @@
       "text": "De tu dot 7 chao ca nha"
     }
   ],
-  "submissions": [],
+  "submissions": [
+    {
+      "id": 1,
+      "ts": 1793079870.4118643,
+      "time": "27/10/2026 14:44",
+      "username": "test_dot10",
+      "author_name": "De Tu Dot 10",
+      "title": "Truyen Kiem Chung Dot 8",
+      "content": "Chuong 1: Mo dau cau chuyen kiem chung. Chuong 2: Dien bien tiep theo cua truyen.",
+      "category": "truyen-dich",
+      "element": "Kim",
+      "source": "upload",
+      "bag_item_id": null,
+      "phi_nguyen": 0,
+      "status": "pending",
+      "reject_reason": ""
+    }
+  ],
   "topups": [],
   "payouts": [],
   "settings": {
