@@ -147,6 +147,11 @@
             "time": "27/10/2026 14:53",
             "text": "💳 Lệnh nạp tiền mới: 1.000¥ của một con vịt (mã NAP2) — chờ đệ tử chuyển khoản & Tông Chủ duyệt.",
             "read": false
+          },
+          {
+            "time": "27/10/2026 14:54",
+            "text": "💳 một con vịt báo ĐÃ CHUYỂN KHOẢN lệnh nạp 1.000¥ (mã NAP2) — chờ Tông Chủ đối chiếu & duyệt.",
+            "read": false
           }
         ],
         "history": [
@@ -977,6 +982,11 @@
           {
             "time": "27/10/2026 14:53",
             "text": "💳 Lệnh nạp tiền mới: 1.000¥ của một con vịt (mã NAP2) — chờ đệ tử chuyển khoản & Tông Chủ duyệt.",
+            "read": false
+          },
+          {
+            "time": "27/10/2026 14:54",
+            "text": "💳 một con vịt báo ĐÃ CHUYỂN KHOẢN lệnh nạp 1.000¥ (mã NAP2) — chờ Tông Chủ đối chiếu & duyệt.",
             "read": false
           }
         ],
@@ -1835,7 +1845,7 @@
       "author_name": "một con vịt",
       "yen": 1000,
       "code": "NAP2",
-      "status": "cho_chuyen",
+      "status": "da_chuyen",
       "reject_reason": ""
     }
   ],
