@@ -27,6 +27,12 @@
     </div>
 
     <div class="panel-3d rounded-2xl p-5 space-y-3">
+        <h3 class="text-sm font-extrabold text-amber-300 uppercase tracking-wider">📣 Đăng Thông Báo Lên Bảng Tin (Đợt 7)</h3>
+        <textarea id="admin-news-text" rows="2" maxlength="500" placeholder="Nội dung thông báo của Chưởng Môn Nhân — sẽ hiện trên Bảng Tin trang chủ và gửi chuông cho toàn bộ đệ tử..." class="w-full p-3 rounded-xl border border-amber-600/50 text-sm"></textarea>
+        <button onclick="postAdminNews()" class="bg-red-700 hover:bg-red-600 text-white font-extrabold px-4 py-2 rounded-lg text-xs cursor-pointer">📣 Đăng Thông Báo</button>
+    </div>
+
+    <div class="panel-3d rounded-2xl p-5 space-y-3">
         <h3 class="text-sm font-extrabold text-amber-300 uppercase tracking-wider">👥 Danh Sách Tài Khoản</h3>
         <div id="users-box" class="space-y-2 text-xs">
             <p class="text-amber-300/50">Đang nạp danh sách...</p>
@@ -141,6 +147,14 @@
         }).catch(() => { document.getElementById('events-box').innerHTML = '<p class="text-red-300">Không nạp được sự kiện.</p>'; });
     }
 
+    async function postAdminNews() {
+        const ta = document.getElementById('admin-news-text');
+        const text = (ta.value || '').trim();
+        if (!text) { alert('Hãy nhập nội dung thông báo trước!'); return; }
+        const d = await post('/api/admin/news', { text });
+        alert(d.message || 'Xong!');
+        if (d.success) ta.value = '';
+    }
     function eventAction(key, action) {
         if (action === 'bat' && !confirm('Bật sự kiện này? Toàn bộ đệ tử sẽ nhận thông báo.')) return;
         post('/api/admin/event', {key, action}).then(res => { alert(res.message); loadEventsAdmin(); });
