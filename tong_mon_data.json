@@ -1339,6 +1339,11 @@
             "time": "27/10/2026 21:07",
             "text": "🧰 Đạo hữu đã được cấp FULL vật tư hành nghề (999 mỗi loại mỗi phẩm, Nước 999, có Bao Tay Bắt Sâu) — vào Nghề Phụ Trợ test thoải mái!",
             "read": false
+          },
+          {
+            "time": "27/10/2026 21:53",
+            "text": "🧒 Nhân vật chibi đã gắn vĩnh viễn với danh xưng của đạo hữu. Chúc đạo hữu tu luyện vui vẻ tại Đại Thiên Tông!",
+            "read": false
           }
         ],
         "history": [
@@ -1487,7 +1492,12 @@
           }
         },
         "locked": false,
-        "chibi": null,
+        "chibi": {
+          "toc": 0,
+          "mau_toc": 0,
+          "ao": 7,
+          "phap_bao": "truong"
+        },
         "vi_yen": 0
       }
     },
