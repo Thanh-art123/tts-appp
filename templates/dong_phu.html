@@ -125,17 +125,21 @@
     <input type="hidden" name="content" id="form-content">
 </form>
 
-<!-- Modal Đăng Lên Tàng Kinh Các -->
+<!-- Modal CHUYỂN từ Túi Trữ Vật lên Tàng Kinh Các (phí: 1 chương = 1 Nguyên Tinh) -->
 <div id="publish-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
     <div class="panel-3d rounded-2xl max-w-md w-full mx-4 p-6 relative border border-amber-500/80 shadow-2xl space-y-4">
         <button onclick="closePublishModal()" class="absolute top-4 right-4 text-amber-400 hover:text-white text-lg cursor-pointer">
             <i class="fa-solid fa-xmark"></i>
         </button>
         <h3 class="text-base font-extrabold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
-            <i class="fa-solid fa-cloud-arrow-up text-amber-500"></i>
-            <span>Đăng Lên Tàng Kinh Các</span>
+            <i class="fa-solid fa-right-left text-amber-500"></i>
+            <span>Chuyển Lên Tàng Kinh Các</span>
         </h3>
         <p class="text-xs text-amber-200/80">Truyện: <b id="publish-book-title" class="text-amber-300"></b></p>
+        <div id="publish-check" class="bg-black/60 border border-amber-700/40 rounded-xl p-3 text-xs space-y-1 text-amber-100/90">
+            <p>🔍 Đang kiểm tra truyện...</p>
+        </div>
+        <p class="text-[11px] text-amber-300/70">Quy định: phí chuyển = <b>số chương × 1 Nguyên Tinh</b> (Nguyên Tinh = linh thạch 10 điểm linh khí). Chuyển xong truyện sẽ <b>rời Túi Trữ Vật</b> và chỉ có <b>1 bản duy nhất</b> trên Tàng Kinh Các.</p>
         <div class="space-y-3 text-xs">
             <div>
                 <label class="block font-bold text-amber-300 mb-1">Chuyên mục:</label>
@@ -154,7 +158,7 @@
         </div>
         <div class="flex justify-end space-x-2 pt-3 border-t border-amber-800/60">
             <button onclick="closePublishModal()" class="bg-slate-800 text-amber-300 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer">Hủy</button>
-            <button onclick="submitPublish()" class="bg-emerald-600 hover:bg-emerald-500 text-black px-4 py-2 rounded-xl text-xs font-extrabold cursor-pointer">Xác Nhận Đăng</button>
+            <button id="publish-submit" onclick="submitPublish()" class="bg-emerald-600 hover:bg-emerald-500 text-black px-4 py-2 rounded-xl text-xs font-extrabold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">🔀 Ấn Chuyển Ngay</button>
         </div>
     </div>
 </div>
@@ -209,7 +213,7 @@
             tuiContainer.innerHTML = '';
             res.items.forEach(item => {
                 const published = item.published_book_id ? `<span class="text-emerald-400 font-semibold bg-emerald-950/80 px-2 py-1 rounded border border-emerald-600/40"><i class="fa-solid fa-cloud-arrow-up"></i> Đã đăng Tàng Kinh Các</span>` : `<span class="text-amber-300/80 font-semibold bg-black/50 px-2 py-1 rounded border border-amber-600/30"><i class="fa-solid fa-lock"></i> Riêng tư trong túi</span>`;
-                const publishBtn = item.published_book_id ? '' : `<button onclick="openPublishModal(${item.item_id})" class="bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer"><i class="fa-solid fa-cloud-arrow-up"></i> Đăng Tàng Kinh Các</button>`;
+                const publishBtn = item.published_book_id ? '' : `<button onclick="openPublishModal(${item.item_id})" class="bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer"><i class="fa-solid fa-right-left"></i> Chuyển → Tàng Kinh Các</button>`;
                 tuiContainer.innerHTML += `
                     <div class="bg-amber-950/40 border border-amber-600/40 p-3 rounded-xl flex flex-col md:flex-row md:justify-between md:items-center gap-2 text-xs">
                         <div>
@@ -267,6 +271,9 @@
 
     function openPublishModal(itemId) {
         currentPublishItemId = itemId;
+        const btn = document.getElementById('publish-submit');
+        btn.disabled = true;
+        document.getElementById('publish-check').innerHTML = '<p>🔍 Đang kiểm tra truyện...</p>';
         fetch(`/api/bag?username=${encodeURIComponent(currentUser.username)}`)
         .then(res => res.json())
         .then(res => {
@@ -278,13 +285,29 @@
             }
             document.getElementById('publish-modal').classList.remove('hidden');
         });
+        // MỤC KIỂM TRA: số chương, phí chuyển, số Nguyên Tinh đang có — thiếu là báo lỗi ngay
+        fetch(`/api/bag/kiem-tra-chuyen?username=${encodeURIComponent(currentUser.username)}&item_id=${itemId}`)
+        .then(res => res.json())
+        .then(res => {
+            const box = document.getElementById('publish-check');
+            if (!res.success) { box.innerHTML = `<p class="text-red-300 font-bold">❌ ${res.message}</p>`; return; }
+            box.innerHTML = `
+                <p>📖 Số chương của truyện: <b class="text-amber-300">${res.so_chuong} chương</b></p>
+                <p>💎 Phí chuyển: <b class="text-amber-300">${res.phi_nguyen_tinh} Nguyên Tinh</b> (1 chương = 1 Nguyên Tinh)</p>
+                <p>👛 Nguyên Tinh đạo hữu đang có: <b class="text-amber-300">${res.dang_co}</b></p>
+                ${res.du
+                    ? '<p class="text-emerald-300 font-bold">✔ KIỂM TRA ĐẠT — đủ điều kiện, ấn "Chuyển Ngay" để chuyển truyện lên Tàng Kinh Các.</p>'
+                    : `<p class="text-red-300 font-bold">❌ CHƯA ĐẠT: ${res.loi}</p>`}`;
+            btn.disabled = !res.du;
+        })
+        .catch(() => { document.getElementById('publish-check').innerHTML = '<p class="text-red-300 font-bold">❌ Không kiểm tra được — thử lại sau!</p>'; });
     }
 
     function closePublishModal() { document.getElementById('publish-modal').classList.add('hidden'); }
 
     function submitPublish() {
         if (currentPublishItemId === null) return;
-        fetch('/api/bag/publish', {
+        fetch('/api/bag/chuyen', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
