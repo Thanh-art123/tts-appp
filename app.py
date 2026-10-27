@@ -761,7 +761,8 @@ def tui_tru_vat():
 
 @app.route('/vi-tien')
 def vi_tien():
-    return render_template('vi_tien.html')
+    # Đợt 10: Ví & nạp tiền chuyển hẳn vào trong Chợ Đấu Giá (mục #vi-nap).
+    return redirect('/bi-canh#vi-nap')
 
 
 @app.route('/bi-canh')
@@ -2853,9 +2854,9 @@ def _item_catalog():
 
 
 def _can_sell(user):
-    if user.get("role") == "admin":
-        return True
-    return 1 + int(_ensure_game(user).get("exp", 0)) // 250 >= 5
+    # Đợt 10 (theo ý ông chủ): MỌI đệ tử đều được rao bán / mở đấu giá / trao đổi
+    # ở Chợ Đấu Giá để giao thương và kiếm Điểm Cống Hiến — bỏ cổng Cấp Hoạt Động 5.
+    return True
 
 
 def _cur_name(currency):
