@@ -3573,7 +3573,7 @@
             "bao_tay": 0
           }
         },
-        "locked": false,
+        "locked": true,
         "chibi": null
       }
     }
