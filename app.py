@@ -201,6 +201,11 @@ def _normalize_db(data):
     data.setdefault("market", {"seq": 1, "listings": [], "auctions": [], "barters": [], "deals": []})
     data.setdefault("events", {"tuan_le": {"active": False, "ends": 0},
                                "dai_hoi": {"active": False, "ends": 0}})
+    # Đợt 7: Bảng Tin Tông Môn + Chat Đệ Tử ở trang chủ
+    if "news" not in data:
+        data["news"] = [{"id": 1, "ts": 0, "time": "", "loai": "he_thong",
+                         "text": "📰 Bảng Tin Tông Môn chính thức khai trương! Sự kiện, cống hiến, thăng cấp của đệ tử và thông báo của Chưởng Môn Nhân sẽ hiện lên bảng này."}]
+    data.setdefault("chat", [])
     for user in data["users"]:
         if "tu_luyen" not in user:
             user["tu_luyen"] = get_default_tu_luyen()
@@ -506,6 +511,15 @@ def _notify(user, text):
     g = _ensure_game(user)
     g["notifications"].append({"time": now_jst(), "text": text, "read": False})
     g["notifications"] = g["notifications"][-50:]
+
+
+def _post_news(db, loai, text):
+    """Đợt 7: ghi 1 tin lên Bảng Tin Tông Môn (trang chủ). Chỉ ghi vào db —
+    nơi gọi chịu trách nhiệm save_database như bình thường."""
+    news = db.setdefault("news", [])
+    nid = (int(news[-1].get("id", 0)) + 1) if news else 1
+    news.append({"id": nid, "ts": time.time(), "time": now_jst(), "loai": loai, "text": text})
+    db["news"] = news[-100:]
 
 
 def _add_diem(user, n, reason=None):
@@ -1010,6 +1024,7 @@ def upload_book():
         _add_exp(user, 50)
         _bump(user, "dang_truyen")
 
+    _post_news(db, "truyen", f"📚 {author} vừa cống hiến truyện mới «{title}» lên Tàng Kinh Các!")
     save_database(db, f"Tai len truyen: {title} (@{username})")
     return jsonify({"success": True, "message": f"Truyện [{title}] đã được lưu vào Động Phủ và Tàng Kinh Các vĩnh viễn!", "book": new_book})
 
@@ -1270,6 +1285,7 @@ def api_bag_chuyen():
     _add_diem(user, 50, f"Chuyển truyện [{item['title']}] từ Túi lên Tàng Kinh Các")
     _add_exp(user, 50)
     _bump(user, "dang_truyen")
+    _post_news(db, "truyen", f"📚 {user.get('author_name', username)} vừa cống hiến truyện «{item['title']}» từ Túi Trữ Vật lên Tàng Kinh Các!")
     save_database(db, f"@{username} chuyen truyen tu tui len Tang Kinh Cac: {item['title']} ({so_chuong} chuong, phi {phi} NT)")
     return jsonify({"success": True,
                     "message": f"🔀 Đã chuyển truyện [{item['title']}] lên Tàng Kinh Các (mục {cat} - hệ {elem}): {so_chuong} chương, phí {phi} Nguyên Tinh. Truyện đã rời Túi Trữ Vật. +50 Điểm Cống Hiến.",
@@ -1434,6 +1450,7 @@ def api_tu_vi_nang_cap():
         _bump(user, "dot_pha")
         _log(user, f"Đột phá thành công lên {REALM_NAMES[muc]} · Nhập Môn (-{cost} Linh Khí, dùng 1 Phá Cảnh Đan)")
         _notify(user, f"🌟 Chúc mừng! Đạo hữu đã đột phá lên {REALM_NAMES[muc]} · Nhập Môn!")
+        _post_news(db, "thang_cap", f"⬆️ THĂNG CẤP: {user.get('author_name', user['username'])} vừa đột phá lên cảnh giới {REALM_NAMES[muc]} · Nhập Môn! Toàn Tông Môn chúc mừng đạo hữu! 🎉")
         save_database(db, f"@{user['username']} dot pha len {REALM_NAMES[muc]}")
         return jsonify({"success": True, "message": f"Đột phá thành công! Chào mừng đạo hữu bước vào {REALM_NAMES[muc]} · Nhập Môn.", "game": game_summary(user)})
 
@@ -2232,6 +2249,7 @@ def api_admin_event():
                     "bids": 0, "ends": ev[key]["ends"], "created": now_jst()})
         for u in db.get("users", []):
             _notify(u, f"{d['icon']} {d['name']} ĐÃ BẮT ĐẦU! {d['desc']} (Thời gian: {d['hours'] // 24} ngày{' ' if d['hours'] % 24 == 0 else ' — ' + str(d['hours'] % 24) + ' giờ'}).")
+        _post_news(db, "su_kien", f"{d['icon']} SỰ KIỆN {d['name']} ĐÃ BẮT ĐẦU! {d['desc']}")
         msg = f"{d['icon']} Đã BẬT sự kiện [{d['name']}] — chạy {d['hours']} giờ kể từ bây giờ."
     else:
         ev[key]["active"] = False
@@ -2241,9 +2259,77 @@ def api_admin_event():
             # Lô Tông Môn chưa ai trả giá thì thu hồi; lô đã có người trả giá để kết toán bình thường.
             m["auctions"] = [a for a in m["auctions"]
                              if not (a.get("seller") == "tong_mon" and not a.get("bidder"))]
+        _post_news(db, "su_kien", f"{d['icon']} Sự kiện {d['name']} đã KẾT THÚC. Cảm ơn các đệ tử đã tham gia!")
         msg = f"Đã TẮT sự kiện [{d['name']}]."
     save_database(db, f"Admin @{admin['username']} {action} su kien {key}")
     return jsonify({"success": True, "message": msg, "events": _events_view(db)})
+
+
+# --- Đợt 7: Bảng Tin Tông Môn & Chat Đệ Tử (trang chủ) ---
+@app.route('/api/news', methods=['GET'])
+def api_news():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    return jsonify({"success": True, "news": list(reversed(db.get("news", [])[-30:]))})
+
+
+@app.route('/api/admin/news', methods=['POST'])
+def api_admin_news():
+    db = load_database()
+    admin, err = _admin_or_403(db)
+    if err:
+        return err
+    text = ((request.json or {}).get('text') or '').strip()
+    if not text:
+        return jsonify({"success": False, "message": "Chưa nhập nội dung thông báo!"})
+    text = text[:500]
+    _post_news(db, "thong_bao", f"📣 THÔNG BÁO TỪ CHƯỞNG MÔN NHÂN: {text}")
+    for u in db.get("users", []):
+        _notify(u, f"📣 Thông báo Tông Môn mới: {text}")
+    save_database(db, f"Admin @{admin['username']} dang thong bao tong mon")
+    return jsonify({"success": True, "message": "Đã đăng thông báo lên Bảng Tin và gửi chuông cho toàn bộ đệ tử."})
+
+
+@app.route('/api/chat', methods=['GET'])
+def api_chat_get():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    return jsonify({"success": True, "messages": db.get("chat", [])[-60:]})
+
+
+@app.route('/api/chat', methods=['POST'])
+def api_chat_post():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    text = ((request.json or {}).get('text') or '').strip()
+    if not text:
+        return jsonify({"success": False, "message": "Chưa nhập tin nhắn!"})
+    if len(text) > 300:
+        return jsonify({"success": False, "message": "Tin nhắn tối đa 300 ký tự!"})
+    chat = db.setdefault("chat", [])
+    now = time.time()
+    last = next((m for m in reversed(chat) if m.get("username") == user["username"]), None)
+    if last and now - float(last.get("ts", 0)) < 3:
+        return jsonify({"success": False, "message": "Đạo hữu nhắn nhanh quá — đợi 3 giây rồi nhắn tiếp nhé!"})
+    g = _ensure_game(user)
+    chat.append({
+        "id": (int(chat[-1].get("id", 0)) + 1) if chat else 1,
+        "ts": now, "time": now_jst(),
+        "username": user["username"],
+        "author_name": user.get("author_name", user["username"]),
+        "role": user.get("role", "member"),
+        "chibi": g.get("chibi"),
+        "text": text,
+    })
+    db["chat"] = chat[-200:]
+    save_database(db, f"@{user['username']} chat tong mon")
+    return jsonify({"success": True, "messages": db["chat"][-60:]})
 
 
 @app.route('/api/leaderboard', methods=['GET'])
