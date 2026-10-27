@@ -7,7 +7,7 @@
         <i class="fa-solid fa-hammer text-amber-500"></i>
         <span>Nghề Phụ Trợ — Đại Sảnh Hành Nghề Kiếm Điểm Cống Hiến</span>
     </h2>
-    <div class="guide"><button type="button" class="guide-chip">ⓘ Hướng dẫn</button><div class="guide-body"><p class="text-xs text-amber-200/80 leading-relaxed">Bảy nghề phụ của Tông Môn: khai thác quặng → luyện khí · trồng thảo → luyện đan · vẽ phù → mở lượt tạo ảnh · câu cá → nuôi linh thú. Mỗi nghề đều có <b class="text-amber-300">nhiệm vụ nghề riêng</b> trong <a href="/sanh-chinh" class="underline text-amber-300 font-bold">Bảng Nhiệm Vụ ở Sảnh Chính</a>. Linh thú cộng % điểm cho nghề &amp; nhiệm vụ và sản xuất điểm mỗi lần điểm danh.</p></div></div>
+    <div class="guide"><button type="button" class="guide-chip">ⓘ Hướng dẫn</button><div class="guide-body"><p class="text-xs text-amber-200/80 leading-relaxed">Đợt nâng cấp mới: mọi nghề đều có <b class="text-amber-300">hình cảnh + thao tác tay</b> — gõ búa rèn, gõ đan lô, tưới cây, quăng cần câu. Mọi <b class="text-amber-300">vật tư đều mua ở Cửa Hàng Vật Tư</b>, chia 4 phẩm <b class="text-amber-300">⚪ Trắng · 🟢 Lục · 🔵 Lam · 🟣 Tím</b>: vật tư càng cao, chế được đồ càng xịn, bán càng nhiều điểm. Linh thú nay săn qua <b class="text-amber-300">Đấu Giá Thú mỗi ngày</b>, nuôi cho ăn/uống không giới hạn lượt, bán lúc nào cũng được.</p></div></div>
     <div class="flex flex-wrap gap-2 text-[11px] font-bold">
         <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">💠 Điểm: <b id="ng-diem" class="text-amber-300">…</b></span>
         <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">💎 Nguyên Tinh: <b id="ng-nt" class="text-amber-300">…</b></span>
@@ -17,66 +17,112 @@
     </div>
 
     <div class="flex flex-wrap gap-1.5 text-[11px] font-extrabold" id="nghe-tabs">
-        <button data-tab="mo" class="ng-tab bg-amber-600 text-black px-3 py-2 rounded-xl cursor-pointer">⛏️ Mỏ Quặng</button>
+        <button data-tab="shop" class="ng-tab bg-amber-600 text-black px-3 py-2 rounded-xl cursor-pointer">🛒 Cửa Hàng Vật Tư</button>
+        <button data-tab="mo" class="ng-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">⛏️ Mỏ Quặng</button>
         <button data-tab="khi" class="ng-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">🔨 Luyện Khí Các</button>
-        <button data-tab="dan" class="ng-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">⚗️ Luyện Đan Các</button>
+        <button data-tab="dan" class="ng-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">🏺 Luyện Đan Các</button>
         <button data-tab="phu" class="ng-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">🖌️ Luyện Phù Các</button>
-        <button data-tab="duoc" class="ng-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">🌿 Linh Dược Các</button>
+        <button data-tab="duoc" class="ng-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">🌳 Linh Dược Các</button>
         <button data-tab="thu" class="ng-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">🐾 Ngự Thú Các</button>
         <button data-tab="cau" class="ng-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">🎣 Đầm Câu</button>
     </div>
 
+    <!-- CỬA HÀNG VẬT TƯ (Đợt 19) -->
+    <div id="tab-shop" class="ng-panel space-y-4">
+        <p class="text-xs text-amber-200/85">Mọi vật tư hành nghề đều mua tại đây, chia 4 phẩm: <b>⚪ Trắng (10đ) · 🟢 Lục (60đ) · 🔵 Lam (250đ) · 🟣 Tím (1.000đ)</b> mỗi phần. Phẩm càng cao: rèn được pháp khí cấp càng cao, tỉ lệ luyện đan càng tốt, cá càng xịn, cây lớn càng nhanh, thú ăn càng mau lớn.</p>
+        <div id="shop-list" class="space-y-3 text-xs"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div class="bg-black/50 border border-amber-700/40 rounded-xl p-3 flex items-center justify-between gap-2">
+                <span class="text-amber-100/85">💧 <b>Nước</b> — tưới cây, cho thú uống · đang có: <b id="shop-nuoc" class="text-amber-300">0</b> bình (5đ/bình)</span>
+                <span class="space-x-1 shrink-0">
+                    <button onclick="ngAct(this,'/api/vat-tu/mua',{loai:'nuoc',so:1})" class="bg-sky-700 hover:bg-sky-600 text-white font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">Mua 1</button>
+                    <button onclick="ngAct(this,'/api/vat-tu/mua',{loai:'nuoc',so:10})" class="bg-sky-700 hover:bg-sky-600 text-white font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">Mua 10</button>
+                </span>
+            </div>
+            <div class="bg-black/50 border border-amber-700/40 rounded-xl p-3 flex items-center justify-between gap-2">
+                <span class="text-amber-100/85">🧤 <b>Bao Tay Bắt Sâu</b> — mua 1 lần dùng mãi · trạng thái: <b id="shop-baotay" class="text-amber-300">chưa có</b> (100đ)</span>
+                <button onclick="ngAct(this,'/api/vat-tu/mua',{loai:'bao_tay'})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer shrink-0">Mua</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MỎ QUẶNG -->
-    <div id="tab-mo" class="ng-panel space-y-4">
-        <p class="text-xs text-amber-200/85">Khai thác quặng 9 cấp làm nguyên liệu cho Luyện Khí Các. Giới hạn <b>10 lượt/ngày</b> — hôm nay đã dùng: <b id="mo-used" class="text-amber-300">0</b>/10.</p>
+    <div id="tab-mo" class="ng-panel hidden space-y-4">
+        <div class="rounded-2xl border border-amber-700/40 bg-gradient-to-b from-stone-800/80 to-black/70 p-4 text-center select-none">
+            <span class="text-5xl">⛰️</span><span class="text-5xl">⛏️</span><span class="text-5xl">🪨</span>
+            <p class="text-[11px] text-amber-200/70 mt-1">Mỏ Quặng Tông Môn — chỉ đào ra Quặng phẩm Trắng; quặng xịn mua ở Cửa Hàng Vật Tư</p>
+        </div>
+        <p class="text-xs text-amber-200/85">Đào quặng lấy <b>Quặng phẩm Trắng</b> (vật tư rèn pháp khí cấp 1–3). Giới hạn <b>10 lượt/ngày</b> — hôm nay đã dùng: <b id="mo-used" class="text-amber-300">0</b>/10. Đang có: <b id="mo-trang" class="text-amber-300">0</b> Quặng Trắng.</p>
         <button onclick="ngAct(this,'/api/nghe/khai-thac',{})" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold py-3 rounded-xl shadow transition text-sm cursor-pointer">⛏️ Khai Thác Quặng</button>
         <div>
-            <p class="text-xs font-bold text-amber-300 mb-2">Kho Quặng Của Đạo Hữu:</p>
+            <p class="text-xs font-bold text-amber-300 mb-2">Kho Quặng Cấp (kho cũ — đem bán ở Chợ Đấu Giá):</p>
             <div id="mo-ores" class="grid grid-cols-3 sm:grid-cols-9 gap-2 text-center text-[11px]"></div>
         </div>
     </div>
 
-    <!-- LUYỆN KHÍ -->
+    <!-- LUYỆN KHÍ (Đợt 19: gõ búa 3 phát) -->
     <div id="tab-khi" class="ng-panel hidden space-y-4">
-        <p class="text-xs text-amber-200/85">Dùng <b>1 Quặng + 1 Nguyên Tinh (lõi)</b> để luyện Pháp Khí. Cấp càng cao tỉ lệ thành công càng thấp; luyện hỏng bán phế phẩm vẫn được ít điểm. Bán pháp khí: <b>cấp² × 15 điểm</b>.</p>
+        <div class="rounded-2xl border border-orange-700/50 bg-gradient-to-b from-orange-950/80 to-black/70 p-4 text-center select-none overflow-hidden">
+            <span class="text-5xl inline-block">🌋</span>
+            <span id="khi-hammer" class="text-6xl inline-block transition-transform duration-150" style="transform: rotate(0deg)">🔨</span>
+            <span class="text-5xl inline-block">⚒️</span>
+            <p class="text-[11px] text-amber-200/70 mt-1">Lò Rèn Tông Môn — chọn quặng theo phẩm, gõ đủ <b>3 phát búa</b> để hoàn thành 1 lần rèn</p>
+        </div>
+        <p class="text-xs text-amber-200/85">Mỗi phẩm quặng rèn được cấp riêng: <b>⚪ Trắng → cấp 1–3 · 🟢 Lục → 4–6 · 🔵 Lam → 7–8 · 🟣 Tím → 9</b>. Bán pháp khí: <b>cấp² × 15 điểm</b>. Hôm nay đã rèn: <b id="khi-used" class="text-amber-300">0</b>/10 lượt.</p>
         <div class="flex flex-wrap items-center gap-2 text-xs">
-            <label class="font-bold text-amber-300">Chọn cấp quặng:</label>
-            <select id="lk-cap" onchange="lkRate()" class="p-2 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none"></select>
+            <label class="font-bold text-amber-300">Phẩm quặng:</label>
+            <select id="lk-pham" onchange="lkCapRefresh(); strikeReset('khi')" class="p-2 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none"></select>
+            <label class="font-bold text-amber-300">Cấp muốn rèn:</label>
+            <select id="lk-cap" onchange="strikeReset('khi')" class="p-2 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none"></select>
             <span id="lk-rate" class="text-amber-200/80"></span>
         </div>
-        <button onclick="ngAct(this,'/api/nghe/luyen-khi',{cap:parseInt(document.getElementById('lk-cap').value)})" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold py-3 rounded-xl shadow transition text-sm cursor-pointer">🔨 Khai Lò Luyện Khí</button>
+        <button id="khi-strike" onclick="strike('khi', this)" class="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-black font-extrabold py-3 rounded-xl shadow transition text-sm cursor-pointer">🔨 Gõ Búa (0/3)</button>
         <div>
             <p class="text-xs font-bold text-amber-300 mb-2">Pháp Khí Đang Có:</p>
             <div id="lk-list" class="space-y-2 text-xs"></div>
         </div>
     </div>
 
-    <!-- LUYỆN ĐAN -->
+    <!-- LUYỆN ĐAN (Đợt 19: gõ lô 3 phát) -->
     <div id="tab-dan" class="ng-panel hidden space-y-4">
-        <p class="text-xs text-amber-200/85">Luyện thảo mộc thành đan dược. Đan ăn vào <b>+Linh Khí trực tiếp</b> — đường tắt nối nghề phụ với Tu Vi. Linh Khí hiện có: <b id="dan-lk" class="text-amber-300">0</b>.</p>
+        <div class="rounded-2xl border border-teal-700/50 bg-gradient-to-b from-teal-950/80 to-black/70 p-4 text-center select-none overflow-hidden">
+            <span id="dan-lo" class="text-6xl inline-block transition-transform duration-150">🏺</span>
+            <span class="text-4xl inline-block">💨</span><span class="text-4xl inline-block">🌿</span>
+            <p class="text-[11px] text-amber-200/70 mt-1">Đan Lô Tông Môn — chọn linh dược theo phẩm, gõ đủ <b>3 phát</b> để hoàn thành 1 lò đan</p>
+        </div>
+        <p class="text-xs text-amber-200/85">Linh dược phẩm càng cao, tỉ lệ thành công càng lớn. Đan thành phẩm <b>dùng để +Linh Khí</b> hoặc <b>bán cho Tông Môn</b> (Hồi Linh Đan 30đ · Tụ Linh Đan 150đ). Linh Khí hiện có: <b id="dan-lk" class="text-amber-300">0</b>. Hôm nay đã luyện: <b id="dan-used" class="text-amber-300">0</b>/10 lượt.</p>
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+            <label class="font-bold text-amber-300">Phẩm linh dược:</label>
+            <select id="ld-pham" onchange="ldRate(); strikeReset('dan')" class="p-2 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none"></select>
+            <label class="font-bold text-amber-300">Loại đan:</label>
+            <select id="ld-loai" onchange="ldRate(); strikeReset('dan')" class="p-2 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none">
+                <option value="hoi_linh">💊 Hồi Linh Đan (dùng: +40 Linh Khí)</option>
+                <option value="tu_linh">💊 Tụ Linh Đan (dùng: +200 Linh Khí)</option>
+            </select>
+            <span id="ld-rate" class="text-amber-200/80"></span>
+        </div>
+        <button id="dan-strike" onclick="strike('dan', this)" class="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-black font-extrabold py-3 rounded-xl shadow transition text-sm cursor-pointer">🏺 Gõ Lô (0/3)</button>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
             <div class="bg-black/50 border border-amber-700/40 rounded-xl p-3 space-y-2">
-                <p class="font-black text-amber-200">💊 Hồi Linh Đan <span class="text-emerald-300">(dùng: +40 Linh Khí)</span></p>
-                <p class="text-amber-100/75">Nguyên liệu: 2× Thảo Cấp 1 + 1× Thảo Cấp 2 · Tỉ lệ thành công 85%</p>
-                <p class="text-amber-100/75">Đang có: Thảo C1 ×<b id="hd-h1">0</b> · Thảo C2 ×<b id="hd-h2">0</b> · Đan ×<b id="hd-dan">0</b></p>
+                <p class="font-black text-amber-200">💊 Hồi Linh Đan <span class="text-emerald-300">(dùng: +40 Linh Khí · bán: 30đ)</span></p>
+                <p class="text-amber-100/75">Đang có: <b id="hd-dan" class="text-amber-300">0</b> viên</p>
                 <p class="space-x-1">
-                    <button onclick="ngAct(this,'/api/nghe/luyen-dan',{loai:'hoi_linh'})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">⚗️ Luyện Đan</button>
                     <button onclick="ngAct(this,'/api/nghe/dung-dan',{loai:'hoi_linh'})" class="bg-emerald-700 hover:bg-emerald-600 text-white font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">💊 Dùng Đan</button>
+                    <button onclick="ngAct(this,'/api/nghe/ban-dan',{loai:'hoi_linh'})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">💰 Bán 30đ</button>
                 </p>
             </div>
             <div class="bg-black/50 border border-amber-700/40 rounded-xl p-3 space-y-2">
-                <p class="font-black text-amber-200">💊 Tụ Linh Đan <span class="text-emerald-300">(dùng: +200 Linh Khí)</span></p>
-                <p class="text-amber-100/75">Nguyên liệu: 2× Thảo Cấp 3 + 1× Thảo Cấp 4 · Tỉ lệ thành công 70%</p>
-                <p class="text-amber-100/75">Đang có: Thảo C3 ×<b id="td-h3">0</b> · Thảo C4 ×<b id="td-h4">0</b> · Đan ×<b id="td-dan">0</b></p>
+                <p class="font-black text-amber-200">💊 Tụ Linh Đan <span class="text-emerald-300">(dùng: +200 Linh Khí · bán: 150đ)</span></p>
+                <p class="text-amber-100/75">Đang có: <b id="td-dan" class="text-amber-300">0</b> viên</p>
                 <p class="space-x-1">
-                    <button onclick="ngAct(this,'/api/nghe/luyen-dan',{loai:'tu_linh'})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">⚗️ Luyện Đan</button>
                     <button onclick="ngAct(this,'/api/nghe/dung-dan',{loai:'tu_linh'})" class="bg-emerald-700 hover:bg-emerald-600 text-white font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">💊 Dùng Đan</button>
+                    <button onclick="ngAct(this,'/api/nghe/ban-dan',{loai:'tu_linh'})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">💰 Bán 150đ</button>
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- LUYỆN PHÙ + TẠO ẢNH -->
+    <!-- LUYỆN PHÙ + TẠO ẢNH (giữ nguyên) -->
     <div id="tab-phu" class="ng-panel hidden space-y-4">
         <p class="text-xs text-amber-200/85">Tự tay vẽ phù trên khung: bấm <b>Bắt Đầu Vẽ</b> (tính 1 lượt, tối đa 5 lượt/ngày — hôm nay đã dùng: <b id="phu-used" class="text-amber-300">0</b>/5), vẽ cho kín khung (ít nhất 25 nét chấm bút) rồi bấm <b>Hoàn Phù</b>: nhận điểm + <b>1 Lượt Tạo Ảnh</b>. <b class="text-red-300">Bỏ ngang giữa chừng = mất lượt</b>, không được gì.</p>
         <div class="bg-[#171106] border-2 border-amber-700/60 rounded-2xl p-2">
@@ -127,27 +173,37 @@
         </div>
     </div>
 
-    <!-- LINH DƯỢC -->
+    <!-- LINH DƯỢC (Đợt 19: 1 cây chăm dài hạn) -->
     <div id="tab-duoc" class="ng-panel hidden space-y-4">
-        <p class="text-xs text-amber-200/85">Dược viên có <b>4 ô đất</b>: mua hạt giống (3 × cấp điểm), chờ cây lớn (2 phút × cấp), thu hoạch được <b>2 cây</b> thảo mộc cấp đó — nguyên liệu cho Luyện Đan hoặc bán lại ở Sảnh Chính.</p>
-        <div id="duoc-plots" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs"></div>
+        <div id="cay-body" class="text-xs"></div>
     </div>
 
-    <!-- NGỰ THÚ -->
+    <!-- NGỰ THÚ (Đợt 19: đấu giá + nuôi không giới hạn) -->
     <div id="tab-thu" class="ng-panel hidden space-y-4">
         <div id="thu-body" class="text-xs"></div>
+        <div id="thu-auction" class="text-xs"></div>
     </div>
 
-    <!-- ĐẦM CÂU -->
+    <!-- ĐẦM CÂU (Đợt 19: mồi theo phẩm) -->
     <div id="tab-cau" class="ng-panel hidden space-y-4">
-        <p class="text-xs text-amber-200/85">Thả câu ở Đầm Câu: cá thường, cá ngon, Linh Ngư hiếm... và biết đâu câu được cả <b>linh thú con</b>! Giới hạn <b>10 lượt/ngày</b> — hôm nay đã dùng: <b id="cau-used" class="text-amber-300">0</b>/10.</p>
-        <button onclick="ngAct(this,'/api/nghe/cau-ca',{})" class="w-full bg-gradient-to-r from-sky-600 to-cyan-500 hover:from-sky-500 hover:to-cyan-400 text-black font-extrabold py-3 rounded-xl shadow transition text-sm cursor-pointer">🎣 Thả Câu</button>
+        <div class="rounded-2xl border border-sky-700/50 bg-gradient-to-b from-sky-950/80 to-black/70 p-4 text-center select-none overflow-hidden">
+            <span class="text-5xl inline-block">🌊</span>
+            <span id="cau-rod" class="text-6xl inline-block transition-transform duration-200">🎣</span>
+            <span class="text-4xl inline-block">🐟</span><span class="text-4xl inline-block">🐠</span>
+            <p class="text-[11px] text-amber-200/70 mt-1">Đầm Câu Tông Môn — mồi càng xịn, cá càng ngon</p>
+        </div>
+        <p class="text-xs text-amber-200/85">Chọn mồi theo phẩm rồi quăng cần: <b>mồi Tím không bao giờ ra cá thường, rất dễ ra Linh Ngư</b>. Giới hạn <b>10 lượt/ngày</b> — hôm nay đã dùng: <b id="cau-used" class="text-amber-300">0</b>/10.</p>
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+            <label class="font-bold text-amber-300">Chọn mồi:</label>
+            <select id="cau-pham" class="p-2 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none"></select>
+        </div>
+        <button id="cau-btn" onclick="cauCa(this)" class="w-full bg-gradient-to-r from-sky-600 to-cyan-500 hover:from-sky-500 hover:to-cyan-400 text-black font-extrabold py-3 rounded-xl shadow transition text-sm cursor-pointer">🎣 Quăng Cần Câu</button>
         <div class="flex flex-wrap gap-2 text-[11px] font-bold">
             <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">🐟 Cá Thường: <b id="ca-thuong" class="text-amber-300">0</b> (5đ/con)</span>
             <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">🐠 Cá Ngon: <b id="ca-ngon" class="text-amber-300">0</b> (12đ/con)</span>
             <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">✨ Linh Ngư: <b id="ca-linh" class="text-amber-300">0</b> (60đ/con)</span>
         </div>
-        <button onclick="ngAct(this,'/api/nghe/ban-ca',{})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-4 py-2 rounded-xl text-xs cursor-pointer">💰 Bán Tất Cả Cá</button>
+        <button onclick="ngAct(this,'/api/nghe/ban-ca',{})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-4 py-2 rounded-xl text-xs cursor-pointer">💰 Bán Tất Cả Cá Cho Tông Môn</button>
     </div>
 
     <div id="nghe-toast" class="hidden fixed left-1/2 bottom-6 -translate-x-1/2 z-50 bg-emerald-800 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl border border-emerald-400/60 max-w-[92vw]"></div>
@@ -156,9 +212,24 @@
 
 {% block scripts %}
 <script>
-    let NGHE = null, GAME = null, phuDrawing = false, phuPoints = 0, phuOpen = false, phuCtx = null, phuLast = null, tickBusy = false;
+    let NGHE = null, GAME = null, phuDrawing = false, phuPoints = 0, phuOpen = false, phuCtx = null, phuLast = null;
+    let THU_LOTS = null;
+    const PHAM_TEN = ['Trắng', 'Lục', 'Lam', 'Tím'];
+    const PHAM_GIA = [10, 60, 250, 1000];
+    const GRADE_TIERS = { 0: [1, 2, 3], 1: [4, 5, 6], 2: [7, 8], 3: [9] };
+    const FORGE_RATES = { 0: [85, 70, 55], 1: [80, 65, 50], 2: [75, 55], 3: [40] };
+    const PILL_RATES = { hoi_linh: [70, 80, 90, 95], tu_linh: [45, 60, 75, 88] };
+    const PHAM_CHIP = ['bg-slate-200 text-slate-900', 'bg-emerald-500 text-black', 'bg-sky-500 text-black', 'bg-purple-500 text-white'];
+    const SHOP_ITEMS = [
+        { loai: 'quang', icon: '🔨', ten: 'Quặng Luyện Khí', dung: 'rèn pháp khí' },
+        { loai: 'duoc', icon: '🌿', ten: 'Linh Dược Luyện Đan', dung: 'nấu đan dược' },
+        { loai: 'moi', icon: '🪱', ten: 'Mồi Câu', dung: 'câu cá ở Đầm Câu' },
+        { loai: 'phan', icon: '🌾', ten: 'Phân Bón', dung: 'bón cho cây Linh Dược' },
+        { loai: 'thuc_an', icon: '🍖', ten: 'Đồ Ăn Linh Thú', dung: 'cho linh thú ăn' },
+    ];
 
     function fmtNum(n) { return (n === null || n === undefined) ? '0' : Number(n).toLocaleString('vi-VN'); }
+    function phamChip(p) { return `<span class="px-2 py-0.5 rounded-full font-black ${PHAM_CHIP[p]}">${PHAM_TEN[p]}</span>`; }
     function toast(msg, ok) {
         const t = document.getElementById('nghe-toast');
         t.innerText = msg;
@@ -183,91 +254,237 @@
         }).catch(() => {});
     }
 
+    // ---- Gõ 3 phát (Luyện Khí / Luyện Đan) ----
+    const STRIKES = { khi: 0, dan: 0 };
+    function strikeReset(kind) {
+        STRIKES[kind] = 0;
+        const btn = document.getElementById(kind + '-strike');
+        if (btn) btn.innerHTML = kind === 'khi' ? '🔨 Gõ Búa (0/3)' : '🏺 Gõ Lô (0/3)';
+    }
+    async function strike(kind, btn) {
+        STRIKES[kind]++;
+        const icon = document.getElementById(kind === 'khi' ? 'khi-hammer' : 'dan-lo');
+        if (icon) { icon.style.transform = 'rotate(-28deg) scale(1.15)'; setTimeout(() => icon.style.transform = 'rotate(0deg)', 160); }
+        if (STRIKES[kind] < 3) {
+            btn.innerHTML = (kind === 'khi' ? '🔨 Gõ Búa' : '🏺 Gõ Lô') + ` (${STRIKES[kind]}/3)`;
+            return;
+        }
+        STRIKES[kind] = 0;
+        btn.innerHTML = (kind === 'khi' ? '🔨 Gõ Búa' : '🏺 Gõ Lô') + ' (0/3)';
+        if (kind === 'khi') {
+            await ngAct(btn, '/api/nghe/luyen-khi', { pham: parseInt(document.getElementById('lk-pham').value), cap: parseInt(document.getElementById('lk-cap').value) });
+        } else {
+            await ngAct(btn, '/api/nghe/luyen-dan', { loai: document.getElementById('ld-loai').value, pham: parseInt(document.getElementById('ld-pham').value) });
+        }
+    }
+
+    function lkCapRefresh() {
+        const pham = parseInt(document.getElementById('lk-pham').value || '0');
+        const capSel = document.getElementById('lk-cap');
+        const cur = capSel.value;
+        capSel.innerHTML = GRADE_TIERS[pham].map((t, j) => `<option value="${t}">Pháp Khí Cấp ${t} — tỉ lệ ${FORGE_RATES[pham][j]}%</option>`).join('');
+        if (cur && GRADE_TIERS[pham].includes(parseInt(cur))) capSel.value = cur;
+        document.getElementById('lk-rate').innerText = `Đang có ${((NGHE && NGHE.vat_tu.quang[String(pham)]) || 0)} quặng phẩm ${PHAM_TEN[pham]}`;
+    }
+    function ldRate() {
+        const pham = parseInt(document.getElementById('ld-pham').value || '0');
+        const loai = document.getElementById('ld-loai').value;
+        document.getElementById('ld-rate').innerText = `Tỉ lệ thành công: ${PILL_RATES[loai][pham]}% · đang có ${((NGHE && NGHE.vat_tu.duoc[String(pham)]) || 0)} dược phẩm ${PHAM_TEN[pham]}`;
+    }
+
+    async function cauCa(btn) {
+        const rod = document.getElementById('cau-rod');
+        if (rod) rod.style.transform = 'rotate(18deg)';
+        btn.disabled = true;
+        setTimeout(async () => {
+            if (rod) rod.style.transform = 'rotate(0deg)';
+            await ngAct(btn, '/api/nghe/cau-ca', { pham: parseInt(document.getElementById('cau-pham').value) });
+        }, 700);
+    }
+
+    // ---- Đấu Giá Thú ----
+    function loadDauGia() {
+        fetch('/api/nghe/thu/dau-gia').then(r => r.json()).then(res => {
+            if (res.success) { THU_LOTS = res.lots; if (res.nghe) { NGHE = res.nghe; GAME = res.game; renderNghe(); } renderAuction(); }
+        }).catch(() => {});
+    }
+    function beastEmoji(ten) {
+        if (/Hổ/.test(ten)) return '🐯'; if (/Kỳ Lân/.test(ten)) return '🦄'; if (/Loan|Phượng/.test(ten)) return '🦅';
+        if (/Hồ Ly/.test(ten)) return '🦊'; if (/Lang|Sói/.test(ten)) return '🐺'; if (/Quy|Rùa/.test(ten)) return '🐢';
+        if (/Long|Rồng/.test(ten)) return '🐲'; return '🐾';
+    }
+    function renderAuction() {
+        const box = document.getElementById('thu-auction');
+        if (!box) return;
+        if (NGHE && NGHE.thu) { box.innerHTML = ''; return; }
+        if (!THU_LOTS) { box.innerHTML = '<p class="text-amber-300/60">Đang mở các lô đấu giá thú hôm nay...</p>'; return; }
+        box.innerHTML = `
+        <div class="bg-black/50 border border-amber-700/40 rounded-xl p-4 space-y-3">
+            <p class="font-black text-amber-200">🏆 ĐẤU GIÁ THÚ HÔM NAY (3 con — hết hôm nay chốt, ai giá cao nhất nhận thú)</p>
+            <p class="text-amber-100/75">Đặt giá là ký quỹ ngay; bị trả cao hơn thì <b class="text-amber-300">hoàn 100%</b>. Chỉ đấu được khi đang <b>chưa có</b> linh thú.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            ${THU_LOTS.map(l => `
+                <div class="bg-black/60 border ${l.toi_dang_thang ? 'border-emerald-500/70' : 'border-amber-700/40'} rounded-xl p-3 space-y-2 text-center">
+                    <p class="text-4xl">${beastEmoji(l.ten)}</p>
+                    <p class="font-black text-amber-200">${l.ten} ${phamChip(l.pham)}</p>
+                    <p class="text-amber-100/80">${l.gia_hien_tai ? `Giá hiện tại: <b class="text-amber-300">${fmtNum(l.gia_hien_tai)}đ</b><br>Đang thắng: <b>${l.nguoi_dang_thang || ''}</b>${l.toi_dang_thang ? ' (là BẠN!)' : ''}` : `Giá khởi điểm: <b class="text-amber-300">${fmtNum(l.gia_khoi_diem)}đ</b><br>Chưa ai đặt giá`}</p>
+                    <div class="flex items-center gap-1.5 justify-center">
+                        <input id="bid-${l.id}" type="number" min="0" placeholder="Điểm đặt giá" class="w-28 p-2 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none">
+                        <button onclick="datGia(this, ${l.id})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-2 rounded-lg cursor-pointer">Đặt Giá</button>
+                    </div>
+                </div>`).join('')}
+            </div>
+        </div>`;
+    }
+    async function datGia(btn, lotId) {
+        const inp = document.getElementById('bid-' + lotId);
+        const gia = parseInt(inp.value || '0');
+        if (!gia || gia <= 0) { toast('Hãy nhập số điểm muốn đặt giá!', false); return; }
+        btn.disabled = true;
+        try {
+            const r = await fetch('/api/nghe/thu/dat-gia', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lot: lotId, gia }) });
+            const res = await r.json();
+            toast(res.message || '', !!res.success);
+            if (res.nghe) { NGHE = res.nghe; GAME = res.game; renderNghe(); }
+            loadDauGia();
+        } catch (e) { toast('Mất kết nối, thử lại nhé!', false); }
+        btn.disabled = false;
+    }
+
     function renderNghe() {
         if (!NGHE || !GAME) return;
+        const VT = NGHE.vat_tu || { quang: {}, duoc: {}, moi: {}, phan: {}, thuc_an: {}, nuoc: 0, bao_tay: 0 };
         document.getElementById('ng-diem').innerText = fmtNum(GAME.diem);
         document.getElementById('ng-nt').innerText = fmtNum((GAME.linh_thach || {}).nguyen || 0);
         document.getElementById('ng-lk').innerText = fmtNum(NGHE.linh_khi);
         document.getElementById('ng-luotanh').innerText = NGHE.luot_tao_anh;
         document.getElementById('ng-beast').innerText = '+' + (NGHE.thu ? NGHE.thu.bonus_pct : 0) + '%';
         document.getElementById('mo-used').innerText = NGHE.hom_nay.khai_thac;
+        document.getElementById('mo-trang').innerText = VT.quang['0'] || 0;
         document.getElementById('cau-used').innerText = NGHE.hom_nay.cau_ca;
         document.getElementById('phu-used').innerText = NGHE.hom_nay.ve_phu;
         document.getElementById('dan-lk').innerText = fmtNum(NGHE.linh_khi);
-        // Kho quặng
+        document.getElementById('khi-used').innerText = NGHE.hom_nay.luyen_khi || 0;
+        document.getElementById('dan-used').innerText = NGHE.hom_nay.luyen_dan || 0;
+        // Cửa hàng vật tư
+        document.getElementById('shop-list').innerHTML = SHOP_ITEMS.map(it => `
+            <div class="bg-black/50 border border-amber-700/40 rounded-xl p-3 space-y-2">
+                <p class="font-black text-amber-200">${it.icon} ${it.ten} <span class="text-amber-100/60 font-bold">— dùng để ${it.dung}</span></p>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                    ${[0, 1, 2, 3].map(p => `
+                    <div class="flex items-center justify-between gap-1 bg-black/50 border border-amber-800/40 rounded-lg px-2 py-1.5">
+                        <span>${phamChip(p)}<br><span class="text-amber-100/75">${fmtNum(PHAM_GIA[p])}đ · có: <b class="text-amber-300">${(VT[it.loai] || {})[String(p)] || 0}</b></span></span>
+                        <span class="space-x-1 shrink-0">
+                            <button onclick="ngAct(this,'/api/vat-tu/mua',{loai:'${it.loai}',pham:${p},so:1})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-2 py-1 rounded-md cursor-pointer">+1</button>
+                            <button onclick="ngAct(this,'/api/vat-tu/mua',{loai:'${it.loai}',pham:${p},so:5})" class="bg-amber-700 hover:bg-amber-600 text-black font-extrabold px-2 py-1 rounded-md cursor-pointer">+5</button>
+                        </span>
+                    </div>`).join('')}
+                </div>
+            </div>`).join('');
+        document.getElementById('shop-nuoc').innerText = VT.nuoc || 0;
+        document.getElementById('shop-baotay').innerText = (VT.bao_tay || 0) >= 1 ? '✅ đã có' : 'chưa có';
+        // Kho quặng cũ
         document.getElementById('mo-ores').innerHTML = Array.from({length: 9}, (_, i) => {
             const n = NGHE.quang[String(i + 1)] || 0;
             return `<div class="p-2 rounded-xl border ${n > 0 ? 'bg-amber-900/60 border-amber-500/70' : 'bg-black/50 border-amber-800/40'}"><p class="font-black text-amber-200">Cấp ${i + 1}</p><p class="text-amber-100/80">${n} viên</p></div>`;
         }).join('');
-        // Luyện khí: select + danh sách pháp khí
-        const sel = document.getElementById('lk-cap');
-        const cur = sel.value;
-        sel.innerHTML = Array.from({length: 9}, (_, i) => `<option value="${i + 1}">Quặng Cấp ${i + 1} (đang có: ${NGHE.quang[String(i + 1)] || 0})</option>`).join('');
-        if (cur) sel.value = cur;
-        lkRate();
+        // Luyện khí: selects + danh sách pháp khí
+        const lkPham = document.getElementById('lk-pham');
+        const curP = lkPham.value;
+        lkPham.innerHTML = [0, 1, 2, 3].map(p => `<option value="${p}">Phẩm ${PHAM_TEN[p]} (có ${VT.quang[String(p)] || 0} quặng)</option>`).join('');
+        if (curP !== '') lkPham.value = curP;
+        lkCapRefresh();
         const counts = {};
         NGHE.phap_khi.forEach(t => counts[t] = (counts[t] || 0) + 1);
         const tiers = Object.keys(counts).sort((a, b) => a - b);
         document.getElementById('lk-list').innerHTML = tiers.length ? tiers.map(t => `
             <div class="flex items-center justify-between bg-black/50 border border-amber-700/40 rounded-xl px-3 py-2">
                 <span class="text-amber-200 font-bold">⚔️ Pháp Khí Cấp ${t} × ${counts[t]}</span>
-                <button onclick="ngAct(this,'/api/nghe/ban-phap-khi',{cap:${t}})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">Bán 1 (+${t * t * 15}đ)</button>
-            </div>`).join('') : '<p class="text-amber-300/50">Chưa có pháp khí nào. Luyện khí ở trên nhé!</p>';
+                <button onclick="ngAct(this,'/api/nghe/ban-phap-khi',{cap:${t}})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">Bán 1 Cho Tông Môn (+${t * t * 15}đ)</button>
+            </div>`).join('') : '<p class="text-amber-300/50">Chưa có pháp khí nào. Rèn ở trên nhé!</p>';
         // Luyện đan
-        const h = NGHE.herbs || {};
-        document.getElementById('hd-h1').innerText = h['1'] || 0;
-        document.getElementById('hd-h2').innerText = h['2'] || 0;
+        const ldPham = document.getElementById('ld-pham');
+        const curD = ldPham.value;
+        ldPham.innerHTML = [0, 1, 2, 3].map(p => `<option value="${p}">Phẩm ${PHAM_TEN[p]} (có ${VT.duoc[String(p)] || 0} dược)</option>`).join('');
+        if (curD !== '') ldPham.value = curD;
+        ldRate();
         document.getElementById('hd-dan').innerText = NGHE.dan.hoi_linh || 0;
-        document.getElementById('td-h3').innerText = h['3'] || 0;
-        document.getElementById('td-h4').innerText = h['4'] || 0;
         document.getElementById('td-dan').innerText = NGHE.dan.tu_linh || 0;
-        // Linh dược
-        document.getElementById('duoc-plots').innerHTML = NGHE.vuon.map((plot, i) => {
-            if (!plot) return `<div class="bg-black/50 border border-amber-700/40 rounded-xl p-3 space-y-2">
-                <p class="font-black text-amber-200">🟫 Ô Đất ${i + 1} — Trống</p>
-                <div class="flex items-center gap-2">
-                    <select id="trong-cap-${i}" class="p-2 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none">${Array.from({length: 9}, (_, g) => `<option value="${g + 1}">Thảo Cấp ${g + 1} (hạt ${3 * (g + 1)}đ · ${2 * (g + 1)} phút)</option>`).join('')}</select>
-                    <button onclick="ngAct(this,'/api/nghe/vuon/trong',{o:${i},cap:parseInt(document.getElementById('trong-cap-${i}').value)})" class="bg-emerald-700 hover:bg-emerald-600 text-white font-extrabold px-3 py-2 rounded-lg cursor-pointer">🌱 Gieo Hạt</button>
-                </div></div>`;
-            if (plot.con_lai > 0) return `<div class="bg-black/50 border border-amber-700/40 rounded-xl p-3 space-y-2">
-                <p class="font-black text-amber-200">🌱 Ô Đất ${i + 1} — Thảo Cấp ${plot.cap} đang lớn</p>
-                <p class="text-amber-100/75">Còn <b class="text-amber-300" data-left="${plot.con_lai}">${fmtTime(plot.con_lai)}</b> nữa thu hoạch được.</p></div>`;
-            return `<div class="bg-emerald-950/60 border border-emerald-500/60 rounded-xl p-3 space-y-2">
-                <p class="font-black text-emerald-300">🌿 Ô Đất ${i + 1} — Thảo Cấp ${plot.cap} ĐÃ CHÍN!</p>
-                <button onclick="ngAct(this,'/api/nghe/vuon/thu',{o:${i}})" class="bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold px-3 py-2 rounded-lg cursor-pointer">🧺 Thu Hoạch (+2 cây)</button></div>`;
-        }).join('');
+        // Cây linh dược
+        renderCay(VT);
         // Ngự thú
-        const tb = document.getElementById('thu-body');
-        if (NGHE.thu) {
-            const t = NGHE.thu, need = (t.cap >= 10) ? 0 : (t.cap * 3 - t.exp);
-            tb.innerHTML = `<div class="bg-black/50 border border-amber-700/40 rounded-xl p-4 space-y-3">
-                <p class="text-base font-black text-amber-300">🐾 ${t.ten} — Cấp ${t.cap}/10</p>
-                <p class="text-amber-100/80">Hiệu quả: <b class="text-amber-300">+${t.bonus_pct}%</b> điểm nghề &amp; nhiệm vụ · sản xuất <b class="text-amber-300">+${t.cap * 3} điểm</b> mỗi lần điểm danh.</p>
-                <p class="text-amber-100/80">EXP thú: ${t.exp}/27 ${t.cap < 10 ? `· còn ${need} EXP nữa lên cấp ${t.cap + 1} (cho ăn cá +2 EXP, mua thức ăn +1 EXP)` : '· ĐÃ TỐI ĐA CẤP!'}</p>
-                <p class="space-x-1">
-                    <button onclick="ngAct(this,'/api/nghe/thu/cho-an',{loai:'ca'})" class="bg-sky-700 hover:bg-sky-600 text-white font-extrabold px-3 py-2 rounded-lg cursor-pointer">🐟 Cho Ăn Bằng Cá (+2 EXP)</button>
-                    <button onclick="ngAct(this,'/api/nghe/thu/cho-an',{loai:'diem'})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-2 rounded-lg cursor-pointer">🍖 Mua Thức Ăn 20đ (+1 EXP)</button>
-                </p></div>`;
-        } else {
-            tb.innerHTML = `<div class="bg-black/50 border border-amber-700/40 rounded-xl p-4 space-y-3">
-                <p class="font-black text-amber-200">🥚 Đạo hữu chưa có Linh Thú</p>
-                <p class="text-amber-100/80">Linh thú cộng % điểm cho nghề &amp; nhiệm vụ và sản xuất điểm khi điểm danh. Có 2 cách sở hữu: <b>câu được linh thú con ở Đầm Câu</b> (hên xui) hoặc mua Trứng Linh Thú tại đây.</p>
-                <button onclick="ngAct(this,'/api/nghe/thu/mua-trung',{})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-4 py-2.5 rounded-xl cursor-pointer">🥚 Mua Trứng Linh Thú (300 điểm)</button></div>`;
-        }
+        renderThu(VT);
+        renderAuction();
         // Đầm câu
+        const cauPham = document.getElementById('cau-pham');
+        const curC = cauPham.value;
+        cauPham.innerHTML = [0, 1, 2, 3].map(p => `<option value="${p}">Mồi phẩm ${PHAM_TEN[p]} (có ${VT.moi[String(p)] || 0})</option>`).join('');
+        if (curC !== '') cauPham.value = curC;
         document.getElementById('ca-thuong').innerText = NGHE.ca.thuong || 0;
         document.getElementById('ca-ngon').innerText = NGHE.ca.ngon || 0;
         document.getElementById('ca-linh').innerText = NGHE.ca.linh_ngu || 0;
     }
 
-    function fmtTime(sec) {
-        sec = Math.max(0, sec | 0);
-        return Math.floor(sec / 60) + ' phút ' + (sec % 60) + ' giây';
+    function renderCay(VT) {
+        const box = document.getElementById('cay-body');
+        const cay = NGHE.cay;
+        if (!cay) {
+            box.innerHTML = `<div class="rounded-2xl border border-emerald-700/50 bg-gradient-to-b from-emerald-950/80 to-black/70 p-5 text-center space-y-3">
+                <p class="text-6xl">🌱</p>
+                <p class="font-black text-amber-200 text-sm">Vườn Linh Dược — 1 cây chăm dài hạn</p>
+                <p class="text-amber-100/80 max-w-xl mx-auto">Gieo 1 cây rồi chăm mỗi ngày (tối đa <b>10 lượt/ngày</b>): <b>💧 tưới nước</b> (tốn Nước), <b>🌾 bón phân</b> (tốn Phân theo phẩm — phân càng xịn cây lớn càng nhanh), <b>🧤 bắt sâu</b> (cần Bao Tay). Cây đạt Sinh Trưởng 100 thì thu hoạch <b>+Điểm Cống Hiến</b>. Bỏ mặc cây khát/sâu thì tụt Sức Khỏe — thu hoạch lúc cây quá yếu hoặc để cây chết sẽ bị <b class="text-red-300">TRỪ 50 điểm</b>!</p>
+                <button onclick="ngAct(this,'/api/nghe/cay/gieo',{})" class="bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold px-5 py-2.5 rounded-xl cursor-pointer">🌱 Gieo Cây Mới (miễn phí)</button>
+            </div>`;
+            return;
+        }
+        const emoji = cay.sinh_truong < 30 ? '🌱' : cay.sinh_truong < 70 ? '🌿' : cay.sinh_truong < 100 ? '🌳' : '🌳✨';
+        const badges = `${cay.khat ? '<span class="bg-sky-900 border border-sky-400/60 text-sky-200 px-2 py-0.5 rounded-full font-black">💧 ĐANG KHÁT — cần tưới!</span>' : ''} ${cay.sau ? '<span class="bg-red-900 border border-red-400/60 text-red-200 px-2 py-0.5 rounded-full font-black">🐛 CÓ SÂU — cần bắt!</span>' : ''}`;
+        box.innerHTML = `
+        <div class="rounded-2xl border border-emerald-700/50 bg-gradient-to-b from-sky-950/70 via-emerald-950/60 to-black/70 p-5 text-center space-y-2 select-none">
+            <p class="text-7xl">${emoji}</p>
+            <p class="space-x-1">${badges || '<span class="text-emerald-300 font-bold">Cây đang khỏe, chưa có nhu cầu gì đặc biệt</span>'}</p>
+            <div class="max-w-md mx-auto space-y-1.5 text-left">
+                <p class="flex justify-between"><span>🌱 Sinh Trưởng</span><b class="text-emerald-300">${cay.sinh_truong}/100</b></p>
+                <div class="w-full bg-black/60 rounded-full h-3 border border-emerald-700/50 overflow-hidden"><div class="bg-gradient-to-r from-emerald-500 to-lime-400 h-3" style="width:${cay.sinh_truong}%"></div></div>
+                <p class="flex justify-between"><span>❤️ Sức Khỏe</span><b class="${cay.suc_khoe < 40 ? 'text-red-400' : 'text-amber-300'}">${cay.suc_khoe}/100</b></p>
+                <div class="w-full bg-black/60 rounded-full h-3 border border-amber-700/50 overflow-hidden"><div class="bg-gradient-to-r from-red-500 to-amber-400 h-3" style="width:${cay.suc_khoe}%"></div></div>
+            </div>
+        </div>
+        <p class="text-amber-200/85">Lượt chăm hôm nay: <b class="text-amber-300">${NGHE.hom_nay.cham_cay || 0}</b>/10 · Nước đang có: <b class="text-amber-300">${VT.nuoc || 0}</b> bình · Bao Tay: <b class="text-amber-300">${(VT.bao_tay || 0) >= 1 ? 'đã có 🧤' : 'chưa có'}</b></p>
+        <div class="flex flex-wrap items-center gap-2">
+            <button onclick="ngAct(this,'/api/nghe/cay/cham',{hanh_dong:'tuoi'})" class="bg-sky-700 hover:bg-sky-600 text-white font-extrabold px-4 py-2.5 rounded-xl cursor-pointer">💧 Tưới Nước (1 bình)</button>
+            <select id="cay-phan-pham" class="p-2 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none">${[0, 1, 2, 3].map(p => `<option value="${p}">Phân ${PHAM_TEN[p]} (có ${VT.phan[String(p)] || 0})</option>`).join('')}</select>
+            <button onclick="ngAct(this,'/api/nghe/cay/cham',{hanh_dong:'bon',pham:parseInt(document.getElementById('cay-phan-pham').value)})" class="bg-lime-700 hover:bg-lime-600 text-white font-extrabold px-4 py-2.5 rounded-xl cursor-pointer">🌾 Bón Phân</button>
+            <button onclick="ngAct(this,'/api/nghe/cay/cham',{hanh_dong:'bat_sau'})" class="bg-red-800 hover:bg-red-700 text-white font-extrabold px-4 py-2.5 rounded-xl cursor-pointer">🧤 Bắt Sâu</button>
+            ${cay.sinh_truong >= 100 ? '<button onclick="ngAct(this,\'/api/nghe/cay/thu-hoach\',{})" class="bg-gradient-to-r from-emerald-500 to-lime-500 text-black font-extrabold px-4 py-2.5 rounded-xl cursor-pointer">🌳 THU HOẠCH CÂY</button>' : ''}
+        </div>`;
     }
 
-    function lkRate() {
-        const t = parseInt(document.getElementById('lk-cap').value || '1');
-        document.getElementById('lk-rate').innerText = `Tỉ lệ thành công: ${Math.max(40, 95 - 6 * (t - 1))}% · tốn 1 Quặng Cấp ${t} + 1 Nguyên Tinh`;
+    function renderThu(VT) {
+        const tb = document.getElementById('thu-body');
+        const t = NGHE.thu;
+        if (!t) {
+            tb.innerHTML = `<div class="rounded-2xl border border-amber-700/40 bg-gradient-to-b from-indigo-950/70 to-black/70 p-5 text-center space-y-2">
+                <p class="text-6xl">🐾</p>
+                <p class="font-black text-amber-200 text-sm">Đạo hữu chưa có Linh Thú</p>
+                <p class="text-amber-100/80 max-w-xl mx-auto">Linh thú nay chỉ có qua <b class="text-amber-300">Đấu Giá Thú</b> ở dưới (mỗi ngày Tông Môn thả 3 con). Có thú rồi thì cho ăn/uống <b>không giới hạn lượt</b> để lên cấp — cấp càng cao cộng % điểm càng nhiều và bán lại càng lời.</p>
+            </div>`;
+            return;
+        }
+        tb.innerHTML = `
+        <div class="rounded-2xl border border-amber-700/40 bg-gradient-to-b from-indigo-950/70 to-black/70 p-5 text-center space-y-2 select-none">
+            <p class="text-7xl">${beastEmoji(t.ten)}</p>
+            <p class="text-base font-black text-amber-300">${t.ten} ${phamChip(t.pham)} — Cấp ${t.cap}/30</p>
+            <p class="text-amber-100/85">EXP: <b class="text-amber-300">${fmtNum(t.exp)}</b> · Hiệu quả: <b class="text-amber-300">+${t.bonus_pct}%</b> điểm nghề &amp; nhiệm vụ · sản xuất <b class="text-amber-300">+${t.cap * 3} điểm</b>/lần điểm danh</p>
+            <p class="text-amber-100/85">Giá gốc: ${fmtNum(t.gia_goc)}đ · Bán lại cho Tông Môn ngay bây giờ: <b class="text-emerald-300">${fmtNum(t.gia_ban)} điểm</b></p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            <select id="thu-an-pham" class="p-2 rounded-lg border border-amber-600/60 bg-black text-amber-200 font-semibold outline-none">${[0, 1, 2, 3].map(p => `<option value="${p}">Đồ Ăn ${PHAM_TEN[p]} (có ${VT.thuc_an[String(p)] || 0} · +${[3, 6, 12, 25][p]} EXP)</option>`).join('')}</select>
+            <button onclick="ngAct(this,'/api/nghe/thu/cho-an',{loai:'thuc_an',pham:parseInt(document.getElementById('thu-an-pham').value)})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-4 py-2.5 rounded-xl cursor-pointer">🍖 Cho Ăn</button>
+            <button onclick="ngAct(this,'/api/nghe/thu/cho-an',{loai:'nuoc'})" class="bg-sky-700 hover:bg-sky-600 text-white font-extrabold px-4 py-2.5 rounded-xl cursor-pointer">💧 Cho Uống Nước (+2 EXP · có ${VT.nuoc || 0})</button>
+            <button onclick="ngAct(this,'/api/nghe/thu/ban',{})" class="bg-red-800 hover:bg-red-700 text-white font-extrabold px-4 py-2.5 rounded-xl cursor-pointer">💰 Bán Thú (+${fmtNum(t.gia_ban)}đ)</button>
+        </div>
+        <p class="text-amber-200/70">Cho ăn/uống <b>không giới hạn số lần</b> — chỉ tốn vật tư mua ở Cửa Hàng. Nuôi càng lâu, bán càng lời.</p>`;
     }
 
     // Tabs
@@ -278,6 +495,7 @@
             document.querySelectorAll('.ng-panel').forEach(p => p.classList.add('hidden'));
             document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
             if (btn.dataset.tab === 'phu') initCanvas();
+            if (btn.dataset.tab === 'thu') loadDauGia();
         });
     });
 
@@ -355,18 +573,6 @@
             btn.disabled = false;
         };
     }
-
-    // Đếm ngược vườn
-    setInterval(() => {
-        let needReload = false;
-        document.querySelectorAll('[data-left]').forEach(el => {
-            let v = parseInt(el.dataset.left) - 1;
-            el.dataset.left = v;
-            el.innerText = fmtTime(v);
-            if (v <= 0) needReload = true;
-        });
-        if (needReload && !tickBusy) { tickBusy = true; loadNghe(); setTimeout(() => tickBusy = false, 3000); }
-    }, 1000);
 
     document.addEventListener('DOMContentLoaded', loadNghe);
 </script>
