@@ -1439,7 +1439,7 @@
       "bag": [],
       "game": {
         "diem": 170,
-        "vi_yen": 0,
+        "vi_yen": 1000,
         "exp": 50,
         "tu_vi": {
           "muc": 1,
@@ -1487,6 +1487,11 @@
           {
             "time": "27/10/2026 14:46",
             "text": "✅ Bản thảo truyện «Truyen Kiem Chung Dot 8» ĐÃ ĐƯỢC Tông Chủ DUYỆT — truyện đã lên Tàng Kinh Các! +50 Điểm Cống Hiến.",
+            "read": false
+          },
+          {
+            "time": "27/10/2026 14:46",
+            "text": "💰 Lệnh nạp 1.000¥ (mã NAP1) ĐÃ ĐƯỢC DUYỆT — tiền đã vào Ví của đạo hữu! Vào trang Ví để đổi sang Điểm Cống Hiến khi cần.",
             "read": false
           }
         ],
@@ -1637,6 +1642,13 @@
       "time": "27/10/2026 14:46",
       "loai": "truyen",
       "text": "📚 De Tu Dot 10 vừa cống hiến truyện mới «Truyen Kiem Chung Dot 8» lên Tàng Kinh Các!"
+    },
+    {
+      "id": 3,
+      "ts": 1793080011.2642536,
+      "time": "27/10/2026 14:46",
+      "loai": "nap_tien",
+      "text": "💳 De Tu Dot 10 vừa nạp 1.000¥ vào Ví Tông Môn. Cảm ơn đạo hữu đã ủng hộ Tông Môn! 🙏"
     }
   ],
   "chat": [
@@ -1758,7 +1770,7 @@
       "author_name": "De Tu Dot 10",
       "yen": 1000,
       "code": "NAP1",
-      "status": "da_chuyen",
+      "status": "approved",
       "reject_reason": ""
     }
   ],
