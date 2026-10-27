@@ -22,7 +22,7 @@
             margin: 0; padding: 0;
             background-color: #dceeff; /* Nền xanh lam nhạt */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #fef3c7; overflow-x: hidden;
+            color: #1e2a44; overflow-x: hidden;
         }
         .xianxia-bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
@@ -33,10 +33,10 @@
             z-index: -1;
         }
         .panel-3d {
-            background: rgba(15, 32, 51, 0.88);
-            backdrop-filter: blur(14px);
-            border: 1px solid rgba(245, 158, 11, 0.45);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(245, 158, 11, 0.15);
+            background: linear-gradient(165deg, #ffffff 0%, #f4f9ff 55%, #e9f3fd 100%);
+            border: 2px solid rgba(217, 168, 60, 0.85);
+            box-shadow: 0 12px 28px rgba(30, 60, 110, 0.20), inset 0 0 20px rgba(255, 255, 255, 0.65);
+            color: #1e2a44;
         }
         /* BẢN ĐỒ TƯƠNG TÁC: Đã ẩn hoàn toàn khung viền nét đứt, chỉ hiện nhãn tên */
         .hotspot {
@@ -73,6 +73,75 @@
             background: rgba(245, 158, 11, 0.9);
             color: #000;
         }
+
+        /* ===== ĐỢT 6: GIAO DIỆN SÁNG + CHỮ TO + ẨN CHỮ HƯỚNG DẪN =====
+           Các khung nội dung vốn nền tối chữ sáng được ánh xạ sang nền sáng
+           chữ sẫm ngay tại đây, áp dụng cho cả nội dung sinh bằng JS. */
+        .panel-3d .bg-black\/40, .panel-3d .bg-black\/50,
+        header .bg-black\/40, header .bg-black\/50 { background-color: #f7fbff !important; }
+        .panel-3d .bg-black\/60, header .bg-black\/60 { background-color: #eef5ff !important; }
+        .panel-3d .bg-black\/70, .panel-3d .bg-black\/75,
+        header .bg-black\/70 { background-color: #e9f3fd !important; }
+        .panel-3d .bg-black\/80, .panel-3d .bg-black\/85 { background-color: #ffffff !important; }
+        .panel-3d .bg-amber-950\/30, .panel-3d .bg-amber-950\/40 { background-color: #fff6da !important; }
+        .panel-3d .bg-amber-950\/60, .panel-3d .bg-amber-950\/70,
+        .panel-3d .bg-amber-950\/80, .panel-3d .bg-amber-950\/90 { background-color: #fdeec3 !important; }
+        #notif-panel { background-color: #ffffff !important; }
+
+        .panel-3d .text-amber-100, header .text-amber-100,
+        .panel-3d .text-amber-100\/90, header .text-amber-100\/90 { color: #22304f !important; }
+        .panel-3d .text-amber-200, header .text-amber-200 { color: #2c3d5f !important; }
+        .panel-3d .text-amber-200\/60, .panel-3d .text-amber-200\/70,
+        .panel-3d .text-amber-200\/75, .panel-3d .text-amber-200\/80,
+        header .text-amber-200\/70 { color: #5a6c8f !important; }
+        .panel-3d .text-amber-300, header .text-amber-300 { color: #8a5a00 !important; }
+        .panel-3d .text-amber-300\/50, .panel-3d .text-amber-300\/60,
+        .panel-3d .text-amber-300\/70, header .text-amber-300\/90 { color: #8f7440 !important; }
+        .panel-3d .text-amber-400, header .text-amber-400 { color: #b45309 !important; }
+        .panel-3d .text-amber-400\/70 { color: #a16207 !important; }
+        .panel-3d .text-amber-500, header .text-amber-500 { color: #c2620a !important; }
+        .panel-3d .text-emerald-300 { color: #047857 !important; }
+        .panel-3d .text-emerald-400 { color: #059669 !important; }
+        .panel-3d .text-red-300 { color: #b91c1c !important; }
+        .panel-3d .text-sky-300 { color: #0369a1 !important; }
+        .panel-3d .text-fuchsia-300 { color: #a21caf !important; }
+        .panel-3d .text-purple-300 { color: #7e22ce !important; }
+
+        /* Cỡ chữ to hơn, dễ đọc hơn trong các khung nội dung */
+        .panel-3d .text-\[9px\] { font-size: 11.5px !important; }
+        .panel-3d .text-\[10px\] { font-size: 12.5px !important; line-height: 1.45 !important; }
+        .panel-3d .text-\[11px\] { font-size: 13.5px !important; line-height: 1.5 !important; }
+        .panel-3d .text-xs { font-size: 14.5px !important; line-height: 1.55 !important; }
+        .panel-3d .text-sm { font-size: 16px !important; line-height: 1.55 !important; }
+        header .text-\[10px\] { font-size: 12px !important; }
+        header .text-xs { font-size: 13.5px !important; }
+        #notif-list { font-size: 13.5px !important; }
+
+        /* Chữ hướng dẫn: ẩn vào nút ⓘ — di chuột vào hoặc chạm mới hiện */
+        .guide { display: block; margin: 4px 0 2px; }
+        .guide-chip {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 13px; font-weight: 800; color: #8a5a00;
+            background: #fff3cf; border: 1.5px solid #d9a83c;
+            padding: 3px 12px; border-radius: 999px; cursor: pointer;
+        }
+        .guide-chip:hover { background: #ffe9a8; }
+        .guide-body {
+            display: none; margin-top: 8px;
+            background: #fffaf0; border: 1px dashed #d9a83c;
+            border-radius: 12px; padding: 10px 12px;
+        }
+        .guide:hover .guide-body, .guide:focus-within .guide-body,
+        .guide.open .guide-body { display: block; }
+
+        /* Ô nhập liệu và nút phụ: nền đen/xám đậm -> sáng cho hợp giao diện mới */
+        .panel-3d .bg-black { background-color: #ffffff !important; }
+        .panel-3d select, .panel-3d textarea,
+        .panel-3d input[type="text"], .panel-3d input[type="number"],
+        .panel-3d input[type="password"], .panel-3d input[type="file"] {
+            background-color: #ffffff !important; color: #22304f !important;
+        }
+        .panel-3d .bg-slate-700, .panel-3d .bg-slate-800 { background-color: #e2e8f0 !important; }
     </style>
 </head>
 <body class="flex flex-col justify-between min-h-screen">
@@ -80,7 +149,7 @@
     <div class="xianxia-bg"></div>
 
     <!-- HEADER & TRÌNH PHÁT NHẠC NỀN TÔNG MÔN -->
-    <header class="relative z-20 bg-[#0c1b2a]/90 text-amber-200 border-b border-amber-600/40 backdrop-blur-md sticky top-0 shadow-2xl">
+    <header class="relative z-20 bg-[#fff6dd]/95 text-amber-200 border-b-2 border-amber-500/70 backdrop-blur-md sticky top-0 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <i class="fa-solid fa-dharmachakra text-amber-400 text-3xl animate-spin" style="animation-duration: 20s;"></i>
@@ -140,13 +209,13 @@
     </header>
 
     <!-- ĐIỀU HƯỚNG NHANH TOÀN WEB -->
-    <div class="max-w-7xl mx-auto px-4 mt-3 flex flex-wrap justify-center gap-2 text-[11px] font-bold relative z-30">
-        <a href="/" class="bg-black/60 border border-amber-600/50 text-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-900/60 transition">🏠 Trang Chủ</a>
+    <div class="max-w-7xl mx-auto px-4 mt-3 flex flex-wrap justify-center gap-2 text-[13.5px] font-bold relative z-30">
+        <a href="/" class="bg-white/90 border border-amber-600/60 text-slate-800 px-3 py-1.5 rounded-full hover:bg-amber-100 shadow-sm transition">🏠 Trang Chủ</a>
         <a href="/sanh-chinh" class="bg-amber-600 border border-amber-400 text-black px-3 py-1.5 rounded-full hover:bg-amber-500 transition shadow">🏛️ Sảnh Chính · Nhiệm Vụ & Đổi Điểm</a>
-        <a href="/tang-kinh-cac" class="bg-black/60 border border-amber-600/50 text-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-900/60 transition">📚 Tàng Kinh Các</a>
-        <a href="/tui-tru-vat" class="bg-black/60 border border-amber-600/50 text-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-900/60 transition">🎒 Túi Trữ Vật</a>
-        <a href="/che-tap-cac" class="bg-black/60 border border-amber-600/50 text-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-900/60 transition">🛠️ Nghề Phụ Trợ</a>
-        <a href="/bi-canh" class="bg-black/60 border border-amber-600/50 text-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-900/60 transition">⚖️ Chợ Đấu Giá</a>
+        <a href="/tang-kinh-cac" class="bg-white/90 border border-amber-600/60 text-slate-800 px-3 py-1.5 rounded-full hover:bg-amber-100 shadow-sm transition">📚 Tàng Kinh Các</a>
+        <a href="/tui-tru-vat" class="bg-white/90 border border-amber-600/60 text-slate-800 px-3 py-1.5 rounded-full hover:bg-amber-100 shadow-sm transition">🎒 Túi Trữ Vật</a>
+        <a href="/che-tap-cac" class="bg-white/90 border border-amber-600/60 text-slate-800 px-3 py-1.5 rounded-full hover:bg-amber-100 shadow-sm transition">🛠️ Nghề Phụ Trợ</a>
+        <a href="/bi-canh" class="bg-white/90 border border-amber-600/60 text-slate-800 px-3 py-1.5 rounded-full hover:bg-amber-100 shadow-sm transition">⚖️ Chợ Đấu Giá</a>
     </div>
 
     <!-- BANNER SỰ KIỆN TÔNG MÔN (Đợt 4) -->
@@ -230,7 +299,7 @@
     </div>
 
     <!-- FOOTER -->
-    <footer class="relative z-20 bg-[#070e17]/95 text-amber-200/70 text-center py-4 text-xs border-t border-amber-900/60">
+    <footer class="relative z-20 bg-white/85 text-slate-600 text-center py-4 text-[13px] border-t-2 border-amber-500/50">
         <button id="install-app-btn" onclick="installApp()" class="hidden mb-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-extrabold px-4 py-2 rounded-full shadow">📲 CÀI APP TÔNG MÔN VỀ MÁY</button>
         <p>© 2026 Đại Thiên Tông - Đọc Truyện, Nghe Truyện & Tu Luyện.</p>
     </footer>
@@ -473,7 +542,7 @@
             if (!rows.length) { list.innerHTML = '<p class="text-xs text-amber-300/60">Chưa có dữ liệu xếp hạng.</p>'; return; }
             const medals = ['🥇', '🥈', '🥉'];
             list.innerHTML = rows.map((r, i) => `
-                <div class="flex items-center justify-between p-2.5 bg-[#0f2027]/90 border ${i === 0 ? 'border-amber-400' : 'border-amber-500/40'} rounded-xl">
+                <div class="flex items-center justify-between p-2.5 bg-[#fff7e0] border ${i === 0 ? 'border-amber-400' : 'border-amber-500/40'} rounded-xl">
                     <div class="flex items-center space-x-2">
                         <span class="w-6 h-6 rounded-full ${i < 3 ? 'bg-amber-500 text-black' : 'bg-black/70 text-amber-300 border border-amber-600/50'} flex items-center justify-center font-black text-xs">${medals[i] || (i + 1)}</span>
                         ${r.chibi && window.chibiSVG ? `<span class="shrink-0">${chibiSVG(r.chibi, 30)}</span>` : ''}
@@ -511,6 +580,12 @@
             }).catch(() => {});
         }
         document.addEventListener('DOMContentLoaded', loadEventBanner);
+
+        // ĐỢT 6: nút "ⓘ Hướng dẫn" — chạm để mở/đóng (trên máy tính di chuột vào là hiện)
+        document.addEventListener('click', (e) => {
+            const chip = e.target.closest('.guide-chip');
+            if (chip) chip.closest('.guide').classList.toggle('open');
+        });
 
         // NHÂN VẬT CHIBI CHẠY TRÊN WEB (Đợt 5)
         let CHIBI_RUN = null;

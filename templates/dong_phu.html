@@ -37,12 +37,12 @@
             </span>
             <span class="text-[10px] text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-600/40">🔒 Bảo mật theo đạo hiệu</span>
         </h3>
-        <p class="text-[11px] text-amber-200/60 leading-relaxed">
+        <div class="guide"><button type="button" class="guide-chip">ⓘ Hướng dẫn</button><div class="guide-body"><p class="text-[11px] text-amber-200/60 leading-relaxed">
             Tài nguyên trong túi được lưu trên đám mây và gắn chặt với tài khoản của đạo hữu: dù web sửa code hay
             deploy lại bao nhiêu lần, chỉ cần đăng nhập đúng tên đăng nhập đã tạo là tài nguyên vẫn còn nguyên.
             Đạo hữu có thể <b class="text-amber-300">đọc truyện ngay trong túi</b>, hoặc
             <b class="text-amber-300">đăng tài nguyên từ túi lên Tàng Kinh Các</b> để chia sẻ cho cả tông môn.
-        </p>
+        </p></div></div>
         <div id="tui-tru-vat-list" class="space-y-2">
             <p class="text-xs text-amber-300/50 text-center py-4">Đang mở túi trữ vật từ hư không...</p>
         </div>
@@ -488,15 +488,15 @@
                         <p class="text-sm font-extrabold text-fuchsia-200">${u.author_name}</p>
                         <p>💇 Tóc: <b>${toc}</b> · 🎨 Màu tóc: <b>${mau}</b></p>
                         <p>👘 ${ao} · ✨ Pháp bảo: <b>${pb}</b></p>
-                        <p class="text-amber-300/70 leading-relaxed">Nhân vật này gắn vĩnh viễn với đạo hào của đạo hữu: chạy trên mọi trang web,
+                        <div class="guide"><button type="button" class="guide-chip">ⓘ Hướng dẫn</button><div class="guide-body"><p class="text-amber-300/70 leading-relaxed">Nhân vật này gắn vĩnh viễn với đạo hào của đạo hữu: chạy trên mọi trang web,
                         xuất hiện cạnh tên đạo hữu ở Thiên Thư Bảng và đầu trang. Mỗi tài khoản chỉ có 1 nhân vật duy nhất —
-                        muốn nhân vật khác, đạo hữu hãy tạo tài khoản mới.</p>
+                        muốn nhân vật khác, đạo hữu hãy tạo tài khoản mới.</p></div></div>
                     </div>
                 </div>`;
             } else {
                 box.innerHTML = `
-                <p class="text-[11px] text-amber-200/75 leading-relaxed">Tài khoản của đạo hữu chưa có nhân vật chibi. Hãy tự phối 1 nhân vật thật ưng ý —
-                <b class="text-fuchsia-300">chọn xong là gắn vĩnh viễn với đạo hào, không đổi lại được</b> (chỉ Chưởng Môn Nhân mới mở khóa chọn lại được khi lỡ tay).</p>
+                <div class="guide"><button type="button" class="guide-chip">ⓘ Hướng dẫn</button><div class="guide-body"><p class="text-[11px] text-amber-200/75 leading-relaxed">Tài khoản của đạo hữu chưa có nhân vật chibi. Hãy tự phối 1 nhân vật thật ưng ý —
+                <b class="text-fuchsia-300">chọn xong là gắn vĩnh viễn với đạo hào, không đổi lại được</b> (chỉ Chưởng Môn Nhân mới mở khóa chọn lại được khi lỡ tay).</p></div></div>
                 <div id="dp-chibi-picker" class="mt-2"></div>
                 <button onclick="submitChibiPick()" class="mt-3 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-extrabold text-xs py-2.5 px-5 rounded-xl shadow transition cursor-pointer">🔒 Chốt Nhân Vật Này — Gắn Vĩnh Viễn Với Đạo Hào</button>`;
                 if (window.buildChibiPicker) {
