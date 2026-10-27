@@ -149,6 +149,8 @@
         <button onclick="rdSkip(-1)" title="Đoạn trước" style="background: #1f2937; color: #fff; border: none; font-weight: 700; font-size: 13px; padding: 8px 12px; border-radius: 999px; cursor: pointer;">⏮</button>
         <button onclick="rdSkip(1)" title="Đoạn sau" style="background: #1f2937; color: #fff; border: none; font-weight: 700; font-size: 13px; padding: 8px 12px; border-radius: 999px; cursor: pointer;">⏭</button>
         <button onclick="rdStop()" style="background: #374151; color: #fff; border: none; font-weight: 700; font-size: 13px; padding: 8px 14px; border-radius: 999px; cursor: pointer;">⏹ Dừng</button>
+        <button onclick="rdDownloadTxt()" title="Tải toàn bộ truyện về máy dạng file chữ" style="background: #0ea5e9; color: #fff; border: none; font-weight: 700; font-size: 13px; padding: 8px 14px; border-radius: 999px; cursor: pointer;">⬇️ Tải Truyện (.txt)</button>
+        <button onclick="rdDownloadMp3()" id="rd-dl-mp3" title="Tải MP3 của chương đang chọn ở mục Nghe từ" style="background: #7c3aed; color: #fff; border: none; font-weight: 700; font-size: 13px; padding: 8px 14px; border-radius: 999px; cursor: pointer;">🎧 Tải MP3 Chương Này</button>
         <select id="rd-voice" style="padding: 7px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 1px solid #10b981;">
             <option value="vi-VN-HoaiMyNeural">🎙 Nữ — Hoài My</option>
             <option value="vi-VN-NamMinhNeural">👨 Nam — Nam Minh</option>
@@ -303,6 +305,62 @@
         if (RD._wake) RD._wake();
         RD.audio.pause(); RD.audio.removeAttribute('src'); RD.audio.load();
         rdBtn('▶ Nghe Truyện'); rdStatus('Đã dừng đọc.');
+    }
+    // ===== ĐỢT 7: TẢI VỀ — truyện (.txt) & MP3 của chương đang chọn =====
+    function rdSafeName(s) { return (s || 'truyen').replace(/[\\/:*?"<>|]/g, '').trim().slice(0, 60) || 'truyen'; }
+    function rdChapterSlice() {
+        const container = document.getElementById('story-content-body');
+        if (!container) return { title: '', text: '' };
+        const kids = Array.from(container.children);
+        if (!kids.length) return { title: '', text: '' };
+        const from = document.getElementById('rd-from').value;
+        let startEl = from ? document.getElementById(from) : null;
+        let fromIdx = 0;
+        if (startEl) {
+            fromIdx = kids.indexOf(startEl);
+            if (fromIdx < 0) { startEl = null; fromIdx = 0; }
+        }
+        let j = kids.length;
+        const begin = startEl ? fromIdx : 0;
+        for (let k = begin + 1; k < kids.length; k++) {
+            if (kids[k].classList && kids[k].classList.contains('chapter-anchor')) { j = k; break; }
+        }
+        const text = kids.slice(begin, j).map(el => el.innerText).join('\n').trim();
+        return { title: startEl ? startEl.innerText : '', text };
+    }
+    function rdDownloadTxt() {
+        const container = document.getElementById('story-content-body');
+        if (!container) return;
+        const title = (document.title || 'Truyen').replace(/ - Đọc Truyện$/, '');
+        const blob = new Blob(['\ufeff' + title + '\n\n' + container.innerText.trim()], { type: 'text/plain;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = rdSafeName(title) + '.txt';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        rdStatus('Đã tải truyện (.txt) về máy!');
+    }
+    async function rdDownloadMp3() {
+        const slice = rdChapterSlice();
+        if (!slice.text || slice.text.length < 10) { alert('Chương này chưa có nội dung để tải!'); return; }
+        const btn = document.getElementById('rd-dl-mp3');
+        btn.disabled = true; btn.style.opacity = .6;
+        try {
+            const chunks = rdChunk(slice.text);
+            const parts = [];
+            for (let i = 0; i < chunks.length; i++) {
+                rdStatus(`Đang tạo MP3 chương này: đoạn ${i + 1}/${chunks.length}...`);
+                const res = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: chunks[i], voice: document.getElementById('rd-voice').value }) });
+                if (!res.ok) throw new Error('tts');
+                parts.push(await res.blob());
+            }
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob(parts, { type: 'audio/mpeg' }));
+            a.download = rdSafeName(slice.title || document.title) + '.mp3';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            rdStatus('Đã tải MP3 của chương về máy! 🎧');
+        } catch (e) { rdStatus('Tải MP3 thất bại — máy chủ giọng đọc đang bận, thử lại sau.'); }
+        btn.disabled = false; btn.style.opacity = 1;
     }
     document.getElementById('rd-voice').addEventListener('change', () => { rdStop(); RD.sig = ''; });
     document.getElementById('rd-from').addEventListener('change', () => { rdStop(); RD.sig = ''; });
