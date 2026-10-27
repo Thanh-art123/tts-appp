@@ -18,6 +18,42 @@
         </div>
     </div>
 
+    <!-- ĐỢT 7: Mục nhỏ chuyển chữ thành giọng đọc — gọn mặc định, ấn vào mới mở -->
+    <div class="rounded-xl border border-amber-600/50 bg-black/30 mb-4">
+        <button type="button" onclick="tkTtsToggle()" class="w-full flex items-center justify-between px-4 py-3 cursor-pointer">
+            <span class="text-sm font-extrabold text-amber-300">🔊 Chuyển Chữ Thành Giọng Đọc — Nghe Thử &amp; Tải MP3</span>
+            <span id="tk-tts-arrow" class="text-amber-300 font-bold">▸ Mở</span>
+        </button>
+        <div id="tk-tts-body" class="hidden px-4 pb-4 space-y-3">
+            <textarea id="tk-tts-text" rows="3" placeholder="Dán hoặc nhập đoạn chữ muốn nghe thử tại đây..." class="w-full p-3 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm"></textarea>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                <div>
+                    <label class="block text-xs font-bold text-amber-300 mb-1">Giọng đọc:</label>
+                    <select id="tk-tts-voice" class="w-full p-2.5 rounded-lg border border-amber-600/60 text-xs font-semibold outline-none">
+                        <option value="vi-VN-HoaiMyNeural">🎙 Nữ — Hoài My</option>
+                        <option value="vi-VN-NamMinhNeural">👨 Nam — Nam Minh</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-amber-300 mb-1">Tốc độ:</label>
+                    <select id="tk-tts-rate" onchange="tkTtsRate()" class="w-full p-2.5 rounded-lg border border-amber-600/60 text-xs font-semibold outline-none">
+                        <option value="0.8">0.8x</option>
+                        <option value="1" selected>1.0x</option>
+                        <option value="1.25">1.25x</option>
+                        <option value="1.5">1.5x</option>
+                        <option value="2">2.0x</option>
+                    </select>
+                </div>
+                <p class="text-xs text-amber-200/90">Trạng thái: <strong id="tk-tts-status" class="text-emerald-400">Sẵn sàng</strong></p>
+            </div>
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="tkTtsPlay()" id="tk-tts-play" class="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-extrabold py-2.5 rounded-xl shadow transition text-xs">▶ Nghe Thử</button>
+                <button onclick="tkTtsStop()" class="bg-slate-600 hover:bg-slate-500 text-white font-extrabold py-2.5 rounded-xl shadow transition text-xs">⏹ Dừng</button>
+                <button onclick="tkTtsDownload()" class="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-extrabold py-2.5 rounded-xl shadow transition text-xs">⬇️ Tải MP3</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Phân loại Chuyên Mục -->
     <div class="flex space-x-2 border-b border-amber-600/40 pb-3 mb-4">
         <button onclick="switchCategory('truyen-dich')" id="btn-truyen-dich" class="sub-btn active-sub text-xs font-bold px-4 py-2 rounded-lg bg-black/60 border border-amber-600/50 text-amber-300 transition cursor-pointer">
@@ -281,6 +317,100 @@
         updateAuthUI();
         loadBooksFromServer();
     });
+
+    // ===== ĐỢT 7: CHUYỂN CHỮ THÀNH GIỌNG ĐỌC (mục nhỏ trong Tàng Kinh Các) =====
+    const TK = { audio: new Audio(), chunks: [], idx: 0, gen: 0, state: 'idle', blobs: new Map(), urls: new Map() };
+    TK.audio.preload = 'auto';
+    function tkStatus(t, ok) {
+        const el = document.getElementById('tk-tts-status');
+        if (el) { el.innerText = t; el.className = ok === false ? 'text-red-500' : 'text-emerald-500'; }
+    }
+    function tkTtsToggle() {
+        const body = document.getElementById('tk-tts-body');
+        const arrow = document.getElementById('tk-tts-arrow');
+        const open = body.classList.toggle('hidden') === false;
+        arrow.innerText = open ? '▾ Thu gọn' : '▸ Mở';
+    }
+    function tkChunk(text, maxLen) {
+        maxLen = maxLen || 900;
+        const parts = (text || '').replace(/\s+/g, ' ').match(/[^.!?…]+[.!?…]*["”’']?\s*/g) || [text];
+        const out = []; let cur = '';
+        for (const p of parts) {
+            if (cur && (cur + p).length > maxLen) { out.push(cur.trim()); cur = p; } else cur += p;
+            while (cur.length > maxLen) { out.push(cur.slice(0, maxLen).trim()); cur = cur.slice(maxLen); }
+        }
+        if (cur.trim()) out.push(cur.trim());
+        return out.filter(Boolean);
+    }
+    async function tkFetch(i) {
+        if (TK.blobs.has(i)) return TK.blobs.get(i);
+        const res = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: TK.chunks[i], voice: document.getElementById('tk-tts-voice').value }) });
+        if (!res.ok) throw new Error('tts');
+        const b = await res.blob();
+        TK.blobs.set(i, b); TK.urls.set(i, URL.createObjectURL(b));
+        return b;
+    }
+    async function tkLoop(gen) {
+        while (TK.idx < TK.chunks.length) {
+            if (gen !== TK.gen) return;
+            tkStatus(`Đang tạo âm thanh đoạn ${TK.idx + 1}/${TK.chunks.length}...`);
+            try { await tkFetch(TK.idx); } catch (e) { tkStatus('Máy chủ giọng đọc đang bận — thử lại sau giây lát.', false); TK.state = 'idle'; tkBtn(); return; }
+            if (gen !== TK.gen) return;
+            TK.audio.src = TK.urls.get(TK.idx);
+            TK.audio.playbackRate = parseFloat(document.getElementById('tk-tts-rate').value) || 1;
+            TK.state = 'playing'; tkBtn();
+            tkStatus(`Đang đọc đoạn ${TK.idx + 1}/${TK.chunks.length}`);
+            try { await TK.audio.play(); } catch (e) {}
+            if (TK.idx + 1 < TK.chunks.length) tkFetch(TK.idx + 1).catch(() => {});
+            await new Promise(res => { TK._wake = res; TK.audio.onended = res; TK.audio.onerror = res; });
+            if (gen !== TK.gen) return;
+            TK.idx++;
+        }
+        TK.state = 'idle'; tkBtn(); tkStatus('Đọc xong!');
+    }
+    function tkBtn() {
+        const b = document.getElementById('tk-tts-play');
+        if (b) b.innerText = TK.state === 'playing' ? '⏸ Tạm Dừng' : (TK.state === 'paused' ? '▶ Tiếp Tục' : '▶ Nghe Thử');
+    }
+    function tkTtsPlay() {
+        if (TK.state === 'playing') { TK.audio.pause(); TK.state = 'paused'; tkBtn(); tkStatus('Đã tạm dừng'); return; }
+        if (TK.state === 'paused') { TK.state = 'playing'; tkBtn(); TK.audio.playbackRate = parseFloat(document.getElementById('tk-tts-rate').value) || 1; TK.audio.play().catch(() => {}); return; }
+        const text = document.getElementById('tk-tts-text').value.trim();
+        if (!text) { alert('Hãy nhập đoạn chữ muốn nghe thử trước!'); return; }
+        TK.chunks = tkChunk(text);
+        TK.blobs.clear(); TK.urls.forEach(u => URL.revokeObjectURL(u)); TK.urls.clear();
+        TK.idx = 0; TK.gen++;
+        tkLoop(TK.gen);
+    }
+    function tkTtsStop() {
+        TK.gen++; TK.state = 'idle'; TK.idx = 0;
+        if (TK._wake) TK._wake();
+        TK.audio.pause(); TK.audio.removeAttribute('src'); TK.audio.load();
+        tkBtn(); tkStatus('Đã dừng');
+    }
+    function tkTtsRate() { TK.audio.playbackRate = parseFloat(document.getElementById('tk-tts-rate').value) || 1; }
+    async function tkTtsDownload() {
+        const text = document.getElementById('tk-tts-text').value.trim();
+        if (!text) { alert('Chưa có nội dung để tải!'); return; }
+        try {
+            const chunks = tkChunk(text);
+            const parts = [];
+            for (let i = 0; i < chunks.length; i++) {
+                tkStatus(`Đang tạo MP3: đoạn ${i + 1}/${chunks.length}...`);
+                const res = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: chunks[i], voice: document.getElementById('tk-tts-voice').value }) });
+                if (!res.ok) throw new Error('tts');
+                parts.push(await res.blob());
+            }
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob(parts, { type: 'audio/mpeg' }));
+            a.download = 'giong-doc-dai-thien-tong.mp3';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            tkStatus('Đã tải file MP3 về máy!');
+        } catch (e) { tkStatus('Tải MP3 thất bại — máy chủ giọng đọc đang bận.', false); }
+    }
+    document.getElementById('tk-tts-voice').addEventListener('change', () => { tkTtsStop(); });
 </script>
 <style>
     .elem-btn.active-elem { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); transform: scale(1.05); border-width: 2px; }
