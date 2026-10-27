@@ -3245,7 +3245,7 @@
       "game": {
         "diem": 22,
         "vi_yen": 0,
-        "exp": 13,
+        "exp": 15,
         "tu_vi": {
           "muc": 1,
           "cap": -1,
@@ -3268,13 +3268,15 @@
           "total": {
             "khai_thac": 1,
             "luyen_khi": 1,
-            "lk_ok": 1
+            "lk_ok": 1,
+            "cau_ca": 1
           },
           "today": {
             "date": "2026-10-27",
             "khai_thac": 1,
             "luyen_khi": 1,
-            "lk_ok": 1
+            "lk_ok": 1,
+            "cau_ca": 1
           }
         },
         "missions": {
@@ -3333,7 +3335,7 @@
           },
           "ca": {
             "thuong": 0,
-            "ngon": 0,
+            "ngon": 1,
             "linh_ngu": 0
           },
           "phap_khi": [
@@ -3363,7 +3365,7 @@
               "3": 0
             },
             "moi": {
-              "0": 2,
+              "0": 1,
               "1": 0,
               "2": 0,
               "3": 0
