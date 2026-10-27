@@ -27,6 +27,38 @@
     </div>
 
     <div class="panel-3d rounded-2xl p-5 space-y-3">
+        <h3 class="text-sm font-extrabold text-amber-300 uppercase tracking-wider">💳 Lệnh Nạp Tiền Chờ Duyệt (Đợt 9)</h3>
+        <p class="text-[11px] text-amber-300/70">Đệ tử tạo lệnh nạp → chuyển khoản → báo «Đã Chuyển Khoản». Tông Chủ đối chiếu sao kê thấy tiền về thì bấm <strong>Duyệt</strong>: tiền vào Ví của đệ tử ngay (đổi điểm theo tỷ giá 100¥ = 1.000 điểm khi đệ tử tự đổi).</p>
+        <div id="topups-box" class="space-y-2 text-xs">
+            <p class="text-amber-300/50">Đang nạp danh sách lệnh nạp...</p>
+        </div>
+    </div>
+
+    <div class="panel-3d rounded-2xl p-5 space-y-3">
+        <h3 class="text-sm font-extrabold text-amber-300 uppercase tracking-wider">🏦 Ví Tông Môn — Tiền Nạp Của Đệ Tử</h3>
+        <div id="vi-tong-box" class="text-xs space-y-2">
+            <p class="text-amber-300/50">Đang nạp số liệu ví...</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            <input id="payout-yen" type="number" min="0" step="100" placeholder="Số yên chuyển về tài khoản (trống = rút hết số đang giữ)" class="flex-1 min-w-[220px] p-2 rounded-lg border border-amber-600/50 text-xs">
+            <button onclick="doPayout()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-4 py-2 rounded-lg text-xs cursor-pointer">🏦 Đánh Dấu Đã Chuyển Về Tài Khoản</button>
+        </div>
+        <div class="pt-2 border-t border-amber-800/50 space-y-2">
+            <label class="block text-xs font-bold text-amber-300">Thông tin nhận tiền (đệ tử thấy ở trang Ví khi tạo lệnh nạp — ngân hàng / số tài khoản / chủ tài khoản / PayPay...):</label>
+            <textarea id="bank-info-text" rows="3" placeholder="Ví dụ: Ngân hàng ゆうちょ銀行 • Số TK: 1234567 • Chủ TK: TRUONG QUOC THANH" class="w-full p-3 rounded-xl border border-amber-600/50 text-sm"></textarea>
+            <button onclick="saveBankInfo()" class="bg-sky-700 hover:bg-sky-600 text-white font-extrabold px-4 py-2 rounded-lg text-xs cursor-pointer">💾 Lưu Thông Tin Nhận Tiền</button>
+        </div>
+    </div>
+
+    <div class="panel-3d rounded-2xl p-5 space-y-3">
+        <h3 class="text-sm font-extrabold text-amber-300 uppercase tracking-wider">📝 Bản Thảo Truyện Chờ Duyệt (Đợt 8)</h3>
+        <p class="text-[11px] text-amber-300/70">Đệ tử đăng truyện lên Tàng Kinh Các đều phải qua mục này. Tông Chủ bấm <strong>Duyệt</strong> thì truyện mới xuất hiện công khai (+50 điểm cho người đăng); <strong>Từ Chối</strong> thì ghi lý do, đệ tử nhận chuông báo (chuyển từ Túi sẽ được hoàn phí Nguyên Tinh).</p>
+        <div id="subs-box" class="space-y-2 text-xs">
+            <p class="text-amber-300/50">Đang nạp danh sách bản thảo...</p>
+        </div>
+    </div>
+
+    <div class="panel-3d rounded-2xl p-5 space-y-3">
         <h3 class="text-sm font-extrabold text-amber-300 uppercase tracking-wider">📣 Đăng Thông Báo Lên Bảng Tin (Đợt 7)</h3>
         <textarea id="admin-news-text" rows="2" maxlength="500" placeholder="Nội dung thông báo của Chưởng Môn Nhân — sẽ hiện trên Bảng Tin trang chủ và gửi chuông cho toàn bộ đệ tử..." class="w-full p-3 rounded-xl border border-amber-600/50 text-sm"></textarea>
         <button onclick="postAdminNews()" class="bg-red-700 hover:bg-red-600 text-white font-extrabold px-4 py-2 rounded-lg text-xs cursor-pointer">📣 Đăng Thông Báo</button>
@@ -147,6 +179,90 @@
         }).catch(() => { document.getElementById('events-box').innerHTML = '<p class="text-red-300">Không nạp được sự kiện.</p>'; });
     }
 
+    async function loadTopups() {
+        const box = document.getElementById('topups-box');
+        const vbox = document.getElementById('vi-tong-box');
+        try {
+            const r = await fetch('/api/admin/topups');
+            const d = await r.json();
+            const tops = d.topups || [];
+            if (box) {
+                if (!tops.length) box.innerHTML = '<p class="text-emerald-500 font-bold">✅ Không có lệnh nạp nào đang chờ.</p>';
+                else box.innerHTML = tops.map(t => `
+                    <div class="rounded-xl border border-amber-600/40 bg-black/30 p-3 space-y-2">
+                        <p class="font-extrabold text-amber-200 text-sm">💴 ${Number(t.yen || 0).toLocaleString('vi-VN')}¥ — mã <span class="text-amber-300">${escQ(t.code)}</span></p>
+                        <p class="text-amber-200/80">Người nạp: <strong>${escQ(t.author_name)}</strong> (@${escQ(t.username)}) • ${t.status === 'da_chuyen' ? '📨 Đã báo chuyển khoản' : '⏳ Chưa báo chuyển'} • ${escQ(t.time || '')}</p>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="topupAction(${t.id}, 'duyet')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-4 py-2 rounded-lg cursor-pointer">✅ Duyệt — Cộng Tiền Vào Ví</button>
+                            <input id="topup-reason-${t.id}" type="text" placeholder="Lý do từ chối..." class="flex-1 min-w-[140px] p-2 rounded-lg border border-amber-600/50 text-xs">
+                            <button onclick="topupAction(${t.id}, 'tu_choi')" class="bg-red-700 hover:bg-red-600 text-white font-extrabold px-4 py-2 rounded-lg cursor-pointer">❌ Từ Chối</button>
+                        </div>
+                    </div>`).join('');
+            }
+            const v = d.vi_tong_mon || {};
+            if (vbox) {
+                const giu = v.dang_giu || 0, muc = v.muc_tieu || 300000;
+                const pct = Math.min(100, Math.round(giu / muc * 100));
+                const pays = (v.payouts || []).map(p => `<p class="text-amber-200/80">🏦 ${escQ(p.time || '')}: đã chuyển <strong>${Number(p.yen || 0).toLocaleString('vi-VN')}¥</strong> về tài khoản</p>`).join('');
+                vbox.innerHTML = `
+                    <p class="text-amber-200">Tổng đệ tử đã nạp (đã duyệt): <strong>${Number(v.tong_nap || 0).toLocaleString('vi-VN')}¥</strong> • Đã chuyển về tài khoản: <strong>${Number(v.da_rut || 0).toLocaleString('vi-VN')}¥</strong></p>
+                    <p class="text-amber-200">Đang giữ trong Ví Tông Môn: <strong class="text-emerald-400">${Number(giu).toLocaleString('vi-VN')}¥</strong> / mục tiêu ${Number(muc).toLocaleString('vi-VN')}¥ (30 man)</p>
+                    <div class="w-full bg-black/50 rounded-full h-3 overflow-hidden"><div class="bg-emerald-500 h-3" style="width:${pct}%"></div></div>
+                    ${giu >= muc ? '<p class="font-extrabold text-emerald-400">🎉 ĐÃ ĐỦ 30 MAN — chuyển về tài khoản ngân hàng được rồi, Tông Chủ!</p>' : `<p class="text-amber-200/70">Còn thiếu ${Number(muc - giu).toLocaleString('vi-VN')}¥ nữa là đủ 30 man.</p>`}
+                    ${pays ? `<div class="pt-1 space-y-1">${pays}</div>` : ''}`;
+            }
+            const bi = document.getElementById('bank-info-text');
+            if (bi && document.activeElement !== bi) bi.value = d.bank_info || '';
+        } catch (e) { if (box) box.innerHTML = '<p class="text-red-500">Không tải được danh sách lệnh nạp.</p>'; }
+    }
+    async function topupAction(id, action) {
+        const reasonEl = document.getElementById('topup-reason-' + id);
+        const d = await post('/api/admin/topup-action', { id, action, reason: reasonEl ? reasonEl.value : '' });
+        alert(d.message || 'Xong!');
+        if (d.success) loadTopups();
+    }
+    async function doPayout() {
+        const v = document.getElementById('payout-yen').value;
+        const d = await post('/api/admin/payout', v ? { yen: parseInt(v) } : {});
+        alert(d.message || 'Xong!');
+        if (d.success) { document.getElementById('payout-yen').value = ''; loadTopups(); }
+    }
+    async function saveBankInfo() {
+        const text = document.getElementById('bank-info-text').value;
+        const d = await post('/api/admin/bank-info', { text });
+        alert(d.message || 'Xong!');
+    }
+    function escQ(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    async function loadSubs() {
+        const box = document.getElementById('subs-box');
+        if (!box) return;
+        try {
+            const r = await fetch('/api/admin/submissions');
+            const d = await r.json();
+            const subs = d.submissions || [];
+            if (!subs.length) { box.innerHTML = '<p class="text-emerald-500 font-bold">✅ Không có bản thảo nào đang chờ duyệt.</p>'; return; }
+            box.innerHTML = subs.map(s => `
+                <div class="rounded-xl border border-amber-600/40 bg-black/30 p-3 space-y-2">
+                    <p class="font-extrabold text-amber-200 text-sm">📖 ${escQ(s.title)}</p>
+                    <p class="text-amber-200/80">Người gửi: <strong>${escQ(s.author_name)}</strong> (@${escQ(s.username)}) • ${s.source === 'bag' ? 'Từ Túi Trữ Vật' + (s.phi_nguyen ? ` (phí ${s.phi_nguyen} NT)` : '') : 'Tải lên trực tiếp'} • ${s.so_chuong} chương • ${(s.do_dai || 0).toLocaleString('vi-VN')} ký tự • ${escQ(s.time || '')}</p>
+                    <button onclick="document.getElementById('sub-preview-${s.id}').classList.toggle('hidden')" class="bg-slate-600 hover:bg-slate-500 text-white font-bold px-3 py-1.5 rounded-lg cursor-pointer">👁 Xem Trước Nội Dung</button>
+                    <div id="sub-preview-${s.id}" class="hidden bg-white/90 text-slate-800 rounded-lg p-3 whitespace-pre-line max-h-56 overflow-y-auto">${escQ(s.preview || '')}…</div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="subAction(${s.id}, 'duyet')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-4 py-2 rounded-lg cursor-pointer">✅ Duyệt — Đăng Lên Tàng Kinh Các</button>
+                        <input id="sub-reason-${s.id}" type="text" placeholder="Lý do từ chối (đệ tử sẽ thấy)..." class="flex-1 min-w-[160px] p-2 rounded-lg border border-amber-600/50 text-xs">
+                        <button onclick="subAction(${s.id}, 'tu_choi')" class="bg-red-700 hover:bg-red-600 text-white font-extrabold px-4 py-2 rounded-lg cursor-pointer">❌ Từ Chối</button>
+                    </div>
+                </div>`).join('');
+        } catch (e) { box.innerHTML = '<p class="text-red-500">Không tải được danh sách bản thảo.</p>'; }
+    }
+    async function subAction(id, action) {
+        const reasonEl = document.getElementById('sub-reason-' + id);
+        const d = await post('/api/admin/submission-action', { id, action, reason: reasonEl ? reasonEl.value : '' });
+        alert(d.message || 'Xong!');
+        if (d.success) loadSubs();
+    }
     async function postAdminNews() {
         const ta = document.getElementById('admin-news-text');
         const text = (ta.value || '').trim();
@@ -160,6 +276,6 @@
         post('/api/admin/event', {key, action}).then(res => { alert(res.message); loadEventsAdmin(); });
     }
 
-    document.addEventListener('DOMContentLoaded', () => { loadUsers(); loadEventsAdmin(); });
+    document.addEventListener('DOMContentLoaded', () => { loadUsers(); loadEventsAdmin(); loadSubs(); loadTopups(); });
 </script>
 {% endblock %}
