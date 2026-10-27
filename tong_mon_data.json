@@ -2334,6 +2334,21 @@
       "role": "member",
       "chibi": null,
       "text": "Chào ông chủ, em Tiểu Hắc vào chat thử đây 👋 Ông chủ nhắn lại 1 tin em xem có đứng máy không nhé"
+    },
+    {
+      "id": 24,
+      "ts": 1793086363.3340473,
+      "time": "27/10/2026 16:32",
+      "username": "mothaiba",
+      "author_name": "một con vịt",
+      "role": "member",
+      "chibi": {
+        "toc": 0,
+        "mau_toc": 2,
+        "ao": 2,
+        "phap_bao": "quat"
+      },
+      "text": "em ăn gì chưa"
     }
   ],
   "submissions": [
