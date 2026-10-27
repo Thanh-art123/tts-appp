@@ -9,6 +9,14 @@
         <p class="text-xs text-amber-100">Số dư của đạo hữu: <span id="sc-diem" class="font-black text-amber-300">...</span> Điểm Cống Hiến · <span id="sc-exp" class="font-bold text-amber-300">...</span></p>
     </div>
 
+    <!-- SỰ KIỆN TÔNG MÔN (Đợt 4) -->
+    <div class="panel-3d rounded-2xl p-5 space-y-3">
+        <h3 class="text-sm font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2">🎉 Sự Kiện Tông Môn</h3>
+        <div id="event-cards" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+            <p class="text-amber-300/60">Đang nạp sự kiện...</p>
+        </div>
+    </div>
+
     <!-- TU VI & LINH KHÍ -->
     <div class="panel-3d rounded-2xl p-5 space-y-4">
         <h3 class="text-sm font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2">🌀 Tu Vi & Linh Khí</h3>
@@ -112,6 +120,7 @@
         {add:25,price:700,name:'+25 ô truyện'},{add:-1,price:2000,name:'Túi Càn Khôn (không giới hạn)'},
     ];
     let GAME = null;
+    let EV = null;
 
     function post(url, body) {
         return fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body || {})})
@@ -128,8 +137,9 @@
 
     function rewardText(rw) {
         const parts = [];
-        if (rw.diem) parts.push(`+${fmtNum(rw.diem)} điểm`);
-        if (rw.exp) parts.push(`+${rw.exp} EXP`);
+        const x2 = EV && EV.tuan_le && EV.tuan_le.on;
+        if (rw.diem) parts.push(`+${fmtNum(rw.diem * (x2 ? 2 : 1))} điểm${x2 ? ' (x2 🎉)' : ''}`);
+        if (rw.exp) parts.push(`+${rw.exp * (x2 ? 2 : 1)} EXP${x2 ? ' (x2 🎉)' : ''}`);
         if (rw.stones) for (const k in rw.stones) {
             const st = STONES.find(s => s.key === k);
             parts.push(`+${rw.stones[k]} ${st ? st.name : k}`);
@@ -225,12 +235,36 @@
         document.getElementById('ms-nghe').innerHTML = by('nghe');
     }
 
+    function scFmtLeft(sec) {
+        sec = Math.max(0, sec | 0);
+        const d = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60);
+        return (d > 0 ? d + ' ngày ' : '') + (h > 0 ? h + ' giờ ' : '') + m + ' phút';
+    }
+
+    function renderEvents() {
+        const box = document.getElementById('event-cards');
+        if (!box || !EV) return;
+        box.innerHTML = ['tuan_le', 'dai_hoi'].map(k => {
+            const e = EV[k];
+            if (!e) return '';
+            return `<div class="bg-black/50 border ${e.on ? 'border-emerald-500/70' : 'border-amber-700/40'} rounded-xl px-3 py-3 space-y-1">
+                <p class="font-black text-amber-200 text-sm">${e.icon} ${e.name}</p>
+                <p class="text-amber-100/80">${e.desc}</p>
+                <p class="${e.on ? 'text-emerald-300' : 'text-amber-300/50'} font-bold">${e.on ? `🟢 Đang diễn ra — còn ${scFmtLeft(e.con_lai)}` : '⚪ Chưa mở — chờ Chưởng Môn Nhân khai mạc'}</p>
+                ${k === 'dai_hoi' && e.on ? '<a href="/bi-canh" class="inline-block bg-purple-700 hover:bg-purple-600 text-white font-extrabold px-3 py-1.5 rounded-lg">Vào Chợ Đấu Giá →</a>' : ''}
+            </div>`;
+        }).join('');
+    }
+
     function refresh() {
         fetch('/api/me').then(r => r.json()).then(res => {
             if (res.success) { GAME = res.user.game; renderAll(); if (typeof loadProfileBox === 'function') loadProfileBox(); }
         });
         fetch('/api/missions').then(r => r.json()).then(res => {
-            if (res.success) renderMissions(res.missions);
+            if (res.success) { if (res.events) { EV = res.events; renderEvents(); } renderMissions(res.missions); }
+        });
+        fetch('/api/events').then(r => r.json()).then(res => {
+            if (res.success) { EV = res.events; renderEvents(); }
         });
     }
 
