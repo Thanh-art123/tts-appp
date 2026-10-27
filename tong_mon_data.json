@@ -1237,8 +1237,8 @@
       },
       "bag": [],
       "game": {
-        "diem": 999999966,
-        "exp": 1000013,
+        "diem": 999999993,
+        "exp": 1000040,
         "tu_vi": {
           "muc": 12,
           "cap": 3,
@@ -1269,14 +1269,14 @@
         },
         "stats": {
           "total": {
-            "khai_thac": 1,
+            "khai_thac": 10,
             "luyen_khi": 1,
             "lk_ok": 1,
             "ve_phu": 1
           },
           "today": {
             "date": "2026-10-27",
-            "khai_thac": 1,
+            "khai_thac": 10,
             "luyen_khi": 1,
             "lk_ok": 1,
             "ve_phu": 1
@@ -1354,6 +1354,42 @@
           {
             "time": "27/10/2026 20:53",
             "text": "Luyện khí thành công pháp khí cấp 1 (+24 Điểm Cống Hiến)"
+          },
+          {
+            "time": "27/10/2026 21:05",
+            "text": "Khai thác quặng ở Mỏ Quặng (+3 Điểm Cống Hiến)"
+          },
+          {
+            "time": "27/10/2026 21:05",
+            "text": "Khai thác quặng ở Mỏ Quặng (+3 Điểm Cống Hiến)"
+          },
+          {
+            "time": "27/10/2026 21:05",
+            "text": "Khai thác quặng ở Mỏ Quặng (+3 Điểm Cống Hiến)"
+          },
+          {
+            "time": "27/10/2026 21:05",
+            "text": "Khai thác quặng ở Mỏ Quặng (+3 Điểm Cống Hiến)"
+          },
+          {
+            "time": "27/10/2026 21:05",
+            "text": "Khai thác quặng ở Mỏ Quặng (+3 Điểm Cống Hiến)"
+          },
+          {
+            "time": "27/10/2026 21:05",
+            "text": "Khai thác quặng ở Mỏ Quặng (+3 Điểm Cống Hiến)"
+          },
+          {
+            "time": "27/10/2026 21:05",
+            "text": "Khai thác quặng ở Mỏ Quặng (+3 Điểm Cống Hiến)"
+          },
+          {
+            "time": "27/10/2026 21:06",
+            "text": "Khai thác quặng ở Mỏ Quặng (+3 Điểm Cống Hiến)"
+          },
+          {
+            "time": "27/10/2026 21:06",
+            "text": "Khai thác quặng ở Mỏ Quặng (+3 Điểm Cống Hiến)"
           }
         ],
         "streak": {
@@ -1396,7 +1432,7 @@
           },
           "vat_tu": {
             "quang": {
-              "0": 0,
+              "0": 9,
               "1": 0,
               "2": 0,
               "3": 0
