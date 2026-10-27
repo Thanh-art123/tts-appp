@@ -48,7 +48,7 @@
 
     <!-- MỎ QUẶNG -->
     <div id="tab-mo" class="ng-panel hidden space-y-4">
-        <div class="rounded-2xl border border-amber-700/40 bg-gradient-to-b from-stone-800/80 to-black/70 p-4 text-center select-none">
+        <div class="scene-dark rounded-2xl border border-amber-700/40 bg-gradient-to-b from-stone-800/80 to-black/70 p-4 text-center select-none">
             <span class="text-5xl">⛰️</span><span class="text-5xl">⛏️</span><span class="text-5xl">🪨</span>
             <p class="text-[11px] text-amber-200/70 mt-1">Mỏ Quặng Tông Môn — chỉ đào ra Quặng phẩm Trắng; quặng xịn mua ở Cửa Hàng Vật Tư</p>
         </div>
@@ -62,7 +62,7 @@
 
     <!-- LUYỆN KHÍ (Đợt 19: gõ búa 3 phát) -->
     <div id="tab-khi" class="ng-panel hidden space-y-4">
-        <div class="rounded-2xl border border-orange-700/50 bg-gradient-to-b from-orange-950/80 to-black/70 p-4 text-center select-none overflow-hidden">
+        <div class="scene-dark rounded-2xl border border-orange-700/50 bg-gradient-to-b from-orange-950/80 to-black/70 p-4 text-center select-none overflow-hidden">
             <span class="text-5xl inline-block">🌋</span>
             <span id="khi-hammer" class="text-6xl inline-block transition-transform duration-150" style="transform: rotate(0deg)">🔨</span>
             <span class="text-5xl inline-block">⚒️</span>
@@ -85,7 +85,7 @@
 
     <!-- LUYỆN ĐAN (Đợt 19: gõ lô 3 phát) -->
     <div id="tab-dan" class="ng-panel hidden space-y-4">
-        <div class="rounded-2xl border border-teal-700/50 bg-gradient-to-b from-teal-950/80 to-black/70 p-4 text-center select-none overflow-hidden">
+        <div class="scene-dark rounded-2xl border border-teal-700/50 bg-gradient-to-b from-teal-950/80 to-black/70 p-4 text-center select-none overflow-hidden">
             <span id="dan-lo" class="text-6xl inline-block transition-transform duration-150">🏺</span>
             <span class="text-4xl inline-block">💨</span><span class="text-4xl inline-block">🌿</span>
             <p class="text-[11px] text-amber-200/70 mt-1">Đan Lô Tông Môn — chọn linh dược theo phẩm, gõ đủ <b>3 phát</b> để hoàn thành 1 lò đan</p>
@@ -186,7 +186,7 @@
 
     <!-- ĐẦM CÂU (Đợt 19: mồi theo phẩm) -->
     <div id="tab-cau" class="ng-panel hidden space-y-4">
-        <div class="rounded-2xl border border-sky-700/50 bg-gradient-to-b from-sky-950/80 to-black/70 p-4 text-center select-none overflow-hidden">
+        <div class="scene-dark rounded-2xl border border-sky-700/50 bg-gradient-to-b from-sky-950/80 to-black/70 p-4 text-center select-none overflow-hidden">
             <span class="text-5xl inline-block">🌊</span>
             <span id="cau-rod" class="text-6xl inline-block transition-transform duration-200">🎣</span>
             <span class="text-4xl inline-block">🐟</span><span class="text-4xl inline-block">🐠</span>
@@ -429,7 +429,7 @@
         const box = document.getElementById('cay-body');
         const cay = NGHE.cay;
         if (!cay) {
-            box.innerHTML = `<div class="rounded-2xl border border-emerald-700/50 bg-gradient-to-b from-emerald-950/80 to-black/70 p-5 text-center space-y-3">
+            box.innerHTML = `<div class="scene-dark rounded-2xl border border-emerald-700/50 bg-gradient-to-b from-emerald-950/80 to-black/70 p-5 text-center space-y-3">
                 <p class="text-6xl">🌱</p>
                 <p class="font-black text-amber-200 text-sm">Vườn Linh Dược — 1 cây chăm dài hạn</p>
                 <p class="text-amber-100/80 max-w-xl mx-auto">Gieo 1 cây rồi chăm mỗi ngày (tối đa <b>10 lượt/ngày</b>): <b>💧 tưới nước</b> (tốn Nước), <b>🌾 bón phân</b> (tốn Phân theo phẩm — phân càng xịn cây lớn càng nhanh), <b>🧤 bắt sâu</b> (cần Bao Tay). Cây đạt Sinh Trưởng 100 thì thu hoạch <b>+Điểm Cống Hiến</b>. Bỏ mặc cây khát/sâu thì tụt Sức Khỏe — thu hoạch lúc cây quá yếu hoặc để cây chết sẽ bị <b class="text-red-300">TRỪ 50 điểm</b>!</p>
@@ -440,7 +440,7 @@
         const emoji = cay.sinh_truong < 30 ? '🌱' : cay.sinh_truong < 70 ? '🌿' : cay.sinh_truong < 100 ? '🌳' : '🌳✨';
         const badges = `${cay.khat ? '<span class="bg-sky-900 border border-sky-400/60 text-sky-200 px-2 py-0.5 rounded-full font-black">💧 ĐANG KHÁT — cần tưới!</span>' : ''} ${cay.sau ? '<span class="bg-red-900 border border-red-400/60 text-red-200 px-2 py-0.5 rounded-full font-black">🐛 CÓ SÂU — cần bắt!</span>' : ''}`;
         box.innerHTML = `
-        <div class="rounded-2xl border border-emerald-700/50 bg-gradient-to-b from-sky-950/70 via-emerald-950/60 to-black/70 p-5 text-center space-y-2 select-none">
+        <div class="scene-dark rounded-2xl border border-emerald-700/50 bg-gradient-to-b from-sky-950/70 via-emerald-950/60 to-black/70 p-5 text-center space-y-2 select-none">
             <p class="text-7xl">${emoji}</p>
             <p class="space-x-1">${badges || '<span class="text-emerald-300 font-bold">Cây đang khỏe, chưa có nhu cầu gì đặc biệt</span>'}</p>
             <div class="max-w-md mx-auto space-y-1.5 text-left">
@@ -464,15 +464,15 @@
         const tb = document.getElementById('thu-body');
         const t = NGHE.thu;
         if (!t) {
-            tb.innerHTML = `<div class="rounded-2xl border border-amber-700/40 bg-gradient-to-b from-indigo-950/70 to-black/70 p-5 text-center space-y-2">
-                <p class="text-6xl">🐾</p>
-                <p class="font-black text-amber-200 text-sm">Đạo hữu chưa có Linh Thú</p>
-                <p class="text-amber-100/80 max-w-xl mx-auto">Linh thú nay chỉ có qua <b class="text-amber-300">Đấu Giá Thú</b> ở dưới (mỗi ngày Tông Môn thả 3 con). Có thú rồi thì cho ăn/uống <b>không giới hạn lượt</b> để lên cấp — cấp càng cao cộng % điểm càng nhiều và bán lại càng lời.</p>
+            tb.innerHTML = `<div class="scene-dark rounded-2xl border border-amber-700/40 bg-gradient-to-b from-indigo-950/70 to-black/70 p-5 text-center space-y-2">
+                <p class="text-6xl">🏚️</p>
+                <p class="font-black text-amber-200 text-base tracking-wide">CHUỒNG THÚ: TRỐNG</p>
+                <p class="text-amber-100/80 max-w-xl mx-auto">Trong chuồng hiện <b class="text-amber-300">không có linh thú nào</b> (chưa có trứng thú, chưa có sủng thú con non). Linh thú nay chỉ có qua <b class="text-amber-300">Đấu Giá Thú</b> ở dưới (mỗi ngày Tông Môn thả 3 con). Có thú rồi thì cho ăn/uống <b>không giới hạn lượt</b> để lên cấp — cấp càng cao cộng % điểm càng nhiều và bán lại càng lời.</p>
             </div>`;
             return;
         }
         tb.innerHTML = `
-        <div class="rounded-2xl border border-amber-700/40 bg-gradient-to-b from-indigo-950/70 to-black/70 p-5 text-center space-y-2 select-none">
+        <div class="scene-dark rounded-2xl border border-amber-700/40 bg-gradient-to-b from-indigo-950/70 to-black/70 p-5 text-center space-y-2 select-none">
             <p class="text-7xl">${beastEmoji(t.ten)}</p>
             <p class="text-base font-black text-amber-300">${t.ten} ${phamChip(t.pham)} — Cấp ${t.cap}/30</p>
             <p class="text-amber-100/85">EXP: <b class="text-amber-300">${fmtNum(t.exp)}</b> · Hiệu quả: <b class="text-amber-300">+${t.bonus_pct}%</b> điểm nghề &amp; nhiệm vụ · sản xuất <b class="text-amber-300">+${t.cap * 3} điểm</b>/lần điểm danh</p>
