@@ -2,12 +2,59 @@
 {% block title %}Chợ Đấu Giá - Đại Thiên Tông{% endblock %}
 
 {% block content %}
+<div id="vi-nap" class="panel-3d rounded-2xl p-6 relative space-y-4 mb-6">
+    <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
+        <i class="fa-solid fa-wallet text-amber-500"></i>
+        <span>💳 Ví & Nạp Tiền — Mua Điểm Cống Hiến</span>
+    </h2>
+    <div class="flex flex-wrap gap-2 text-[12px] font-bold">
+        <span class="bg-emerald-950/60 border border-emerald-600/50 rounded-full px-3 py-1.5">💴 Số dư Ví: <b id="vi-yen" class="text-emerald-300">—</b></span>
+        <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">💠 Điểm Cống Hiến: <b id="vi-diem" class="text-amber-300">—</b></span>
+        <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">Tỷ giá: <b class="text-amber-300">100¥ = 1.000 điểm</b></span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-2">
+            <p class="text-xs font-extrabold text-amber-300">💴 NẠP TIỀN VÀO VÍ</p>
+            <div class="flex flex-wrap gap-1.5">
+                <button type="button" onclick="wvSetNap(100)" class="bg-black/60 border border-amber-600/50 text-amber-200 font-extrabold px-3 py-1.5 rounded-lg text-xs cursor-pointer">100¥</button>
+                <button type="button" onclick="wvSetNap(500)" class="bg-black/60 border border-amber-600/50 text-amber-200 font-extrabold px-3 py-1.5 rounded-lg text-xs cursor-pointer">500¥</button>
+                <button type="button" onclick="wvSetNap(1000)" class="bg-black/60 border border-amber-600/50 text-amber-200 font-extrabold px-3 py-1.5 rounded-lg text-xs cursor-pointer">1.000¥</button>
+                <button type="button" onclick="wvSetNap(5000)" class="bg-black/60 border border-amber-600/50 text-amber-200 font-extrabold px-3 py-1.5 rounded-lg text-xs cursor-pointer">5.000¥</button>
+                <button type="button" onclick="wvSetNap(10000)" class="bg-black/60 border border-amber-600/50 text-amber-200 font-extrabold px-3 py-1.5 rounded-lg text-xs cursor-pointer">10.000¥</button>
+                <button type="button" onclick="wvSetNap(30000)" class="bg-black/60 border border-amber-600/50 text-amber-200 font-extrabold px-3 py-1.5 rounded-lg text-xs cursor-pointer">30.000¥</button>
+            </div>
+            <div class="flex items-end gap-2">
+                <input id="nap-yen" type="number" min="100" step="100" value="1000" oninput="wvNapPreview()" class="flex-1 p-2.5 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm font-bold">
+                <button onclick="wvTaoLenh()" class="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-extrabold px-4 py-2.5 rounded-xl shadow transition text-xs whitespace-nowrap">💳 Tạo Lệnh Nạp</button>
+            </div>
+            <p class="text-[11px] text-amber-200/90">Đổi hết sẽ được: <strong id="nap-preview" class="text-amber-300">10.000 điểm</strong></p>
+            <div id="nap-guide-box" class="hidden rounded-xl border border-sky-500/50 bg-sky-950/40 p-3 space-y-1.5">
+                <p class="text-xs font-extrabold text-sky-300">📌 Chuyển khoản cho lệnh <span id="nap-code-label"></span>:</p>
+                <div id="bank-info" class="text-xs text-sky-100 whitespace-pre-line"></div>
+                <p class="text-xs text-sky-100">⚠️ Nội dung chuyển khoản ghi đúng mã <strong id="nap-code-strong" class="text-amber-300"></strong> — chuyển xong bấm <strong>«Đã Chuyển Khoản»</strong> ở lệnh bên dưới. Tông Chủ duyệt xong tiền sẽ vào Ví.</p>
+            </div>
+        </div>
+        <div class="space-y-2">
+            <p class="text-xs font-extrabold text-amber-300">🔄 ĐỔI YÊN SANG ĐIỂM CỐNG HIẾN</p>
+            <div class="flex items-end gap-2">
+                <input id="doi-yen" type="number" min="100" step="100" value="100" oninput="wvDoiPreview()" class="flex-1 p-2.5 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm font-bold">
+                <button onclick="wvDoiDiem()" class="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold px-4 py-2.5 rounded-xl shadow transition text-xs whitespace-nowrap">🔄 Đổi Ngay</button>
+            </div>
+            <p class="text-[11px] text-amber-200/90">Sẽ nhận: <strong id="doi-preview" class="text-amber-300">1.000 Điểm Cống Hiến</strong> (mỗi lần đổi tối thiểu 100¥)</p>
+            <p class="text-xs font-extrabold text-amber-300 pt-1">🧾 LỆNH NẠP CỦA TA</p>
+            <div id="topup-list" class="space-y-1.5 text-xs">
+                <p class="text-slate-500">Đang tải...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="panel-3d rounded-2xl p-6 relative space-y-5">
     <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
         <i class="fa-solid fa-gavel text-amber-500"></i>
         <span>Chợ Đấu Giá Tông Môn — Buôn Bán · Đấu Giá · Trao Đổi</span>
     </h2>
-    <div class="guide"><button type="button" class="guide-chip">ⓘ Hướng dẫn</button><div class="guide-body"><p class="text-xs text-amber-200/80 leading-relaxed">Nơi đệ tử toàn Tông Môn giao thương bằng <b class="text-amber-300">Điểm Cống Hiến</b>: rao bán giá cố định, đấu giá vật hiếm (trả bằng Điểm hoặc Nguyên Tinh), hoặc rao đổi vật lấy vật. Mọi giao dịch đều <b>ký quỹ tại chợ</b> nên không lo bị lừa; chợ thu <b class="text-amber-300">phí sàn <span id="cho-fee">5</span>%</b> khi bán thành công. Điều kiện rao bán/mở đấu giá: <b class="text-amber-300">Cấp Hoạt Động ≥ 5</b> (chống tài khoản rác).</p></div></div>
+    <div class="guide"><button type="button" class="guide-chip">ⓘ Hướng dẫn</button><div class="guide-body"><p class="text-xs text-amber-200/80 leading-relaxed">Nơi đệ tử toàn Tông Môn giao thương bằng <b class="text-amber-300">Điểm Cống Hiến</b>: rao bán giá cố định, đấu giá vật hiếm (trả bằng Điểm hoặc Nguyên Tinh), hoặc rao đổi vật lấy vật. Mọi giao dịch đều <b>ký quỹ tại chợ</b> nên không lo bị lừa; chợ thu <b class="text-amber-300">phí sàn <span id="cho-fee">5</span>%</b> khi bán thành công. <b class="text-amber-300">Mọi đệ tử đều được</b> rao bán / mở đấu giá / trao đổi — nhặt được đồ (quặng, thảo mộc, cá, pháp khí, bảo vật...) cứ đăng lên bán kiếm Điểm Cống Hiến. Cần điểm nhanh thì nạp tiền vào Ví ngay trong chợ này (mục Ví & Nạp Tiền ở trên cùng).</p></div></div>
     <div class="flex flex-wrap gap-2 text-[11px] font-bold">
         <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">💠 Điểm: <b id="cho-diem" class="text-amber-300">…</b></span>
         <span class="bg-black/60 border border-amber-600/50 rounded-full px-3 py-1.5">💎 Nguyên Tinh: <b id="cho-nt" class="text-amber-300">…</b></span>
@@ -258,5 +305,74 @@
     }, 1000);
 
     document.addEventListener('DOMContentLoaded', loadCho);
+
+    // ===== ĐỢT 9+10: VÍ & NẠP TIỀN NGAY TRONG CHỢ =====
+    let WV = { vi_yen: 0, diem: 0, rate: 10, bank_info: '' };
+    function wvEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function wvFmt(n) { return Number(n || 0).toLocaleString('vi-VN') + '¥'; }
+    function wvSetNap(v) { document.getElementById('nap-yen').value = v; wvNapPreview(); }
+    function wvNapPreview() {
+        const yen = parseInt(document.getElementById('nap-yen').value) || 0;
+        document.getElementById('nap-preview').innerText = (yen * WV.rate).toLocaleString('vi-VN') + ' điểm';
+    }
+    function wvDoiPreview() {
+        const yen = parseInt(document.getElementById('doi-yen').value) || 0;
+        document.getElementById('doi-preview').innerText = (yen * WV.rate).toLocaleString('vi-VN') + ' Điểm Cống Hiến';
+    }
+    const WV_STATUS = {
+        cho_chuyen: '<span class="font-extrabold text-amber-600">⏳ Chờ chuyển khoản</span>',
+        da_chuyen: '<span class="font-extrabold text-sky-600">📨 Đã chuyển — chờ duyệt</span>',
+        approved: '<span class="font-extrabold text-emerald-600">✅ Đã duyệt</span>',
+        rejected: '<span class="font-extrabold text-red-600">❌ Bị từ chối</span>'
+    };
+    async function wvLoad() {
+        try {
+            const r = await fetch('/api/wallet');
+            const d = await r.json();
+            if (!d.success) return;
+            WV = d;
+            document.getElementById('vi-yen').innerText = wvFmt(d.vi_yen);
+            document.getElementById('vi-diem').innerText = Number(d.diem || 0).toLocaleString('vi-VN');
+            wvNapPreview(); wvDoiPreview();
+            const box = document.getElementById('topup-list');
+            const tops = d.topups || [];
+            if (!tops.length) { box.innerHTML = '<p class="text-slate-500">Chưa có lệnh nạp nào.</p>'; return; }
+            box.innerHTML = tops.map(t => `
+                <div class="rounded-lg border border-amber-600/30 bg-black/20 px-2.5 py-1.5 flex flex-wrap items-center gap-1.5 justify-between">
+                    <span class="text-amber-200"><strong>${wvFmt(t.yen)}</strong> • Mã <strong class="text-amber-300">${wvEsc(t.code)}</strong></span>
+                    <span>${WV_STATUS[t.status] || wvEsc(t.status)}${t.status === 'rejected' && t.reject_reason ? ` — ${wvEsc(t.reject_reason)}` : ''}</span>
+                    ${t.status === 'cho_chuyen' ? `<button onclick="wvDaChuyen(${t.id})" class="bg-sky-600 hover:bg-sky-500 text-white font-extrabold px-2.5 py-1 rounded-lg cursor-pointer">📨 Đã Chuyển Khoản</button>` : ''}
+                </div>`).join('');
+        } catch (e) { /* bỏ qua lỗi mạng tạm thời */ }
+    }
+    async function wvTaoLenh() {
+        const yen = parseInt(document.getElementById('nap-yen').value) || 0;
+        const r = await fetch('/api/wallet/topup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ yen }) });
+        const d = await r.json();
+        alert(d.message || 'Xong!');
+        if (d.success) {
+            document.getElementById('nap-guide-box').classList.remove('hidden');
+            document.getElementById('nap-code-label').innerText = d.code;
+            document.getElementById('nap-code-strong').innerText = d.code;
+            document.getElementById('bank-info').innerText = WV.bank_info || '(Tông Chủ chưa cài thông tin nhận tiền — hãy nhắn Tông Chủ để được hướng dẫn chuyển khoản.)';
+            wvLoad();
+        }
+    }
+    async function wvDaChuyen(id) {
+        const r = await fetch('/api/wallet/topup-done', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+        const d = await r.json();
+        alert(d.message || 'Xong!');
+        if (d.success) wvLoad();
+    }
+    async function wvDoiDiem() {
+        const yen = parseInt(document.getElementById('doi-yen').value) || 0;
+        const r = await fetch('/api/wallet/doi-diem', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ yen }) });
+        const d = await r.json();
+        alert(d.message || 'Xong!');
+        if (d.success) { wvLoad(); loadCho(); }
+    }
+    document.addEventListener('DOMContentLoaded', wvLoad);
 </script>
 {% endblock %}
