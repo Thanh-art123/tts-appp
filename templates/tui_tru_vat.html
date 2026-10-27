@@ -14,8 +14,15 @@
     <div class="guide"><button type="button" class="guide-chip">ⓘ Hướng dẫn</button><div class="guide-body"><p class="text-xs text-amber-200/70 leading-relaxed">
         Mỗi tài nguyên đạo hữu đã cất vào túi là một <b class="text-amber-300">biểu tượng công pháp</b> ở dưới.
         <b class="text-amber-300">Ấn vào biểu tượng</b> để hiện tên truyện và các nút Đọc / Chuyển lên Tàng Kinh Các / Xóa.
+        Mục <b class="text-amber-300">💎 Tài Nguyên</b> chứa toàn bộ vật tư + thành phẩm hành nghề (quặng, đan, cá, pháp khí...) — mọi thứ kiếm được ở Nghề Phụ Trợ đều cất về đây.
     </p></div></div>
 
+    <div class="flex flex-wrap gap-1.5 text-[11px] font-extrabold" id="bag-tabs">
+        <button data-btab="truyen" class="bag-tab bg-amber-600 text-black px-3 py-2 rounded-xl cursor-pointer">📚 Truyện Trong Túi</button>
+        <button data-btab="tainguyen" class="bag-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer">💎 Tài Nguyên &amp; Thành Phẩm</button>
+    </div>
+
+    <div id="bag-tab-truyen" class="space-y-5">
     <!-- LƯỚI BIỂU TƯỢNG CÔNG PHÁP TRONG TÚI -->
     <div id="bag-grid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
         <p class="text-xs text-amber-300/50 col-span-full text-center py-6">Đang mở túi trữ vật từ hư không...</p>
@@ -60,6 +67,15 @@
             <i class="fa-solid fa-box-archive"></i>
             <span>Cất Vào Túi Trữ Vật</span>
         </button>
+    </div>
+    </div><!-- /bag-tab-truyen -->
+
+    <!-- MỤC TÀI NGUYÊN (Đợt 19 bổ sung theo lệnh ông chủ: cất TẤT CẢ vào Túi Trữ Vật) -->
+    <div id="bag-tab-tainguyen" class="hidden space-y-4">
+        <p class="text-xs text-amber-200/85">Toàn bộ <b class="text-amber-300">vật tư hành nghề + thành phẩm</b> của đạo hữu đều cất tại đây: vật tư mua ở Cửa Hàng Vật Tư (trang Nghề Phụ Trợ), pháp khí rèn được, đan luyện được, cá câu được... Bán / dùng ngay tại mục này cũng được.</p>
+        <div id="tn-body" class="space-y-4 text-xs">
+            <p class="text-amber-300/50 text-center py-6">Đang mở mục tài nguyên...</p>
+        </div>
     </div>
 </div>
 
@@ -298,6 +314,112 @@
                 if (selectedBagId === null) document.getElementById('bag-detail').innerHTML = '<p class="text-xs text-amber-300/60 text-center py-2">👆 Ấn vào một biểu tượng ở trên để xem tên và thao tác.</p>';
             }
         });
+    }
+
+    // ---- Mục TÀI NGUYÊN (Đợt 19 bổ sung) ----
+    const TN_PHAM_TEN = ['Trắng', 'Lục', 'Lam', 'Tím'];
+    const TN_PHAM_CHIP = ['bg-slate-200 text-slate-900', 'bg-emerald-500 text-black', 'bg-sky-500 text-black', 'bg-purple-500 text-white'];
+    let tnLoaded = false;
+
+    document.querySelectorAll('#bag-tabs .bag-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#bag-tabs .bag-tab').forEach(b => b.className = 'bag-tab bg-black/60 text-amber-200 border border-amber-600/50 px-3 py-2 rounded-xl cursor-pointer');
+            btn.className = 'bag-tab bg-amber-600 text-black px-3 py-2 rounded-xl cursor-pointer';
+            document.getElementById('bag-tab-truyen').classList.toggle('hidden', btn.dataset.btab !== 'truyen');
+            document.getElementById('bag-tab-tainguyen').classList.toggle('hidden', btn.dataset.btab !== 'tainguyen');
+            if (btn.dataset.btab === 'tainguyen') loadTaiNguyen();
+        });
+    });
+
+    function tnPhamChip(p) { return `<span class="px-1.5 py-0.5 rounded-full font-black ${TN_PHAM_CHIP[p]}">${TN_PHAM_TEN[p]}</span>`; }
+
+    async function tnAct(btn, url, body) {
+        if (btn) btn.disabled = true;
+        try {
+            const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
+            const res = await r.json();
+            alert(res.message || (res.success ? 'Xong!' : 'Có lỗi xảy ra!'));
+        } catch (e) { alert('Mất kết nối, thử lại nhé!'); }
+        if (btn) btn.disabled = false;
+        loadTaiNguyen();
+    }
+
+    function loadTaiNguyen() {
+        fetch('/api/nghe').then(r => r.json()).then(res => {
+            if (!res.success) return;
+            tnLoaded = true;
+            renderTaiNguyen(res.nghe);
+        }).catch(() => {});
+    }
+
+    function renderTaiNguyen(ng) {
+        const box = document.getElementById('tn-body');
+        const VT = ng.vat_tu || { quang: {}, duoc: {}, moi: {}, phan: {}, thuc_an: {}, nuoc: 0, bao_tay: 0 };
+        const gradedRow = (icon, ten, store) => `
+            <div class="flex flex-wrap items-center gap-2 bg-black/50 border border-amber-700/40 rounded-xl px-3 py-2">
+                <span class="font-bold text-amber-200 w-44">${icon} ${ten}</span>
+                ${[0, 1, 2, 3].map(p => `<span>${tnPhamChip(p)} <b class="text-amber-300">${(store || {})[String(p)] || 0}</b></span>`).join('')}
+            </div>`;
+        const counts = {};
+        (ng.phap_khi || []).forEach(t => counts[t] = (counts[t] || 0) + 1);
+        const pkTiers = Object.keys(counts).sort((a, b) => a - b);
+        box.innerHTML = `
+        <div class="space-y-2">
+            <p class="font-black text-amber-300">🧰 VẬT TƯ HÀNH NGHỀ (mua ở Cửa Hàng Vật Tư — trang Nghề Phụ Trợ)</p>
+            ${gradedRow('🔨', 'Quặng Luyện Khí', VT.quang)}
+            ${gradedRow('🌿', 'Linh Dược Luyện Đan', VT.duoc)}
+            ${gradedRow('🪱', 'Mồi Câu', VT.moi)}
+            ${gradedRow('🌾', 'Phân Bón', VT.phan)}
+            ${gradedRow('🍖', 'Đồ Ăn Linh Thú', VT.thuc_an)}
+            <div class="flex flex-wrap items-center gap-3 bg-black/50 border border-amber-700/40 rounded-xl px-3 py-2">
+                <span class="font-bold text-amber-200">💧 Nước: <b class="text-amber-300">${VT.nuoc || 0}</b> bình</span>
+                <span class="font-bold text-amber-200">🧤 Bao Tay Bắt Sâu: <b class="text-amber-300">${(VT.bao_tay || 0) >= 1 ? 'đã có' : 'chưa có'}</b></span>
+                ${ng.thu ? `<span class="font-bold text-amber-200">🐾 Linh Thú: <b class="text-amber-300">${ng.thu.ten}</b> (cấp ${ng.thu.cap})</span>` : ''}
+            </div>
+        </div>
+        <div class="space-y-2">
+            <p class="font-black text-amber-300">⚔️ PHÁP KHÍ (rèn ở Luyện Khí Các — bán cho Tông Môn: cấp² × 15 điểm)</p>
+            ${pkTiers.length ? pkTiers.map(t => `
+            <div class="flex items-center justify-between bg-black/50 border border-amber-700/40 rounded-xl px-3 py-2">
+                <span class="text-amber-200 font-bold">⚔️ Pháp Khí Cấp ${t} × ${counts[t]}</span>
+                <button onclick="tnAct(this,'/api/nghe/ban-phap-khi',{cap:${t}})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">Bán 1 (+${t * t * 15}đ)</button>
+            </div>`).join('') : '<p class="text-amber-300/50">Chưa có pháp khí nào.</p>'}
+        </div>
+        <div class="space-y-2">
+            <p class="font-black text-amber-300">💊 ĐAN DƯỢC (luyện ở Luyện Đan Các)</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="bg-black/50 border border-amber-700/40 rounded-xl p-3 space-y-2">
+                    <p class="font-black text-amber-200">💊 Hồi Linh Đan — đang có: <b class="text-amber-300">${(ng.dan || {}).hoi_linh || 0}</b> viên</p>
+                    <p class="space-x-1">
+                        <button onclick="tnAct(this,'/api/nghe/dung-dan',{loai:'hoi_linh'})" class="bg-emerald-700 hover:bg-emerald-600 text-white font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">Dùng (+40 Linh Khí)</button>
+                        <button onclick="tnAct(this,'/api/nghe/ban-dan',{loai:'hoi_linh'})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">Bán (30đ)</button>
+                    </p>
+                </div>
+                <div class="bg-black/50 border border-amber-700/40 rounded-xl p-3 space-y-2">
+                    <p class="font-black text-amber-200">💊 Tụ Linh Đan — đang có: <b class="text-amber-300">${(ng.dan || {}).tu_linh || 0}</b> viên</p>
+                    <p class="space-x-1">
+                        <button onclick="tnAct(this,'/api/nghe/dung-dan',{loai:'tu_linh'})" class="bg-emerald-700 hover:bg-emerald-600 text-white font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">Dùng (+200 Linh Khí)</button>
+                        <button onclick="tnAct(this,'/api/nghe/ban-dan',{loai:'tu_linh'})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">Bán (150đ)</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="space-y-2">
+            <p class="font-black text-amber-300">🐟 CÁ CÂU ĐƯỢC (ở Đầm Câu)</p>
+            <div class="flex flex-wrap items-center gap-3 bg-black/50 border border-amber-700/40 rounded-xl px-3 py-2">
+                <span class="font-bold text-amber-200">🐟 Cá Thường: <b class="text-amber-300">${(ng.ca || {}).thuong || 0}</b> (5đ)</span>
+                <span class="font-bold text-amber-200">🐠 Cá Ngon: <b class="text-amber-300">${(ng.ca || {}).ngon || 0}</b> (12đ)</span>
+                <span class="font-bold text-amber-200">✨ Linh Ngư: <b class="text-amber-300">${(ng.ca || {}).linh_ngu || 0}</b> (60đ)</span>
+                <button onclick="tnAct(this,'/api/nghe/ban-ca',{})" class="bg-amber-600 hover:bg-amber-500 text-black font-extrabold px-3 py-1.5 rounded-lg cursor-pointer">💰 Bán Tất Cả Cá</button>
+            </div>
+        </div>
+        <div class="space-y-2">
+            <p class="font-black text-amber-300">📦 KHO NGUYÊN LIỆU CŨ (đem bán ở Chợ Đấu Giá)</p>
+            <div class="grid grid-cols-3 sm:grid-cols-9 gap-2 text-center text-[11px]">
+                ${Array.from({length: 9}, (_, i) => { const n = (ng.quang || {})[String(i + 1)] || 0; return `<div class="p-2 rounded-xl border ${n > 0 ? 'bg-amber-900/60 border-amber-500/70' : 'bg-black/50 border-amber-800/40'}"><p class="font-black text-amber-200">Quặng C${i + 1}</p><p class="text-amber-100/80">${n}</p></div>`; }).join('')}
+                ${Array.from({length: 9}, (_, i) => { const n = (ng.herbs || {})[String(i + 1)] || 0; return `<div class="p-2 rounded-xl border ${n > 0 ? 'bg-emerald-900/60 border-emerald-500/70' : 'bg-black/50 border-amber-800/40'}"><p class="font-black text-amber-200">Thảo C${i + 1}</p><p class="text-amber-100/80">${n}</p></div>`; }).join('')}
+            </div>
+        </div>`;
     }
 
     document.addEventListener('DOMContentLoaded', loadBagTiles);
