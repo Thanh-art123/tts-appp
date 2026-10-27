@@ -479,7 +479,7 @@ MISSIONS = [
     {"id": "nk_lk1", "group": "nghe", "name": "Khí Sư Tập Sự", "desc": "Luyện khí thành công 1 pháp khí ở Luyện Khí Các", "counter": "lk_ok", "target": 1, "reward": {"diem": 40, "exp": 20}},
     {"id": "nk_dan1", "group": "nghe", "name": "Đan Sư Tập Sự", "desc": "Luyện thành công 1 viên đan ở Luyện Đan Các", "counter": "ld_ok", "target": 1, "reward": {"diem": 40, "exp": 20}},
     {"id": "nk_thuhoach2", "group": "nghe", "name": "Dược Nông Tập Sự", "desc": "Thu hoạch 2 lần ở Linh Dược Các", "counter": "thu_hoach", "target": 2, "reward": {"diem": 30, "exp": 15}},
-    {"id": "nk_thu1", "group": "nghe", "name": "Ngự Thú Sư", "desc": "Sở hữu 1 Linh Thú (câu được ở Đầm Câu hoặc mua Trứng Linh Thú ở Ngự Thú Các)", "counter": "co_thu", "target": 1, "reward": {"diem": 60, "exp": 30}},
+    {"id": "nk_thu1", "group": "nghe", "name": "Ngự Thú Sư", "desc": "Sở hữu 1 Linh Thú (thắng Đấu Giá Thú ở Ngự Thú Các)", "counter": "co_thu", "target": 1, "reward": {"diem": 60, "exp": 30}},
 ]
 NEWBIE_ORDER = ["nb1", "nb2", "nb3", "nb4", "nb5"]
 
@@ -512,7 +512,14 @@ def default_game(user):
         "nghe": {"quang": {}, "dan": {"hoi_linh": 0, "tu_linh": 0},
                  "ca": {"thuong": 0, "ngon": 0, "linh_ngu": 0},
                  "phap_khi": [], "thu": None,
-                 "vuon": [None, None, None, None], "luot_tao_anh": 0, "phu_open": False},
+                 "vuon": [None, None, None, None], "luot_tao_anh": 0, "phu_open": False,
+                 "cay": None,
+                 "vat_tu": {"quang": {"0": 0, "1": 0, "2": 0, "3": 0},
+                            "duoc": {"0": 0, "1": 0, "2": 0, "3": 0},
+                            "moi": {"0": 0, "1": 0, "2": 0, "3": 0},
+                            "phan": {"0": 0, "1": 0, "2": 0, "3": 0},
+                            "thuc_an": {"0": 0, "1": 0, "2": 0, "3": 0},
+                            "nuoc": 0, "bao_tay": 0}},
         "locked": False,
         "chibi": None,
     }
@@ -1868,6 +1875,70 @@ BEAST_NAMES = ["Tiểu Bạch Hổ", "Hắc Kỳ Lân Con", "Thanh Loan", "Hỏa
                "Ngọc Thố", "Kim Sí Điểu", "Huyền Quy Nhỏ", "Tuyết Lang Con"]
 ORE_WEIGHTS = [(1, 30), (2, 24), (3, 18), (4, 12), (5, 7), (6, 4), (7, 2.5), (8, 1.5), (9, 1)]
 
+# ============================================================
+# ĐỢT 19 — NÂNG CẤP NGHỀ PHỤ TRỢ (ông chủ duyệt bảng thảo 2026-10-27):
+# vật tư mua ở Cửa Hàng Vật Tư Tông Môn, chia 4 PHẨM MÀU (Trắng/Lục/Lam/Tím);
+# Luyện Khí & Luyện Đan gõ 3 phát, tối đa 10 lượt/ngày; Linh Dược = 1 cây
+# chăm dài hạn (tưới/bón/bắt sâu, chăm xấu bị trừ điểm); Đầm Câu theo phẩm
+# mồi; Ngự Thú = ĐẤU GIÁ THÚ mỗi ngày + nuôi cho ăn/uống KHÔNG giới hạn,
+# bán lúc nào cũng được; Mỏ Quặng chỉ còn đào ra Quặng Trắng (vật tư).
+# ============================================================
+PHAM_TEN = ["Trắng", "Lục", "Lam", "Tím"]
+PHAM_GIA = [10, 60, 250, 1000]                    # giá mua 1 phần vật tư theo phẩm (điểm)
+GRADE_TIERS = {0: [1, 2, 3], 1: [4, 5, 6], 2: [7, 8], 3: [9]}   # phẩm -> cấp pháp khí chế được
+FORGE_RATES = {0: [85, 70, 55], 1: [80, 65, 50], 2: [75, 55], 3: [40]}   # % thành công theo vị trí cấp trong phẩm
+PILL_RATES = {"hoi_linh": [70, 80, 90, 95], "tu_linh": [45, 60, 75, 88]}  # % theo phẩm dược
+PILL_TEN = {"hoi_linh": "Hồi Linh Đan", "tu_linh": "Tụ Linh Đan"}
+PILL_SELL = {"hoi_linh": 30, "tu_linh": 150}      # giá Tông Môn thu mua đan (điểm/viên)
+FISH_ODDS = [(55, 25, 5, 15), (35, 40, 12, 13), (15, 45, 25, 15), (0, 40, 45, 15)]  # (thường, ngon, linh ngư, hụt) theo phẩm mồi
+BEAST_PHAM_GIA_KHOI = [200, 800, 3000, 10000]     # giá khởi điểm đấu giá thú theo phẩm
+FEED_EXP = [3, 6, 12, 25]                         # EXP thú mỗi lần cho ăn theo phẩm thức ăn
+SHOP_GRADED = {"quang": "Quặng Luyện Khí", "duoc": "Linh Dược Luyện Đan", "moi": "Mồi Câu",
+               "phan": "Phân Bón", "thuc_an": "Đồ Ăn Linh Thú"}
+
+
+def _thu_gia_ban(thu):
+    """Giá Tông Môn mua lại linh thú: giá gốc x (1 + 20% x số cấp trên 1) + 3 điểm/EXP."""
+    if not thu:
+        return 0
+    goc = int(thu.get("gia_goc", 300) or 300)
+    return int(round(goc * (1 + 0.2 * max(0, _beast_level(thu) - 1)))) + int(thu.get("exp", 0)) * 3
+
+
+def _dau_gia_thu_hom_nay(db):
+    """Lô đấu giá thú của hôm nay (3 con). Tự chốt kết quả ngày trước: người
+    thắng (chưa có thú) nhận thú với giá gốc = giá thắng; đã có thú thì hoàn
+    tiền. Trả (cấu trúc, có_thay_đổi_không) — nơi gọi tự save_database."""
+    today = _today_str()
+    dg = db.get("thu_dau_gia")
+    if dg and dg.get("ngay") == today:
+        return dg, False
+    if dg:
+        for lot in dg.get("lots", []):
+            top = lot.get("cao_nhat")
+            if not top:
+                continue
+            w = find_user(db, top["username"])
+            if not w:
+                continue
+            ngw = _nghe(w)
+            if not ngw.get("thu"):
+                ngw["thu"] = {"ten": lot["ten"], "exp": 0, "pham": lot["pham"], "gia_goc": int(top["diem"])}
+                _bump(w, "co_thu")
+                _notify(w, f"🐾 Đạo hữu đã THẮNG đấu giá linh thú {lot['ten']} (phẩm {PHAM_TEN[lot['pham']]}) với giá {top['diem']} điểm! Thú đã về Ngự Thú Các — vào cho ăn, cho uống để nó lớn nhé.")
+            else:
+                _add_diem(w, int(top["diem"]), "Hoàn tiền thắng đấu giá thú (đã có linh thú)")
+                _notify(w, "🐾 Đạo hữu thắng đấu giá thú nhưng đã có linh thú rồi — Tông Môn hoàn lại toàn bộ tiền đặt giá.")
+    names = random.sample(BEAST_NAMES, 3)
+    lots = []
+    for i in range(3):
+        pham = random.choices([0, 1, 2, 3], weights=[50, 30, 15, 5])[0]
+        lots.append({"id": i + 1, "ten": names[i], "pham": pham,
+                     "gia_khoi_diem": BEAST_PHAM_GIA_KHOI[pham], "cao_nhat": None})
+    dg = {"ngay": today, "lots": lots}
+    db["thu_dau_gia"] = dg
+    return dg, True
+
 
 def _nghe(user):
     g = _ensure_game(user)
@@ -1884,7 +1955,7 @@ def _nghe(user):
 def _beast_level(thu):
     if not thu:
         return 0
-    return min(10, int(thu.get("exp", 0)) // 3 + 1)
+    return min(30, int(thu.get("exp", 0)) // 3 + 1)
 
 
 def _beast_bonus_pct(user):
@@ -1921,15 +1992,22 @@ def _nghe_view(user):
         "ca": ng.get("ca", {}),
         "phap_khi": ng.get("phap_khi", []),
         "thu": ({"ten": thu["ten"], "exp": thu.get("exp", 0), "cap": _beast_level(thu),
+                 "pham": int(thu.get("pham", 0)), "gia_goc": int(thu.get("gia_goc", 300) or 300),
+                 "gia_ban": _thu_gia_ban(thu),
                  "bonus_pct": _beast_bonus_pct(user)} if thu else None),
         "vuon": vuon,
         "luot_tao_anh": ng.get("luot_tao_anh", 0),
         "phu_open": bool(ng.get("phu_open")),
         "hom_nay": {"khai_thac": _today_count(user, "khai_thac"),
                     "cau_ca": _today_count(user, "cau_ca"),
-                    "ve_phu": _today_count(user, "ve_phu")},
+                    "ve_phu": _today_count(user, "ve_phu"),
+                    "luyen_khi": _today_count(user, "luyen_khi"),
+                    "luyen_dan": _today_count(user, "luyen_dan"),
+                    "cham_cay": _today_count(user, "cham_cay")},
         "herbs": g["inventory"].get("herbs", {}),
         "linh_khi": g.get("linh_khi", 0),
+        "vat_tu": ng.get("vat_tu", {}),
+        "cay": ng.get("cay"),
     }
 
 
@@ -1955,46 +2033,49 @@ def api_nghe_khai_thac():
     if _today_count(user, "khai_thac") >= 10:
         return jsonify({"success": False, "message": "Hôm nay đã khai thác đủ 10 lượt ở Mỏ Quặng rồi, mai quay lại nhé!"})
     ng = _nghe(user)
-    tiers = [t for t, w in ORE_WEIGHTS]
-    weights = [w for t, w in ORE_WEIGHTS]
-    tier = random.choices(tiers, weights=weights, k=1)[0]
-    ng["quang"][str(tier)] = int(ng["quang"].get(str(tier), 0)) + 1
+    vt = ng.setdefault("vat_tu", default_game(user)["nghe"]["vat_tu"])
+    vt["quang"]["0"] = int(vt["quang"].get("0", 0)) + 1
     _bump(user, "khai_thac")
     gain = _nghe_gain(user, 2, "Khai thác quặng ở Mỏ Quặng")
     _add_exp(user, 3)
-    save_database(db, f"@{user['username']} khai thac duoc quang cap {tier}")
-    return _nghe_resp(user, f"⛏️ Khai thác thành công: nhận 1 Quặng Cấp {tier} (+{gain} điểm, +3 EXP). Quặng dùng để luyện khí ở Luyện Khí Các.")
+    save_database(db, f"@{user['username']} khai thac duoc quang trang")
+    return _nghe_resp(user, f"⛏️ Khai thác thành công: nhận 1 Quặng phẩm Trắng (+{gain} điểm, +3 EXP). Mỏ chỉ cho quặng Trắng — quặng phẩm cao mua ở Cửa Hàng Vật Tư nhé.")
 
 
 @app.route('/api/nghe/luyen-khi', methods=['POST'])
 def api_nghe_luyen_khi():
+    """Đợt 19: luyện khí bằng QUẶNG VẬT TƯ theo phẩm (mua ở Cửa Hàng Vật Tư /
+    đào ở Mỏ được phẩm Trắng). Giao diện gõ búa 3 phát rồi mới gọi API này.
+    Tối đa 10 lượt/ngày."""
     db = load_database()
     user, err = _game_or_401(db)
     if err:
         return err
-    tier = int((request.json or {}).get('cap', 0) or 0)
-    if tier < 1 or tier > 9:
-        return jsonify({"success": False, "message": "Cấp quặng không hợp lệ (1-9)!"})
+    data = request.json or {}
+    pham = int(data.get('pham', -1) or 0) if data.get('pham') is not None else -1
+    tier = int(data.get('cap', 0) or 0)
+    if pham not in GRADE_TIERS or tier not in GRADE_TIERS.get(pham, []):
+        return jsonify({"success": False, "message": "Phẩm quặng / cấp pháp khí không hợp lệ! Mỗi phẩm chỉ rèn được cấp của nó: Trắng 1-3, Lục 4-6, Lam 7-8, Tím 9."})
+    if _today_count(user, "luyen_khi") >= 10:
+        return jsonify({"success": False, "message": "Hôm nay đã luyện khí đủ 10 lượt rồi, mai quay lại nhé!"})
     ng = _nghe(user)
-    if int(ng["quang"].get(str(tier), 0)) < 1:
-        return jsonify({"success": False, "message": f"Chưa có Quặng Cấp {tier}! Hãy khai thác ở Mỏ Quặng trước."})
-    g = _ensure_game(user)
-    if int(g["linh_thach"].get("nguyen", 0)) < 1:
-        return jsonify({"success": False, "message": "Luyện khí cần 1 Nguyên Tinh làm lõi! Mua ở Sảnh Chính nhé."})
-    ng["quang"][str(tier)] -= 1
-    _add_stone(user, "nguyen", -1)
-    rate = max(40, 95 - 6 * (tier - 1))
+    vt = ng["vat_tu"]
+    if int(vt["quang"].get(str(pham), 0)) < 1:
+        return jsonify({"success": False, "message": f"Chưa có Quặng phẩm {PHAM_TEN[pham]}! Mua ở Cửa Hàng Vật Tư (hoặc đào ở Mỏ nếu là phẩm Trắng)."})
+    vt["quang"][str(pham)] -= 1
+    _bump(user, "luyen_khi")
+    rate = FORGE_RATES[pham][GRADE_TIERS[pham].index(tier)]
     if random.randint(1, 100) <= rate:
         ng["phap_khi"].append(tier)
         _bump(user, "lk_ok")
         gain = _nghe_gain(user, 10 + 5 * tier, f"Luyện khí thành công pháp khí cấp {tier}")
         _add_exp(user, 10)
         save_database(db, f"@{user['username']} luyen khi thanh cong cap {tier}")
-        return _nghe_resp(user, f"🔨 Luyện khí THÀNH CÔNG (tỉ lệ {rate}%)! Nhận Pháp Khí Cấp {tier} (+{gain} điểm, +10 EXP). Bán pháp khí cũng ra điểm đấy.")
+        return _nghe_resp(user, f"🔨 Gõ đủ 3 phát — Luyện khí THÀNH CÔNG (tỉ lệ {rate}%)! Nhận Pháp Khí Cấp {tier} cất vào kho (+{gain} điểm, +10 EXP). Bán cho Tông Môn được {tier * tier * 15} điểm.")
     gain = _nghe_gain(user, 3, "Luyện khí thất bại, bán phế phẩm")
     _add_exp(user, 3)
     save_database(db, f"@{user['username']} luyen khi that bai cap {tier}")
-    return _nghe_resp(user, f"💥 Luyện khí THẤT BẠI (tỉ lệ thành công {rate}%)! Quặng và lõi đã mất, bán phế phẩm được +{gain} điểm (+3 EXP).")
+    return _nghe_resp(user, f"💥 Gõ đủ 3 phát nhưng pháp khí NỔ LÒ (tỉ lệ thành công {rate}%)! Quặng đã mất, bán phế phẩm được +{gain} điểm (+3 EXP).")
 
 
 @app.route('/api/nghe/ban-phap-khi', methods=['POST'])
@@ -2016,34 +2097,37 @@ def api_nghe_ban_phap_khi():
 
 @app.route('/api/nghe/luyen-dan', methods=['POST'])
 def api_nghe_luyen_dan():
+    """Đợt 19: luyện đan bằng LINH DƯỢC VẬT TƯ theo phẩm (Cửa Hàng Vật Tư).
+    Giao diện gõ lô 3 phát rồi mới gọi API này. Tối đa 10 lượt/ngày.
+    Đan thành phẩm: dùng để +Linh Khí hoặc bán cho Tông Môn."""
     db = load_database()
     user, err = _game_or_401(db)
     if err:
         return err
-    loai = (request.json or {}).get('loai')
-    g = _ensure_game(user)
-    herbs = g["inventory"].setdefault("herbs", {})
-    if loai == "hoi_linh":
-        need, rate, ten = {"1": 2, "2": 1}, 85, "Hồi Linh Đan"
-    elif loai == "tu_linh":
-        need, rate, ten = {"3": 2, "4": 1}, 70, "Tụ Linh Đan"
-    else:
-        return jsonify({"success": False, "message": "Loại đan không hợp lệ!"})
-    for gr, n in need.items():
-        if int(herbs.get(gr, 0)) < n:
-            return jsonify({"success": False, "message": f"Thiếu Thảo Mộc Cấp {gr} (cần {n})! Trồng ở Linh Dược Các hoặc mua ở Sảnh Chính."})
-    for gr, n in need.items():
-        herbs[gr] = int(herbs.get(gr, 0)) - n
+    data = request.json or {}
+    loai = data.get('loai')
+    pham = data.get('pham')
+    if loai not in PILL_RATES or pham not in (0, 1, 2, 3):
+        return jsonify({"success": False, "message": "Loại đan / phẩm dược không hợp lệ!"})
+    if _today_count(user, "luyen_dan") >= 10:
+        return jsonify({"success": False, "message": "Hôm nay đã luyện đan đủ 10 lượt rồi, mai quay lại nhé!"})
     ng = _nghe(user)
+    vt = ng["vat_tu"]
+    if int(vt["duoc"].get(str(pham), 0)) < 1:
+        return jsonify({"success": False, "message": f"Chưa có Linh Dược phẩm {PHAM_TEN[pham]}! Mua ở Cửa Hàng Vật Tư nhé."})
+    vt["duoc"][str(pham)] -= 1
+    _bump(user, "luyen_dan")
+    rate = PILL_RATES[loai][pham]
+    ten = PILL_TEN[loai]
     if random.randint(1, 100) <= rate:
         ng["dan"][loai] = int(ng["dan"].get(loai, 0)) + 1
         _bump(user, "ld_ok")
         _add_exp(user, 10)
-        save_database(db, f"@{user['username']} luyen dan {loai} thanh cong")
-        return _nghe_resp(user, f"⚗️ Luyện đan THÀNH CÔNG (tỉ lệ {rate}%)! Nhận 1 viên {ten} (+10 EXP). Vào Luyện Đan Các để dùng đan, +Linh Khí trực tiếp.")
+        save_database(db, f"@{user['username']} luyen dan {loai} pham {pham} thanh cong")
+        return _nghe_resp(user, f"🏺 Gõ đủ 3 phát — Luyện đan THÀNH CÔNG (tỉ lệ {rate}%)! Nhận 1 viên {ten} cất vào kho (+10 EXP). Dùng để +Linh Khí hoặc bán cho Tông Môn {PILL_SELL[loai]} điểm/viên.")
     _add_exp(user, 2)
     save_database(db, f"@{user['username']} luyen dan {loai} that bai")
-    return _nghe_resp(user, f"💥 Luyện đan THẤT BẠI (tỉ lệ {rate}%)! Nguyên liệu đã mất, nhận +2 EXP kinh nghiệm.")
+    return _nghe_resp(user, f"💥 Gõ đủ 3 phát nhưng đan LỎNG LÒ (tỉ lệ thành công {rate}%)! Linh dược đã mất, nhận +2 EXP kinh nghiệm.")
 
 
 @app.route('/api/nghe/dung-dan', methods=['POST'])
@@ -2066,6 +2150,25 @@ def api_nghe_dung_dan():
     _log(user, f"Dùng {ten} (+{lk} Linh Khí)")
     save_database(db, f"@{user['username']} dung dan {loai}")
     return _nghe_resp(user, f"💊 Đã dùng 1 viên {ten}: +{lk} Linh Khí! Linh Khí hiện có: {g['linh_khi']}.")
+
+
+@app.route('/api/nghe/ban-dan', methods=['POST'])
+def api_nghe_ban_dan():
+    """Đợt 19: bán 1 viên đan cho Tông Môn ngay tại Luyện Đan Các."""
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    loai = (request.json or {}).get('loai')
+    if loai not in PILL_SELL:
+        return jsonify({"success": False, "message": "Loại đan không hợp lệ!"})
+    ng = _nghe(user)
+    if int(ng["dan"].get(loai, 0)) < 1:
+        return jsonify({"success": False, "message": "Chưa có viên đan này trong kho!"})
+    ng["dan"][loai] -= 1
+    gain = _nghe_gain(user, PILL_SELL[loai], f"Bán {PILL_TEN[loai]} cho Tông Môn")
+    save_database(db, f"@{user['username']} ban dan {loai}")
+    return _nghe_resp(user, f"💰 Đã bán 1 viên {PILL_TEN[loai]} cho Tông Môn, nhận +{gain} Điểm Cống Hiến.")
 
 
 @app.route('/api/nghe/phu/bat-dau', methods=['POST'])
@@ -2167,38 +2270,38 @@ def api_nghe_vuon_thu():
 
 @app.route('/api/nghe/cau-ca', methods=['POST'])
 def api_nghe_cau_ca():
+    """Đợt 19: câu cá bằng MỒI theo phẩm (Cửa Hàng Vật Tư) — mồi càng xịn
+    càng dễ ra cá ngon/linh ngư. Thú không còn câu được nữa (chỉ qua đấu giá)."""
     db = load_database()
     user, err = _game_or_401(db)
     if err:
         return err
+    pham = (request.json or {}).get('pham')
+    if pham not in (0, 1, 2, 3):
+        return jsonify({"success": False, "message": "Phẩm mồi không hợp lệ!"})
     if _today_count(user, "cau_ca") >= 10:
         return jsonify({"success": False, "message": "Hôm nay đã câu đủ 10 lượt rồi, mai quay lại nhé!"})
     ng = _nghe(user)
+    vt = ng["vat_tu"]
+    if int(vt["moi"].get(str(pham), 0)) < 1:
+        return jsonify({"success": False, "message": f"Chưa có Mồi Câu phẩm {PHAM_TEN[pham]}! Mua ở Cửa Hàng Vật Tư nhé."})
+    vt["moi"][str(pham)] -= 1
     _bump(user, "cau_ca")
     _add_exp(user, 2)
+    w_thuong, w_ngon, w_linh, _w_hut = FISH_ODDS[pham]
     r = random.randint(1, 100)
-    if r <= 50:
+    if r <= w_thuong:
         ng["ca"]["thuong"] = int(ng["ca"].get("thuong", 0)) + 1
         msg = "🎣 Câu được 1 Cá Thường! (bán 5 điểm/con ở Đầm Câu)"
-    elif r <= 72:
+    elif r <= w_thuong + w_ngon:
         ng["ca"]["ngon"] = int(ng["ca"].get("ngon", 0)) + 1
         msg = "🎣 Câu được 1 Cá Ngon! (bán 12 điểm/con)"
-    elif r <= 85:
+    elif r <= w_thuong + w_ngon + w_linh:
         ng["ca"]["linh_ngu"] = int(ng["ca"].get("linh_ngu", 0)) + 1
         msg = "✨ Câu được 1 LINH NGƯ hiếm! (bán 60 điểm/con)"
-    elif r <= 90:
-        if not ng.get("thu"):
-            ten = random.choice(BEAST_NAMES)
-            ng["thu"] = {"ten": ten, "exp": 0}
-            _bump(user, "co_thu")
-            _notify(user, f"🐾 Câu được linh thú con {ten} ở Đầm Câu! Vào Ngự Thú Các để chăm sóc.")
-            msg = f"🐾✨ KHÔNG NGỜ! Câu được linh thú con: {ten}! Nó đã về Ngự Thú Các của đạo hữu (cộng % điểm + sản xuất điểm khi điểm danh)."
-        else:
-            _add_diem(user, 100, "Thả linh thú con câu được ở Đầm Câu, Tông Môn thưởng")
-            msg = "🐾 Câu được linh thú con nhưng đạo hữu đã có linh thú rồi — thả lại hồ, Tông Môn thưởng +100 điểm!"
     else:
         msg = "🎣 Cá cắn câu hụt rồi... (vẫn +2 EXP an ủi)"
-    save_database(db, f"@{user['username']} cau ca")
+    save_database(db, f"@{user['username']} cau ca pham {pham}")
     return _nghe_resp(user, msg + " (+2 EXP)")
 
 
@@ -2221,27 +2324,78 @@ def api_nghe_ban_ca():
 
 @app.route('/api/nghe/thu/mua-trung', methods=['POST'])
 def api_nghe_thu_mua_trung():
+    # Đợt 19: ĐÃ BỎ bán trứng — linh thú nay chỉ có qua Đấu Giá Thú mỗi ngày ở Ngự Thú Các.
+    return jsonify({"success": False, "message": "🥚 Tông Môn đã ngừng bán Trứng Linh Thú! Nay linh thú chỉ có qua mục Đấu Giá Thú (mỗi ngày 3 con) ở Ngự Thú Các."})
+
+
+@app.route('/api/nghe/thu/dau-gia', methods=['GET'])
+def api_nghe_thu_dau_gia():
+    """Đợt 19: xem 3 lô đấu giá thú của hôm nay (tự chốt kết quả hôm qua)."""
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    dg, changed = _dau_gia_thu_hom_nay(db)
+    if changed:
+        save_database(db, "Chot dau gia thu / mo lo moi")
+    lots = []
+    for lot in dg["lots"]:
+        top = lot.get("cao_nhat")
+        top_user = find_user(db, top["username"]) if top else None
+        lots.append({"id": lot["id"], "ten": lot["ten"], "pham": lot["pham"],
+                     "gia_khoi_diem": lot["gia_khoi_diem"],
+                     "gia_hien_tai": int(top["diem"]) if top else None,
+                     "nguoi_dang_thang": (top_user.get("author_name", top["username"]) if top_user else None),
+                     "toi_dang_thang": bool(top and top["username"] == user["username"])})
+    return jsonify({"success": True, "lots": lots, "ngay": dg["ngay"],
+                    "game": game_summary(user), "nghe": _nghe_view(user)})
+
+
+@app.route('/api/nghe/thu/dat-gia', methods=['POST'])
+def api_nghe_thu_dat_gia():
+    """Đợt 19: đặt giá đấu giá thú. Tiền ký quỹ trừ ngay; bị trả cao hơn thì
+    hoàn 100% + chuông báo (như Chợ Đấu Giá). Chỉ đấu khi chưa có thú."""
     db = load_database()
     user, err = _game_or_401(db)
     if err:
         return err
     ng = _nghe(user)
     if ng.get("thu"):
-        return jsonify({"success": False, "message": "Đạo hữu đã có linh thú rồi (mỗi người 1 con)!"})
+        return jsonify({"success": False, "message": "Đạo hữu đang có linh thú rồi! Hãy bán con hiện tại cho Tông Môn trước, rồi mới đấu giá con mới."})
+    data = request.json or {}
+    lot_id = int(data.get('lot', 0) or 0)
+    gia = int(data.get('gia', 0) or 0)
+    dg, changed = _dau_gia_thu_hom_nay(db)
+    lot = next((l for l in dg["lots"] if l["id"] == lot_id), None)
+    if not lot:
+        return jsonify({"success": False, "message": "Không tìm thấy lô đấu giá này!"})
+    top = lot.get("cao_nhat")
+    cur = int(top["diem"]) if top else 0
+    step = max(10, int(cur * 0.05)) if top else 0
+    min_next = (cur + step) if top else int(lot["gia_khoi_diem"])
+    if gia < min_next:
+        return jsonify({"success": False, "message": f"Giá tối thiểu cho lô này là {min_next} điểm!"})
+    my_old = cur if (top and top["username"] == user["username"]) else 0
+    need = gia - my_old
     g = _ensure_game(user)
-    if int(g.get("diem", 0)) < 300:
-        return jsonify({"success": False, "message": "Trứng Linh Thú giá 300 điểm — chưa đủ điểm rồi!"})
-    _add_diem(user, -300, "Mua Trứng Linh Thú")
-    ten = random.choice(BEAST_NAMES)
-    ng["thu"] = {"ten": ten, "exp": 0}
-    _bump(user, "co_thu")
-    _notify(user, f"🐣 Trứng nở thành {ten}! Linh thú cộng % điểm nghề và sản xuất điểm khi điểm danh.")
-    save_database(db, f"@{user['username']} mua trung linh thu {ten}")
-    return _nghe_resp(user, f"🐣 Trứng nở thành {ten} (cấp 1)! Cho ăn để lên cấp: mỗi cấp +2% điểm nghề/nhiệm vụ và +3 điểm sản xuất mỗi lần điểm danh.")
+    if int(g.get("diem", 0)) < need:
+        return jsonify({"success": False, "message": f"Không đủ điểm! Cần thêm {need} điểm ký quỹ cho mức giá này."})
+    if top and top["username"] != user["username"]:
+        old = find_user(db, top["username"])
+        if old:
+            _add_diem(old, cur, f"Hoàn ký quỹ đấu giá thú {lot['ten']} (bị trả giá cao hơn)")
+            _notify(old, f"🐾 Đạo hữu bị trả giá cao hơn ở lô thú {lot['ten']} — Tông Môn đã hoàn 100% ký quỹ ({cur} điểm).")
+    if need > 0:
+        _add_diem(user, -need, f"Ký quỹ đấu giá thú {lot['ten']}")
+    lot["cao_nhat"] = {"username": user["username"], "diem": gia}
+    save_database(db, f"@{user['username']} dat gia thu {lot['ten']} {gia}")
+    return _nghe_resp(user, f"🐾 Đã đặt giá {gia} điểm cho {lot['ten']} (phẩm {PHAM_TEN[lot['pham']]})! Hết hôm nay, ai cao nhất sẽ nhận thú. Bị trả cao hơn thì hoàn 100% ký quỹ.")
 
 
-@app.route('/api/nghe/thu/cho-an', methods=['POST'])
-def api_nghe_thu_cho_an():
+@app.route('/api/nghe/thu/ban', methods=['POST'])
+def api_nghe_thu_ban():
+    """Đợt 19: bán linh thú cho Tông Môn bất cứ lúc nào — nuôi càng lâu, cấp
+    càng cao, bán càng lời."""
     db = load_database()
     user, err = _game_or_401(db)
     if err:
@@ -2249,28 +2403,228 @@ def api_nghe_thu_cho_an():
     ng = _nghe(user)
     thu = ng.get("thu")
     if not thu:
-        return jsonify({"success": False, "message": "Chưa có linh thú để cho ăn!"})
-    loai = (request.json or {}).get('loai')
-    if loai == "ca":
-        if int(ng["ca"].get("thuong", 0)) >= 1:
-            ng["ca"]["thuong"] -= 1
-        elif int(ng["ca"].get("ngon", 0)) >= 1:
-            ng["ca"]["ngon"] -= 1
-        else:
-            return jsonify({"success": False, "message": "Không có cá để cho ăn! Ra Đầm Câu câu cá trước nhé."})
-        thu["exp"] = min(27, int(thu.get("exp", 0)) + 2)
-        msg = f"🐾 Đã cho {thu['ten']} ăn 1 con cá (+2 EXP thú)."
-    elif loai == "diem":
-        g = _ensure_game(user)
-        if int(g.get("diem", 0)) < 20:
-            return jsonify({"success": False, "message": "Cần 20 điểm để mua thức ăn cho thú!"})
-        _add_diem(user, -20, f"Mua thức ăn cho {thu['ten']}")
-        thu["exp"] = min(27, int(thu.get("exp", 0)) + 1)
-        msg = f"🐾 Đã cho {thu['ten']} ăn (-20 điểm, +1 EXP thú)."
+        return jsonify({"success": False, "message": "Chưa có linh thú để bán!"})
+    gia = _thu_gia_ban(thu)
+    ten, cap = thu["ten"], _beast_level(thu)
+    ng["thu"] = None
+    gain = _nghe_gain(user, gia, f"Bán linh thú {ten} cấp {cap} cho Tông Môn")
+    save_database(db, f"@{user['username']} ban linh thu {ten} +{gain}")
+    return _nghe_resp(user, f"🐾 Đã bán {ten} (cấp {cap}) cho Tông Môn, nhận +{gain} Điểm Cống Hiến. Chuồng đã trống — vào Đấu Giá Thú săn con mới nhé!")
+
+
+@app.route('/api/nghe/thu/cho-an', methods=['POST'])
+def api_nghe_thu_cho_an():
+    """Đợt 19: cho thú ăn (Đồ Ăn theo phẩm, mua ở Cửa Hàng Vật Tư) hoặc cho
+    uống (Nước). KHÔNG giới hạn số lần/ngày — tốn vật tư là chính."""
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    ng = _nghe(user)
+    thu = ng.get("thu")
+    if not thu:
+        return jsonify({"success": False, "message": "Chưa có linh thú để chăm!"})
+    data = request.json or {}
+    loai = data.get('loai')
+    vt = ng["vat_tu"]
+    if loai == "thuc_an":
+        pham = data.get('pham')
+        if pham not in (0, 1, 2, 3):
+            return jsonify({"success": False, "message": "Phẩm đồ ăn không hợp lệ!"})
+        if int(vt["thuc_an"].get(str(pham), 0)) < 1:
+            return jsonify({"success": False, "message": f"Chưa có Đồ Ăn Linh Thú phẩm {PHAM_TEN[pham]}! Mua ở Cửa Hàng Vật Tư nhé."})
+        vt["thuc_an"][str(pham)] -= 1
+        cong = FEED_EXP[pham]
+        thu["exp"] = int(thu.get("exp", 0)) + cong
+        msg = f"🍖 Đã cho {thu['ten']} ăn Đồ Ăn phẩm {PHAM_TEN[pham]} (+{cong} EXP thú)."
+    elif loai == "nuoc":
+        if int(vt.get("nuoc", 0)) < 1:
+            return jsonify({"success": False, "message": "Chưa có Nước! Mua ở Cửa Hàng Vật Tư nhé (5 điểm/bình)."})
+        vt["nuoc"] -= 1
+        thu["exp"] = int(thu.get("exp", 0)) + 2
+        msg = f"💧 Đã cho {thu['ten']} uống nước (+2 EXP thú)."
     else:
-        return jsonify({"success": False, "message": "Loại thức ăn không hợp lệ!"})
-    save_database(db, f"@{user['username']} cho linh thu an")
-    return _nghe_resp(user, msg + f" Linh thú hiện cấp {_beast_level(thu)} (+{_beast_bonus_pct(user)}% điểm).")
+        return jsonify({"success": False, "message": "Chỉ cho ăn bằng Đồ Ăn Linh Thú (theo phẩm) hoặc cho uống Nước — mua ở Cửa Hàng Vật Tư nhé."})
+    save_database(db, f"@{user['username']} cham linh thu")
+    return _nghe_resp(user, msg + f" Thú hiện cấp {_beast_level(thu)} (+{_beast_bonus_pct(user)}% điểm), bán lại cho Tông Môn được {_thu_gia_ban(thu)} điểm.")
+
+
+# ============================================================
+# ĐỢT 19 — CỬA HÀNG VẬT TƯ + CÂY LINH DƯỢC
+# ============================================================
+@app.route('/api/vat-tu/mua', methods=['POST'])
+def api_vat_tu_mua():
+    """Mua vật tư ở Cửa Hàng Vật Tư Tông Môn: vật tư theo phẩm (quang/duoc/
+    moi/phan/thuc_an) giá PHAM_GIA; Nước 5 điểm/bình; Bao Tay Bắt Sâu 100
+    điểm mua 1 lần dùng mãi."""
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    data = request.json or {}
+    loai = data.get('loai')
+    so = max(1, min(99, int(data.get('so', 1) or 1)))
+    ng = _nghe(user)
+    vt = ng["vat_tu"]
+    g = _ensure_game(user)
+    if loai in SHOP_GRADED:
+        pham = data.get('pham')
+        if pham not in (0, 1, 2, 3):
+            return jsonify({"success": False, "message": "Phẩm vật tư không hợp lệ!"})
+        gia = PHAM_GIA[pham] * so
+        if int(g.get("diem", 0)) < gia:
+            return jsonify({"success": False, "message": f"Không đủ điểm! Cần {gia} điểm cho {so} phần {SHOP_GRADED[loai]} phẩm {PHAM_TEN[pham]}."})
+        _add_diem(user, -gia, f"Mua {so} {SHOP_GRADED[loai]} phẩm {PHAM_TEN[pham]}")
+        vt[loai][str(pham)] = int(vt[loai].get(str(pham), 0)) + so
+        save_database(db, f"@{user['username']} mua vat tu {loai} pham {pham} x{so}")
+        return _nghe_resp(user, f"🛒 Đã mua {so} {SHOP_GRADED[loai]} phẩm {PHAM_TEN[pham]} (-{gia} điểm).")
+    if loai == "nuoc":
+        gia = 5 * so
+        if int(g.get("diem", 0)) < gia:
+            return jsonify({"success": False, "message": f"Không đủ điểm! Cần {gia} điểm cho {so} bình Nước."})
+        _add_diem(user, -gia, f"Mua {so} bình Nước")
+        vt["nuoc"] = int(vt.get("nuoc", 0)) + so
+        save_database(db, f"@{user['username']} mua {so} binh nuoc")
+        return _nghe_resp(user, f"🛒 Đã mua {so} bình Nước (-{gia} điểm). Nước dùng tưới cây và cho linh thú uống.")
+    if loai == "bao_tay":
+        if int(vt.get("bao_tay", 0)) >= 1:
+            return jsonify({"success": False, "message": "Đạo hữu đã có Bao Tay Bắt Sâu rồi — 1 đôi dùng mãi, khỏi mua thêm!"})
+        if int(g.get("diem", 0)) < 100:
+            return jsonify({"success": False, "message": "Không đủ điểm! Bao Tay Bắt Sâu giá 100 điểm."})
+        _add_diem(user, -100, "Mua Bao Tay Bắt Sâu")
+        vt["bao_tay"] = 1
+        save_database(db, f"@{user['username']} mua bao tay bat sau")
+        return _nghe_resp(user, "🧤 Đã mua Bao Tay Bắt Sâu (-100 điểm) — từ nay bắt sâu cho cây thoải mái, không hao.")
+    return jsonify({"success": False, "message": "Loại vật tư không hợp lệ!"})
+
+
+@app.route('/api/nghe/cay/gieo', methods=['POST'])
+def api_nghe_cay_gieo():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    ng = _nghe(user)
+    if ng.get("cay"):
+        return jsonify({"success": False, "message": "Đang có 1 cây rồi — chăm cho nó lớn, thu hoạch xong mới gieo cây mới được!"})
+    ng["cay"] = {"sinh_truong": 0, "suc_khoe": 100, "khat": False, "sau": False,
+                 "tong_phan": 0, "so_bon": 0}
+    save_database(db, f"@{user['username']} gieo cay linh duoc")
+    return _nghe_resp(user, "🌱 Đã gieo 1 cây Linh Dược mới! Mỗi ngày được 10 lượt chăm sóc: tưới nước, bón phân, bắt sâu. Sinh Trưởng đạt 100 là thu hoạch được điểm.")
+
+
+@app.route('/api/nghe/cay/cham', methods=['POST'])
+def api_nghe_cay_cham():
+    """Chăm cây: tuoi (tốn Nước) / bon (tốn Phân theo phẩm) / bat_sau (cần
+    Bao Tay). Bỏ mặc nhu cầu của cây (khát/sâu) khi làm việc khác sẽ làm tụt
+    Sức Khỏe; Sức Khỏe về 0 thì cây CHẾT và bị trừ 50 điểm."""
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    ng = _nghe(user)
+    cay = ng.get("cay")
+    if not cay:
+        return jsonify({"success": False, "message": "Chưa gieo cây nào! Bấm Gieo Cây Mới trước nhé."})
+    if _today_count(user, "cham_cay") >= 10:
+        return jsonify({"success": False, "message": "Hôm nay đã chăm cây đủ 10 lượt rồi, mai quay lại nhé!"})
+    data = request.json or {}
+    hd = data.get('hanh_dong')
+    vt = ng["vat_tu"]
+    # Kiểm tra vật tư trước khi tốn lượt
+    if hd == "tuoi":
+        if int(vt.get("nuoc", 0)) < 1:
+            return jsonify({"success": False, "message": "Hết Nước rồi! Mua ở Cửa Hàng Vật Tư (5 điểm/bình)."})
+    elif hd == "bon":
+        pham = data.get('pham')
+        if pham not in (0, 1, 2, 3):
+            return jsonify({"success": False, "message": "Phẩm phân không hợp lệ!"})
+        if int(vt["phan"].get(str(pham), 0)) < 1:
+            return jsonify({"success": False, "message": f"Chưa có Phân Bón phẩm {PHAM_TEN[pham]}! Mua ở Cửa Hàng Vật Tư nhé."})
+    elif hd == "bat_sau":
+        if int(vt.get("bao_tay", 0)) < 1:
+            return jsonify({"success": False, "message": "Chưa có Bao Tay Bắt Sâu! Mua ở Cửa Hàng Vật Tư (100 điểm, dùng mãi)."})
+    else:
+        return jsonify({"success": False, "message": "Hành động chăm cây không hợp lệ!"})
+    _bump(user, "cham_cay")
+    # Bỏ mặc nhu cầu -> tụt sức khỏe
+    canh_bao = []
+    if cay.get("khat") and hd != "tuoi":
+        cay["suc_khoe"] = max(0, int(cay.get("suc_khoe", 100)) - 6)
+        canh_bao.append("cây đang KHÁT mà không tưới (-6 sức khỏe)")
+    if cay.get("sau") and hd != "bat_sau":
+        cay["suc_khoe"] = max(0, int(cay.get("suc_khoe", 100)) - 6)
+        canh_bao.append("cây đang CÓ SÂU mà không bắt (-6 sức khỏe)")
+    # Áp dụng hành động
+    if hd == "tuoi":
+        vt["nuoc"] = int(vt.get("nuoc", 0)) - 1
+        if cay.get("khat"):
+            cay["sinh_truong"] = min(100, int(cay["sinh_truong"]) + 10)
+            cay["khat"] = False
+            msg = "💧 Tưới nước đúng lúc cây đang khát: Sinh Trưởng +10!"
+        else:
+            cay["sinh_truong"] = min(100, int(cay["sinh_truong"]) + 3)
+            msg = "💧 Đã tưới nước: Sinh Trưởng +3."
+    elif hd == "bon":
+        pham = data.get('pham')
+        vt["phan"][str(pham)] -= 1
+        cong = [8, 12, 18, 26][pham]
+        cay["sinh_truong"] = min(100, int(cay["sinh_truong"]) + cong)
+        cay["tong_phan"] = int(cay.get("tong_phan", 0)) + pham
+        cay["so_bon"] = int(cay.get("so_bon", 0)) + 1
+        msg = f"🌾 Bón Phân phẩm {PHAM_TEN[pham]}: Sinh Trưởng +{cong}!"
+    else:  # bat_sau
+        if cay.get("sau"):
+            cay["sinh_truong"] = min(100, int(cay["sinh_truong"]) + 8)
+            cay["sau"] = False
+            msg = "🧤 Đã bắt hết sâu: Sinh Trưởng +8, cây khỏe lại!"
+        else:
+            cay["sinh_truong"] = min(100, int(cay["sinh_truong"]) + 2)
+            msg = "🧤 Kiểm tra lá: không có sâu. Sinh Trưởng +2."
+    # Phát sinh nhu cầu mới
+    if not cay.get("khat") and random.randint(1, 100) <= 35:
+        cay["khat"] = True
+    if not cay.get("sau") and random.randint(1, 100) <= 25:
+        cay["sau"] = True
+    if canh_bao:
+        msg += " ⚠️ Nhưng " + "; ".join(canh_bao) + "."
+    if int(cay.get("suc_khoe", 100)) <= 0:
+        ng["cay"] = None
+        _add_diem(user, -50, "Cây Linh Dược chết do chăm sóc tệ")
+        _notify(user, "🥀 Cây Linh Dược đã CHẾT vì bị bỏ mặc! Tông Môn trừ 50 điểm. Gieo cây mới và chăm sóc cẩn thận nhé.")
+        save_database(db, f"@{user['username']} cay linh duoc chet")
+        return _nghe_resp(user, "🥀 Ôi không — Sức Khỏe cây về 0, CÂY ĐÃ CHẾT! Tông Môn trừ 50 điểm. Hãy gieo cây mới và đừng bỏ mặc nhu cầu của cây.")
+    save_database(db, f"@{user['username']} cham cay {hd}")
+    return _nghe_resp(user, msg + f" (Sinh Trưởng {cay['sinh_truong']}/100 · Sức Khỏe {cay['suc_khoe']}/100)")
+
+
+@app.route('/api/nghe/cay/thu-hoach', methods=['POST'])
+def api_nghe_cay_thu_hoach():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    ng = _nghe(user)
+    cay = ng.get("cay")
+    if not cay:
+        return jsonify({"success": False, "message": "Chưa có cây nào để thu hoạch!"})
+    if int(cay.get("sinh_truong", 0)) < 100:
+        return jsonify({"success": False, "message": f"Cây chưa trưởng thành (Sinh Trưởng {cay.get('sinh_truong', 0)}/100) — chăm tiếp đi!"})
+    sk = int(cay.get("suc_khoe", 100))
+    so_bon = int(cay.get("so_bon", 0))
+    pham_tb = (int(cay.get("tong_phan", 0)) / so_bon) if so_bon else 0
+    ng["cay"] = None
+    _bump(user, "thu_hoach")
+    if sk < 40:
+        _add_diem(user, -50, "Thu hoạch cây Linh Dược sinh trưởng xấu")
+        save_database(db, f"@{user['username']} thu hoach cay xau -50")
+        return _nghe_resp(user, f"🥀 Cây trưởng thành nhưng Sức Khỏe quá kém ({sk}/100) — sinh trưởng xấu! Tông Môn TRỪ 50 điểm và thu hồi cây. Lần sau chăm sóc đàng hoàng nhé.")
+    base = 200 + int(round(150 * pham_tb))
+    thuong = int(round(base * sk / 100.0))
+    gain = _nghe_gain(user, thuong, "Thu hoạch cây Linh Dược")
+    _add_exp(user, 20)
+    save_database(db, f"@{user['username']} thu hoach cay +{gain}")
+    return _nghe_resp(user, f"🌳 THU HOẠCH CÂY LINH DƯỢC! Cây khỏe {sk}/100, phân bón trung bình phẩm {pham_tb:.1f} → nhận +{gain} Điểm Cống Hiến (+20 EXP). Gieo cây mới để chăm tiếp nhé!")
 
 
 # ============================================================
