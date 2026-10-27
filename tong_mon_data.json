@@ -726,7 +726,7 @@
         },
         "linh_khi": 0,
         "linh_thach": {
-          "nguyen": 0,
+          "nguyen": 5,
           "vien": 0,
           "vi": 0,
           "vinh": 0
@@ -751,7 +751,13 @@
           "claimed_today": [],
           "newbie_done": []
         },
-        "notifications": [],
+        "notifications": [
+          {
+            "time": "27/10/2026 10:58",
+            "text": "💎 Chưởng Môn Nhân đã tặng đạo hữu 5 Nguyên Tinh.",
+            "read": false
+          }
+        ],
         "history": [],
         "streak": {
           "last": "",
