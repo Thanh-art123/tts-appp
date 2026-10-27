@@ -761,8 +761,9 @@ def tui_tru_vat():
 
 @app.route('/vi-tien')
 def vi_tien():
-    # Đợt 10: Ví & nạp tiền chuyển hẳn vào trong Chợ Đấu Giá (mục #vi-nap).
-    return redirect('/bi-canh#vi-nap')
+    # Đợt 12: đã hủy tính năng nạp tiền — đường cũ /vi-tien chuyển về Chợ Đấu Giá
+    # (nơi có dòng nhắn: muốn đổi điểm bằng ngân tệ thì nhắn trực tiếp với Tông Chủ).
+    return redirect('/bi-canh')
 
 
 @app.route('/bi-canh')
