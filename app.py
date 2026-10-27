@@ -705,6 +705,11 @@ def dong_phu():
     return render_template('dong_phu.html')
 
 
+@app.route('/tui-tru-vat')
+def tui_tru_vat():
+    return render_template('tui_tru_vat.html')
+
+
 @app.route('/bi-canh')
 def bi_canh():
     return render_template('bi_canh.html')
