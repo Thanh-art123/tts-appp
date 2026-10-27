@@ -1115,13 +1115,15 @@
           "total": {
             "doc_chuong": 1,
             "diem_danh": 1,
-            "cat_tui": 1
+            "cat_tui": 1,
+            "ve_phu": 1
           },
           "today": {
             "date": "2026-10-27",
             "doc_chuong": 1,
             "diem_danh": 1,
-            "cat_tui": 1
+            "cat_tui": 1,
+            "ve_phu": 1
           }
         },
         "missions": {
@@ -1190,7 +1192,7 @@
             }
           ],
           "luot_tao_anh": 0,
-          "phu_open": false
+          "phu_open": true
         },
         "locked": false,
         "chibi": {
