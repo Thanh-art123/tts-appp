@@ -282,11 +282,37 @@ def load_database():
         return data
 
 
+# ============================================================
+# ĐỢT 19c — CHỮA LAG NÚT BẤM (ông chủ yêu cầu 2026-10-27: "click là chạy
+# lệnh luôn"). Trước đây MỌI thao tác đều chờ đẩy tệp dữ liệu ~7MB lên
+# GitHub (~9 giây) mới trả kết quả. Nay các API thao tác thường ngày đi
+# qua LƯU TRỄ + GỘP (trả kết quả ngay, việc đẩy GitHub chạy nền vài giây
+# sau, luôn lưu bản mới nhất trong bộ nhớ). Chỉ giữ LƯU NGAY cho: đăng ký
+# tài khoản, khu vực Quản Trị, Chợ (tiền ký quỹ giữa 2 người) và chuyển
+# truyện từ Túi lên Tàng Kinh Các (phí + bản thảo).
+# ============================================================
+_save_ctx = threading.local()
+
+
+@app.before_request
+def _dot19c_save_mode():
+    p = request.path or ""
+    _save_ctx.defer = (
+        p.startswith("/api/")
+        and not p.startswith("/api/admin/")
+        and not p.startswith("/api/cho")
+        and p not in ("/api/register", "/api/bag/chuyen")
+    )
+
+
 def save_database(data, message="Cap nhat du lieu Tong Mon"):
     """Lưu dữ liệu: ghi bản sao cục bộ + đẩy lên GitHub (nếu đã nạp được từ GitHub).
 
     Có khóa _save_lock để 2 lần lưu không bao giờ đẩy lên GitHub cùng lúc
     (tránh xung đột khi cập nhật nhánh data)."""
+    if getattr(_save_ctx, "defer", False):
+        schedule_save_database(data, message)
+        return
     with _save_lock:
         _db_cache["data"] = data
         try:
@@ -3752,6 +3778,18 @@ def api_admin_user_action():
         _log(target, "Tài khoản chủ được nâng FULL: Điểm Cống Hiến / Linh Thạch / Tu Vi / Bảo Vật / Linh Sủng tối đa")
         _notify(target, "🚀 Tài khoản của đạo hữu đã được nâng FULL: Điểm Cống Hiến, Linh Thạch, Tu Vi Đại Chúa Tể, đủ 9 bảo vật và Linh Sủng cấp tối đa!")
         msg = f"Đã nâng FULL cho [{target['username']}]: 999.999.999 điểm · Tu Vi Đại Chúa Tể · Viên Mãn · linh thạch 99.999 mỗi loại · đủ 9 bảo vật · linh sủng cấp 10 · túi không giới hạn."
+    elif action == "full_vat_tu":
+        # Đợt 19c: cấp FULL vật tư hành nghề (ông chủ yêu cầu cho tài khoản Tông Chủ để dễ test)
+        ngt = _nghe(target)
+        vt = ngt["vat_tu"]
+        for _loai in ("quang", "duoc", "moi", "phan", "thuc_an"):
+            for _p in ("0", "1", "2", "3"):
+                vt[_loai][_p] = 999
+        vt["nuoc"] = 999
+        vt["bao_tay"] = 1
+        _log(target, "Được cấp FULL vật tư hành nghề: 999 mỗi loại/phẩm + Nước 999 + Bao Tay")
+        _notify(target, "🧰 Đạo hữu đã được cấp FULL vật tư hành nghề (999 mỗi loại mỗi phẩm, Nước 999, có Bao Tay Bắt Sâu) — vào Nghề Phụ Trợ test thoải mái!")
+        msg = f"Đã cấp FULL vật tư cho [{target['username']}]: mọi vật tư 999/phẩm · Nước 999 · Bao Tay đã có."
     else:
         return jsonify({"success": False, "message": "Hành động không hợp lệ!"})
     save_database(db, f"Admin @{admin['username']} action {action} -> @{target['username']}")
