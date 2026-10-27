@@ -1237,7 +1237,7 @@
       },
       "bag": [],
       "game": {
-        "diem": 999999993,
+        "diem": 1000000008,
         "exp": 1000040,
         "tu_vi": {
           "muc": 12,
@@ -1390,6 +1390,10 @@
           {
             "time": "27/10/2026 21:06",
             "text": "Khai thác quặng ở Mỏ Quặng (+3 Điểm Cống Hiến)"
+          },
+          {
+            "time": "27/10/2026 21:06",
+            "text": "Bán Pháp Khí Cấp 1 (+15 Điểm Cống Hiến)"
           }
         ],
         "streak": {
@@ -1407,9 +1411,7 @@
             "ngon": 0,
             "linh_ngu": 0
           },
-          "phap_khi": [
-            1
-          ],
+          "phap_khi": [],
           "thu": {
             "ten": "Hắc Kỳ Lân Con",
             "exp": 999
