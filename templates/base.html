@@ -220,8 +220,7 @@
         <a href="/sanh-chinh" class="bg-amber-600 border border-amber-400 text-black px-3 py-1.5 rounded-full hover:bg-amber-500 transition shadow">🏛️ Sảnh Chính · Nhiệm Vụ & Đổi Điểm</a>
         <a href="/tang-kinh-cac" class="bg-white/90 border border-amber-600/60 text-slate-800 px-3 py-1.5 rounded-full hover:bg-amber-100 shadow-sm transition">📚 Tàng Kinh Các</a>
         <a href="/tui-tru-vat" class="bg-white/90 border border-amber-600/60 text-slate-800 px-3 py-1.5 rounded-full hover:bg-amber-100 shadow-sm transition">🎒 Túi Trữ Vật</a>
-        <a href="/bi-canh#vi-nap" class="bg-white/90 border border-amber-600/60 text-slate-800 px-3 py-1.5 rounded-full hover:bg-amber-100 shadow-sm transition">💳 Ví Nạp Tiền</a>
-        <a href="/che-tap-cac" class="bg-white/90 border border-amber-600/60 text-slate-800 px-3 py-1.5 rounded-full hover:bg-amber-100 shadow-sm transition">🛠️ Nghề Phụ Trợ</a>
+                <a href="/che-tap-cac" class="bg-white/90 border border-amber-600/60 text-slate-800 px-3 py-1.5 rounded-full hover:bg-amber-100 shadow-sm transition">🛠️ Nghề Phụ Trợ</a>
         <a href="/bi-canh" class="bg-white/90 border border-amber-600/60 text-slate-800 px-3 py-1.5 rounded-full hover:bg-amber-100 shadow-sm transition">⚖️ Chợ Đấu Giá</a>
     </div>
 
@@ -503,7 +502,7 @@
                 const box = document.getElementById('profile-box');
                 if (!box) return;
                 document.getElementById('pf-name').innerText = `${u.role === 'admin' ? '⚡' : '👤'} ${u.author_name} — ${tv.ten_muc || ''} · ${tv.ten_cap || ''}`;
-                document.getElementById('pf-stats').innerText = `💠 ${fmtNum(g.diem)} điểm · 💴 ${fmtNum(g.vi_yen || 0)}¥ · ⭐ Cấp ${g.cap_hoat_dong || 1} · 🌀 ${fmtNum(tv.linh_khi)} linh khí`;
+                document.getElementById('pf-stats').innerText = `💠 ${fmtNum(g.diem)} điểm · ⭐ Cấp ${g.cap_hoat_dong || 1} · 🌀 ${fmtNum(tv.linh_khi)} linh khí`;
                 const bell = document.getElementById('pf-bell-count');
                 if (g.unread > 0) { bell.innerText = g.unread; bell.classList.remove('hidden'); }
                 else bell.classList.add('hidden');
