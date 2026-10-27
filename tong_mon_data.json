@@ -2148,6 +2148,21 @@
       "role": "member",
       "chibi": null,
       "text": "do toc do lan 2"
+    },
+    {
+      "id": 16,
+      "ts": 1793085547.3659368,
+      "time": "27/10/2026 16:19",
+      "username": "mothaiba",
+      "author_name": "một con vịt",
+      "role": "member",
+      "chibi": {
+        "toc": 0,
+        "mau_toc": 2,
+        "ao": 2,
+        "phap_bao": "quat"
+      },
+      "text": "chào cả nhà"
     }
   ],
   "submissions": [
