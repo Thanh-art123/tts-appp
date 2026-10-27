@@ -79,6 +79,7 @@
                         <button onclick="addStone('${u.username}')" class="bg-slate-700 hover:bg-slate-600 text-amber-100 font-bold px-2.5 py-1 rounded-lg cursor-pointer">Tặng linh thạch</button>
                         <button onclick="setCap('${u.username}')" class="bg-slate-700 hover:bg-slate-600 text-amber-100 font-bold px-2.5 py-1 rounded-lg cursor-pointer">Đặt dung lượng túi</button>
                         <button onclick="maxFull('${u.username}')" class="bg-fuchsia-700 hover:bg-fuchsia-600 text-white font-bold px-2.5 py-1 rounded-lg cursor-pointer">🚀 Max Full</button>
+                        <button onclick="fullVatTu('${u.username}')" class="bg-teal-700 hover:bg-teal-600 text-white font-bold px-2.5 py-1 rounded-lg cursor-pointer">🧰 Full Vật Tư</button>
                         <button onclick="resetChibi('${u.username}')" class="bg-slate-700 hover:bg-slate-600 text-amber-100 font-bold px-2.5 py-1 rounded-lg cursor-pointer">↩️ Reset Chibi</button>
                     </p>
                 </div>`).join('');
@@ -115,6 +116,10 @@
 
     function maxFull(username) {
         post('/api/admin/user-action', {username, action:'max_full'}).then(res => { alert(res.message); loadUsers(); });
+    }
+
+    function fullVatTu(username) {
+        post('/api/admin/user-action', {username, action:'full_vat_tu'}).then(res => { alert(res.message); loadUsers(); });
     }
 
     function resetChibi(username) {
