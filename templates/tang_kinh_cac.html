@@ -54,6 +54,19 @@
         </div>
     </div>
 
+    <!-- ĐỢT 8: Bản thảo của ta — trạng thái duyệt truyện đã gửi -->
+    <div class="rounded-xl border border-amber-600/50 bg-black/30 mb-4">
+        <button type="button" onclick="tkSubsToggle()" class="w-full flex items-center justify-between px-4 py-3 cursor-pointer">
+            <span class="text-sm font-extrabold text-amber-300">📝 Bản Thảo Của Ta — Trạng Thái Chờ Tông Chủ Duyệt</span>
+            <span id="tk-subs-arrow" class="text-amber-300 font-bold">▸ Mở</span>
+        </button>
+        <div id="tk-subs-body" class="hidden px-4 pb-4">
+            <div id="tk-subs-list" class="space-y-2 text-sm">
+                <p class="text-slate-500 text-xs">Đang tải...</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Phân loại Chuyên Mục -->
     <div class="flex space-x-2 border-b border-amber-600/40 pb-3 mb-4">
         <button onclick="switchCategory('truyen-dich')" id="btn-truyen-dich" class="sub-btn active-sub text-xs font-bold px-4 py-2 rounded-lg bg-black/60 border border-amber-600/50 text-amber-300 transition cursor-pointer">
@@ -130,6 +143,8 @@
                 <input type="file" id="book-file" accept=".txt,.html,.htm" class="w-full bg-black/80 text-amber-100 border border-amber-500/80 rounded-xl p-2.5 cursor-pointer file:mr-4 file:py-1 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-extrabold file:bg-amber-600 file:text-black">
             </div>
         </div>
+
+        <p class="text-[11px] text-amber-200/80 pt-2">📝 Lưu ý: truyện của đệ tử sẽ được gửi cho <strong class="text-amber-300">Tông Chủ duyệt</strong> trước — được duyệt mới xuất hiện trên Tàng Kinh Các và nhận +50 Điểm Cống Hiến.</p>
 
         <div class="flex justify-end space-x-2 pt-3 border-t border-amber-800/60">
             <button onclick="closeUploadModal()" class="bg-slate-800 text-amber-300 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer">Hủy</button>
@@ -411,6 +426,38 @@
         } catch (e) { tkStatus('Tải MP3 thất bại — máy chủ giọng đọc đang bận.', false); }
     }
     document.getElementById('tk-tts-voice').addEventListener('change', () => { tkTtsStop(); });
+
+    // ===== ĐỢT 8: BẢN THẢO CỦA TA =====
+    function tkSubsToggle() {
+        const body = document.getElementById('tk-subs-body');
+        const arrow = document.getElementById('tk-subs-arrow');
+        const open = body.classList.toggle('hidden') === false;
+        arrow.innerText = open ? '▾ Thu gọn' : '▸ Mở';
+        if (open) tkLoadSubs();
+    }
+    async function tkLoadSubs() {
+        const box = document.getElementById('tk-subs-list');
+        if (!box) return;
+        try {
+            const r = await fetch('/api/submissions/mine');
+            const d = await r.json();
+            const subs = d.submissions || [];
+            if (!subs.length) { box.innerHTML = '<p class="text-slate-500 text-xs">Đạo hữu chưa gửi bản thảo nào. Tải truyện lên là bản thảo sẽ nằm ở đây chờ Tông Chủ duyệt.</p>'; return; }
+            const chip = s => s.status === 'approved'
+                ? '<span class="font-extrabold text-emerald-600">✅ Đã duyệt — đã lên Tàng Kinh Các</span>'
+                : s.status === 'rejected'
+                    ? `<span class="font-extrabold text-red-600">❌ Bị từ chối</span>${s.reject_reason ? ` — Lý do: ${escTk(s.reject_reason)}` : ''}`
+                    : '<span class="font-extrabold text-amber-600">⏳ Đang chờ Tông Chủ duyệt</span>';
+            box.innerHTML = subs.map(s => `
+                <div class="rounded-lg border border-amber-600/30 bg-black/20 px-3 py-2">
+                    <p class="font-bold text-amber-200">📖 ${escTk(s.title)}</p>
+                    <p class="text-xs text-amber-200/80">${chip(s)} • ${s.source === 'bag' ? 'Chuyển từ Túi Trữ Vật' : 'Tải lên trực tiếp'} • ${escTk(s.time || '')}</p>
+                </div>`).join('');
+        } catch (e) { box.innerHTML = '<p class="text-red-500 text-xs">Không tải được danh sách bản thảo.</p>'; }
+    }
+    function escTk(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
 </script>
 <style>
     .elem-btn.active-elem { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); transform: scale(1.05); border-width: 2px; }
