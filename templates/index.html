@@ -1,447 +1,132 @@
 {% extends "base.html" %}
-{% block title %}Nghe Giảng Kinh - Đại Thiên Tông{% endblock %}
+{% block title %}Bảng Tin Tông Môn - Đại Thiên Tông{% endblock %}
 
 {% block content %}
-<div class="panel-3d rounded-2xl p-6 relative space-y-6">
+<div class="panel-3d rounded-2xl p-6 relative space-y-4">
     <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
-        <i class="fa-solid fa-scroll text-amber-500"></i>
-        <span>Chuyển Văn Bản Thành Giọng Đọc Thần Âm</span>
+        <i class="fa-solid fa-newspaper text-amber-500"></i>
+        <span>📰 Bảng Tin Tông Môn</span>
     </h2>
-
-    <div class="space-y-4">
-        <div>
-            <label class="block text-xs font-semibold text-amber-200/90 mb-1">Khẩu quyết văn bản cần ngưng tụ:</label>
-            <textarea id="tts-text" rows="4" placeholder="Nhập nội dung cần đọc tại đây..." class="w-full p-3 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none bg-black/75 text-amber-100 placeholder-amber-700/70 shadow-inner" required>Một khoảng lặng kéo dài. Cuối cùng, giọng nói kia chỉ để lại hai chữ: Tạm biệt.</textarea>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <!-- Chọn Giọng Đọc -->
-            <div>
-                <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Giọng Đọc:</label>
-                <select id="voice-select" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
-                    <option value="vi-VN-HoaiMyNeural">🎙 Giọng Nữ — Hoài My (Thần Âm AI)</option>
-                    <option value="vi-VN-NamMinhNeural">👨 Giọng Nam — Nam Minh (Thần Âm AI)</option>
-                </select>
-            </div>
-
-            <!-- Tốc độ đọc (0.8x đến 3.5x) - Thay đổi real-time ngay lúc nghe -->
-            <div>
-                <div class="flex justify-between text-xs text-amber-200 mb-1">
-                    <span class="font-bold text-amber-300">Tốc độ đọc:</span>
-                    <span id="rate-val" class="font-bold text-amber-400">1.0x</span>
-                </div>
-                <input type="range" id="rate-range" min="0.8" max="3.5" step="0.1" value="1.0" oninput="changeRateRealTime(this.value)" class="w-full h-1.5 accent-amber-500 rounded-lg cursor-pointer">
-            </div>
-        </div>
-
-        <!-- HIỂN THỊ THỜI LƯỢNG ÂM THANH -->
-        <div class="flex justify-between items-center text-xs text-amber-300 px-1 bg-black/40 p-2 rounded-lg border border-amber-800/40">
-            <span>⏱ Thời lượng ước tính: <strong id="duration-display" class="text-amber-400">00:00</strong></span>
-            <span>Trạng thái: <strong id="status-display" class="text-emerald-400">Sẵn sàng</strong></span>
-        </div>
-
-        <!-- CÁC NÚT ĐIỀU KHIỂN GỌN GÀNG TRÊN 1 HÀNG DUY NHẤT -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-            <button onclick="togglePlayStop()" id="toggle-play-btn" class="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-black font-extrabold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-xs">
-                <i class="fa-solid fa-play" id="main-icon"></i>
-                <span id="main-text">Phát Âm Thanh (1 Click)</span>
-            </button>
-            <button onclick="downloadAudioMP3()" class="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-extrabold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-xs">
-                <i class="fa-solid fa-download"></i>
-                <span>Tải Nhạc (MP3)</span>
-            </button>
-        </div>
+    <div class="guide"><button type="button" class="guide-chip">ⓘ Hướng dẫn</button><div class="guide-body"><p class="text-xs text-amber-200/80 leading-relaxed">Mọi tin tức của Tông Môn đều hiện lên bảng này: <strong class="text-amber-300">sự kiện</strong>, <strong class="text-amber-300">cập nhật</strong>, đệ tử <strong class="text-amber-300">cống hiến truyện</strong>, đệ tử <strong class="text-amber-300">thăng cấp</strong> và <strong class="text-amber-300">thông báo của Chưởng Môn Nhân</strong>. Cần nghe truyện hay chuyển chữ thành giọng đọc thì vào <strong class="text-amber-300">Tàng Kinh Các</strong> nhé.</p></div></div>
+    <div id="news-list" class="space-y-2">
+        <p class="text-sm text-slate-500">Đang tải bảng tin...</p>
     </div>
 </div>
 
 <div class="panel-3d rounded-2xl p-6 relative space-y-4 mt-6">
     <h2 class="text-lg font-bold text-amber-400 border-b border-amber-600/40 pb-3 flex items-center space-x-2">
-        <i class="fa-solid fa-book-open text-amber-500"></i>
-        <span>Nghe Truyện Từ Tàng Kinh Các</span>
+        <i class="fa-solid fa-comments text-amber-500"></i>
+        <span>💬 Trò Chuyện Đệ Tử</span>
     </h2>
-    <div class="guide"><button type="button" class="guide-chip">ⓘ Hướng dẫn</button><div class="guide-body"><p class="text-xs text-amber-200/80 leading-relaxed">Mọi truyện đạo hữu tải lên Tàng Kinh Các đều tự xuất hiện ở đây. Chọn truyện, chọn tập rồi bấm nghe — <strong class="text-amber-300">hết chương này máy tự sang chương tiếp theo</strong>, không cần thao tác. Giọng đọc và tốc độ dùng chung với thanh công cụ phía trên.</p></div></div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-            <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Truyện:</label>
-            <select id="bk-select" onchange="bkLoadChapters(this.value)" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
-                <option value="">Đang nạp danh sách truyện...</option>
-            </select>
-        </div>
-        <div>
-            <label class="block text-xs font-bold text-amber-300 mb-1">Chọn Tập / Chương để bắt đầu nghe:</label>
-            <select id="bk-chapter" onchange="bkChapterChanged()" class="w-full p-2.5 rounded-lg border border-amber-600/60 bg-black text-xs font-semibold text-amber-200 outline-none">
-                <option value="">—</option>
-            </select>
-        </div>
+    <div id="chat-list" class="space-y-3 overflow-y-auto pr-1" style="max-height: 420px;">
+        <p class="text-sm text-slate-500">Đang tải cuộc trò chuyện...</p>
     </div>
-    <div class="flex justify-between items-center text-xs text-amber-300 px-1 bg-black/40 p-2 rounded-lg border border-amber-800/40">
-        <span>📻 Trạng thái nghe truyện: <strong id="bk-status" class="text-emerald-400">Đang nạp...</strong></span>
+    <div class="flex items-center gap-2 pt-1">
+        <input id="chat-input" type="text" maxlength="300" placeholder="Nhắn gì đó với các đệ tử..."
+            class="flex-1 p-3 rounded-xl border border-amber-600/50 focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();sendChat();}">
+        <button onclick="sendChat()" class="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-extrabold px-5 py-3 rounded-xl shadow transition text-sm whitespace-nowrap">
+            Gửi 💬
+        </button>
     </div>
-    <button onclick="bkToggle()" id="bk-play-btn" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-extrabold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-xs">
-        <i class="fa-solid fa-headphones"></i>
-        <span id="bk-play-text">Nghe Truyện (Tự Sang Chương)</span>
-    </button>
-    <div id="bk-progress-wrap" class="hidden space-y-2 bg-black/40 p-3 rounded-xl border border-amber-800/40">
-        <div class="flex items-center gap-2">
-            <button onclick="bkChapJump(-1)" title="Chương trước" class="bg-amber-900/70 hover:bg-amber-800 text-amber-200 text-xs font-bold px-3 py-2 rounded-lg border border-amber-700/50">⏮</button>
-            <input type="range" id="bk-seek" min="0" max="1000" value="0" oninput="bkSeekInput(this.value)" onchange="bkSeekGo(this.value)" class="flex-1 h-1.5 accent-amber-500 rounded-lg cursor-pointer">
-            <button onclick="bkChapJump(1)" title="Chương sau" class="bg-amber-900/70 hover:bg-amber-800 text-amber-200 text-xs font-bold px-3 py-2 rounded-lg border border-amber-700/50">⏭</button>
-        </div>
-        <div class="flex justify-between gap-2 text-[11px] text-amber-200/90">
-            <span id="bk-pos" class="truncate">📍 —</span>
-            <span id="bk-time" class="whitespace-nowrap">≈ 00:00 / 00:00</span>
-        </div>
-        <p class="text-[10px] text-amber-200/50">Kéo thanh trượt để tua tới đoạn mong muốn • ⏮ ⏭ nhảy chương • vị trí nghe dở được tự ghi nhớ cho lần sau.</p>
-    </div>
+    <p id="chat-hint" class="text-xs text-slate-500"></p>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // ===== GIỌNG ĐỌC THẦN ÂM TỪ MÁY CHỦ (edge-tts) =====
-    // Âm thanh tạo trên server, phát bằng thẻ audio -> Android/app đều nghe được.
-    // Engine chạy theo "đoạn" (segment): văn bản tự do hoặc từng chương truyện nối tiếp.
-    const TT = {
-        audio: new Audio(), segments: [], idx: 0, gen: 0,
-        state: 'idle', mode: 'text', blobs: new Map(), urls: new Map()
+    // ===== ĐỢT 7: BẢNG TIN TÔNG MÔN + CHAT ĐỆ TỬ =====
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function timeAgo(ts) {
+        if (!ts) return '';
+        const s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
+        if (s < 60) return 'vừa xong';
+        if (s < 3600) return Math.floor(s / 60) + ' phút trước';
+        if (s < 86400) return Math.floor(s / 3600) + ' giờ trước';
+        return Math.floor(s / 86400) + ' ngày trước';
+    }
+    const NEWS_STYLE = {
+        su_kien: 'border-fuchsia-400 bg-fuchsia-50',
+        truyen: 'border-emerald-400 bg-emerald-50',
+        thang_cap: 'border-amber-400 bg-amber-50',
+        thong_bao: 'border-red-400 bg-red-50',
+        he_thong: 'border-sky-400 bg-sky-50'
     };
-    TT.audio.preload = 'auto';
-
-    function setStatus(txt, cls) {
-        const el = document.getElementById('status-display');
-        if (el) { el.innerText = txt; el.className = cls || 'text-emerald-400'; }
-    }
-    function bkStatus(txt) {
-        const el = document.getElementById('bk-status');
-        if (el) el.innerText = txt;
-    }
-    function setMainUI(state) {
-        const icon = document.getElementById('main-icon');
-        const text = document.getElementById('main-text');
-        const bkText = document.getElementById('bk-play-text');
-        if (state === 'playing') {
-            icon.className = 'fa-solid fa-pause'; text.innerText = 'Tạm Dừng';
-            if (bkText && TT.mode === 'book') bkText.innerText = 'Tạm Dừng';
-        } else if (state === 'paused') {
-            icon.className = 'fa-solid fa-play'; text.innerText = 'Tiếp Tục Đọc';
-            if (bkText && TT.mode === 'book') bkText.innerText = 'Tiếp Tục Nghe';
-        } else {
-            icon.className = 'fa-solid fa-play'; text.innerText = 'Phát Âm Thanh (1 Click)';
-            if (bkText) bkText.innerText = 'Nghe Truyện (Tự Sang Chương)';
-        }
-    }
-    function currentRate() { return parseFloat(document.getElementById('rate-range').value) || 1; }
-
-    function chunkText(text, maxLen) {
-        maxLen = maxLen || 900;
-        const parts = (text || '').replace(/\s+/g, ' ').match(/[^.!?…]+[.!?…]*["”’']?\s*/g) || [text];
-        const out = []; let cur = '';
-        for (const p of parts) {
-            if (cur && (cur + p).length > maxLen) { out.push(cur.trim()); cur = p; }
-            else cur += p;
-            while (cur.length > maxLen) { out.push(cur.slice(0, maxLen).trim()); cur = cur.slice(maxLen); }
-        }
-        if (cur.trim()) out.push(cur.trim());
-        return out.filter(Boolean);
-    }
-
-    async function ttsBlob(text) {
-        const res = await fetch('/api/tts', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: text, voice: document.getElementById('voice-select').value })
-        });
-        if (!res.ok) throw new Error('tts fail');
-        return await res.blob();
-    }
-    async function fetchChunkBlob(i) {
-        if (!TT.blobs.has(i)) TT.blobs.set(i, await ttsBlob(TT.segments[i].text));
-        return TT.blobs.get(i);
-    }
-    function chunkURL(i) {
-        if (!TT.urls.has(i)) TT.urls.set(i, URL.createObjectURL(TT.blobs.get(i)));
-        return TT.urls.get(i);
-    }
-    function showSegStatus(verb, cls) {
-        const seg = TT.segments[TT.idx];
-        const msg = seg ? `${verb}: ${seg.label}` : verb;
-        setStatus(msg, cls);
-        if (TT.mode === 'book') bkStatus(msg);
-    }
-
-    async function playLoop(gen) {
-        while (TT.idx < TT.segments.length) {
-            if (gen !== TT.gen) return;
-            showSegStatus('Đang tạo âm thanh', 'text-amber-400');
-            try { await fetchChunkBlob(TT.idx); }
-            catch (e) { fallbackSpeak(); return; }
-            if (gen !== TT.gen) return;
-            TT.audio.src = chunkURL(TT.idx);
-            TT.audio.playbackRate = currentRate();
-            showSegStatus('Đang đọc', 'text-emerald-400 font-bold');
-            TT.state = 'playing'; setMainUI('playing');
-            if (TT.mode === 'book') { saveBookmark(); bkProgressUI(0); }
-            try { await TT.audio.play(); } catch (e) {}
-            if (TT.idx + 1 < TT.segments.length) fetchChunkBlob(TT.idx + 1).catch(() => {});
-            await new Promise(res => { TT._wake = res; TT.audio.onended = res; TT.audio.onerror = res; });
-            if (gen !== TT.gen) return;
-            TT.idx++;
-        }
-        TT.state = 'idle'; setMainUI('idle');
-        if (TT.mode === 'book') { setStatus('Đã đọc hết truyện', 'text-emerald-400'); bkStatus('Đã đọc hết toàn bộ truyện 🎉'); }
-        else setStatus('Hoàn thành', 'text-emerald-400');
-    }
-
-    function startSegments(segs, mode) {
-        TT.gen++;
-        TT.mode = mode;
-        TT.segments = segs;
-        TT.cum = []; TT.totalChars = 0;
-        segs.forEach(sg => { TT.cum.push(TT.totalChars); TT.totalChars += (sg.chars || sg.text.length); });
-        TT.idx = 0;
-        const wrap = document.getElementById('bk-progress-wrap');
-        if (wrap) wrap.classList.toggle('hidden', mode !== 'book');
-        TT.blobs.clear();
-        TT.urls.forEach(u => URL.revokeObjectURL(u)); TT.urls.clear();
-        playLoop(TT.gen);
-    }
-    function pauseResume() {
-        if (TT.state === 'playing') {
-            TT.audio.pause();
-            TT.state = 'paused'; setMainUI('paused');
-            setStatus('Đã tạm dừng', 'text-amber-400');
-            if (TT.mode === 'book') bkStatus('Đã tạm dừng');
-            return true;
-        }
-        if (TT.state === 'paused') {
-            TT.state = 'playing'; setMainUI('playing');
-            TT.audio.playbackRate = currentRate();
-            TT.audio.play().catch(() => {});
-            showSegStatus('Đang đọc', 'text-emerald-400 font-bold');
-            return true;
-        }
-        return false;
-    }
-
-    function fallbackSpeak() {
-        const synth = window.speechSynthesis;
-        const text = document.getElementById('tts-text').value.trim();
-        TT.state = 'idle'; setMainUI('idle');
-        if (!synth || !text || TT.mode === 'book') { setStatus('Máy chủ giọng đọc đang bận, thử lại sau giây lát.', 'text-red-400'); bkStatus('Máy chủ giọng đọc đang bận — thử lại sau giây lát.'); return; }
-        setStatus('Đang đọc bằng giọng dự phòng của máy...', 'text-amber-400');
-        synth.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        const vi = synth.getVoices().find(v => (v.lang || '').toLowerCase().includes('vi'));
-        if (vi) u.voice = vi;
-        u.rate = Math.min(currentRate(), 2);
-        u.onend = () => setStatus('Hoàn thành', 'text-emerald-400');
-        synth.speak(u);
-    }
-
-    function togglePlayStop() {
-        if (TT.mode === 'text' && pauseResume()) return;
-        const text = document.getElementById('tts-text').value.trim();
-        if (!text) { alert('Xin hãy nhập nội dung cần đọc!'); return; }
-        const parts = chunkText(text);
-        startSegments(parts.map((p, i) => ({ label: `Đoạn ${i + 1}/${parts.length}`, text: p, ci: -1, chars: p.length })), 'text');
-    }
-
-    function changeRateRealTime(val) {
-        document.getElementById('rate-val').innerText = parseFloat(val).toFixed(1) + 'x';
-        updateDuration();
-        if (TT.state === 'playing' || TT.state === 'paused') TT.audio.playbackRate = parseFloat(val);
-    }
-
-    function updateDuration() {
-        const textEl = document.getElementById('tts-text');
-        const rateEl = document.getElementById('rate-range');
-        const durationEl = document.getElementById('duration-display');
-        if (!textEl || !rateEl || !durationEl) return;
-        const text = textEl.value.trim();
-        const rate = parseFloat(rateEl.value);
-        const words = text ? text.split(/\s+/).length : 0;
-        let seconds = (words / 150) * 60 / rate;
-        durationEl.innerText = `${Math.floor(seconds / 60).toString().padStart(2, '0')}:${Math.floor(seconds % 60).toString().padStart(2, '0')}`;
-    }
-    const ttsTextEl = document.getElementById('tts-text');
-    if (ttsTextEl) { ttsTextEl.addEventListener('input', updateDuration); updateDuration(); }
-
-    async function downloadAudioMP3() {
-        const text = document.getElementById('tts-text').value.trim();
-        if (!text) { alert('Không có nội dung để tải!'); return; }
+    async function loadNews() {
+        const box = document.getElementById('news-list');
+        if (!box) return;
         try {
-            const chunks = chunkText(text);
-            const parts = [];
-            for (let i = 0; i < chunks.length; i++) {
-                setStatus(`Đang tạo file MP3: đoạn ${i + 1}/${chunks.length}...`, 'text-amber-400');
-                parts.push(await ttsBlob(chunks[i]));
-            }
-            const file = new Blob(parts, { type: 'audio/mpeg' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(file);
-            a.download = 'giong-doc-than-am.mp3';
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            setStatus('Đã tải file MP3 thật về máy!', 'text-emerald-400');
-        } catch (e) {
-            setStatus('Tải MP3 thất bại — máy chủ giọng đọc đang bận.', 'text-red-400');
-        }
-    }
-
-    // ===== NGHE TRUYỆN TỪ TÀNG KINH CÁC =====
-    const BK = { chapters: [], title: '' };
-    function bkToggle() {
-        if (!BK.chapters.length) { alert('Hãy chọn một truyện trước!'); return; }
-        const start = parseInt(document.getElementById('bk-chapter').value) || 0;
-        // Đang nghe đúng truyện + đúng chương đã chọn -> nút này chỉ Tạm dừng / Tiếp tục
-        if (TT.mode === 'book' && TT.state !== 'idle' && TT.bookId === BK.bookId && TT.startChapter === start && pauseResume()) return;
-        const segs = [];
-        for (let ci = start; ci < BK.chapters.length; ci++) {
-            const parts = chunkText(BK.chapters[ci].text);
-            parts.forEach(p => segs.push({ label: `${BK.chapters[ci].title} (chương ${ci + 1}/${BK.chapters.length} của «${BK.title}»)`, text: p, ci: ci, chars: p.length }));
-        }
-        if (!segs.length) { alert('Chương này chưa có nội dung!'); return; }
-        // Nghe tiếp đoạn dở dang lần trước nếu chọn đúng chương đã lưu
-        if (BK.resumeCi === start && BK.resumeSeg > 0) {
-            const inChap = segs.filter(x => x.ci === start).length;
-            const drop = Math.min(BK.resumeSeg, Math.max(0, inChap - 1));
-            if (drop > 0) segs.splice(0, drop);
-            BK.resumeSeg = 0; BK.resumeCi = -1;
-        }
-        TT.bookId = BK.bookId; TT.startChapter = start;
-        startSegments(segs, 'book');
-    }
-    async function bkLoadChapters(id) {
-        if (!id) return;
-        BK.bookId = id;
-        if (TT.mode === 'book' && TT.state !== 'idle') stopSession();
-        const csel = document.getElementById('bk-chapter');
-        csel.innerHTML = '<option value="">Đang tải danh sách chương...</option>';
-        bkStatus('Đang tải chương...');
-        try {
-            const r = await fetch('/api/nghe/book/' + id);
+            const r = await fetch('/api/news');
             const d = await r.json();
-            BK.chapters = d.chapters || [];
-            BK.title = d.title || '';
-            csel.innerHTML = '';
-            BK.chapters.forEach((c, i) => {
-                const o = document.createElement('option');
-                o.value = i; o.textContent = c.title;
-                csel.appendChild(o);
-            });
-            const saved = loadBookmark();
-            BK.resumeSeg = 0; BK.resumeCi = -1;
-            if (saved && String(saved.bookId) === String(id) && saved.ci >= 0 && saved.ci < BK.chapters.length) {
-                csel.value = saved.ci;
-                BK.resumeCi = saved.ci; BK.resumeSeg = saved.seg || 0;
-                bkStatus(`Lần trước nghe tới: ${BK.chapters[saved.ci].title} — bấm Nghe Truyện để nghe tiếp đúng chỗ dở!`);
-            } else {
-                bkStatus(`Sẵn sàng: «${BK.title}» có ${BK.chapters.length} chương. Bấm Nghe Truyện để bắt đầu!`);
-            }
-        } catch (e) { bkStatus('Không tải được truyện này.'); }
-    }
-    async function bkInit() {
-        const sel = document.getElementById('bk-select');
-        if (!sel) return;
-        try {
-            const r = await fetch('/api/nghe/books');
-            const d = await r.json();
-            const books = d.books || [];
-            sel.innerHTML = '';
-            if (!books.length) {
-                sel.innerHTML = '<option value="">(Chưa có truyện nào — hãy tải truyện lên Tàng Kinh Các)</option>';
-                bkStatus('Chưa có truyện nào trong Tàng Kinh Các.');
-                return;
-            }
-            books.forEach(b => {
-                const o = document.createElement('option');
-                o.value = b.id;
-                o.textContent = `📖 ${b.title} — ${b.chapters} chương`;
-                sel.appendChild(o);
-            });
-            bkLoadChapters(books[0].id);
-        } catch (e) {
-            sel.innerHTML = '<option value="">Không tải được danh sách truyện</option>';
-        }
+            const items = d.news || [];
+            if (!items.length) { box.innerHTML = '<p class="text-sm text-slate-500">Chưa có tin nào trên bảng.</p>'; return; }
+            box.innerHTML = items.map(n => `
+                <div class="border-l-4 rounded-lg px-3 py-2 ${NEWS_STYLE[n.loai] || NEWS_STYLE.he_thong}">
+                    <p class="text-sm leading-relaxed text-slate-800">${esc(n.text)}</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">${esc(n.time || '')}${n.ts ? ' • ' + timeAgo(n.ts) : ''}</p>
+                </div>`).join('');
+        } catch (e) { /* giữ nguyên danh sách cũ khi mạng chập chờn */ }
     }
 
-    // ===== TIẾN ĐỘ, TUA & GHI NHỚ VỊ TRÍ NGHE =====
-    function fmtT(sec) {
-        sec = Math.max(0, Math.round(sec));
-        const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), x = sec % 60;
-        return (h ? h + ':' + String(m).padStart(2, '0') : String(m).padStart(2, '0')) + ':' + String(x).padStart(2, '0');
-    }
-    function estSec(chars) { return chars / 13.5 / currentRate(); }
-    function stopSession() {
-        TT.gen++; TT.state = 'idle'; TT.audio.pause();
-        if (TT._wake) TT._wake();
-        setMainUI('idle');
-    }
-    function bkChapterChanged() {
-        BK.resumeSeg = 0; BK.resumeCi = -1;
-        if (TT.mode === 'book' && TT.state !== 'idle') {
-            stopSession();
-            bkStatus('Đã chọn chương khác — bấm Nghe Truyện để đọc từ chương vừa chọn.');
+    let CHAT_LAST_ID = -1;
+    function chatAvatar(m) {
+        if (m.chibi && window.chibiSVG) {
+            return `<span class="inline-block shrink-0" style="width:34px;height:40px;">${chibiSVG(m.chibi)}</span>`;
         }
+        return '<span class="inline-block shrink-0 text-2xl" style="width:34px;text-align:center;">👤</span>';
     }
-    function saveBookmark() {
-        if (TT.mode !== 'book' || !TT.segments.length) return;
-        const seg = TT.segments[TT.idx];
-        if (!seg || seg.ci < 0) return;
-        let within = 0;
-        for (let i = 0; i < TT.idx; i++) if (TT.segments[i].ci === seg.ci) within++;
-        try { localStorage.setItem('tm_listen_pos', JSON.stringify({ bookId: TT.bookId, ci: seg.ci, seg: within })); } catch (e) {}
+    function renderChat(messages, forceScroll) {
+        const box = document.getElementById('chat-list');
+        if (!box) return;
+        const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 120;
+        if (!messages.length) {
+            box.innerHTML = '<p class="text-sm text-slate-500">Chưa có đệ tử nào lên tiếng — hãy là người đầu tiên! 👋</p>';
+            CHAT_LAST_ID = 0;
+            return;
+        }
+        box.innerHTML = messages.map(m => `
+            <div class="flex items-start gap-2">
+                ${chatAvatar(m)}
+                <div class="min-w-0">
+                    <p class="text-xs font-bold ${m.role === 'admin' ? 'text-red-700' : 'text-slate-700'}">${m.role === 'admin' ? '⚡ ' : ''}${esc(m.author_name)} <span class="font-normal text-slate-400">• ${esc((m.time || '').slice(6) || '')}</span></p>
+                    <p class="text-sm text-slate-800 leading-snug break-words">${esc(m.text)}</p>
+                </div>
+            </div>`).join('');
+        CHAT_LAST_ID = messages[messages.length - 1].id || 0;
+        if (forceScroll || nearBottom) box.scrollTop = box.scrollHeight;
     }
-    function loadBookmark() {
-        try { return JSON.parse(localStorage.getItem('tm_listen_pos') || 'null'); } catch (e) { return null; }
+    async function loadChat(forceScroll) {
+        try {
+            const r = await fetch('/api/chat');
+            const d = await r.json();
+            const msgs = d.messages || [];
+            const lastId = msgs.length ? (msgs[msgs.length - 1].id || 0) : 0;
+            if (forceScroll || lastId !== CHAT_LAST_ID) renderChat(msgs, forceScroll);
+        } catch (e) { /* bỏ qua lỗi mạng tạm thời */ }
     }
-    function bkProgressUI(frac) {
-        if (!TT.segments.length || !TT.totalChars) return;
-        const seg = TT.segments[TT.idx];
-        if (!seg) return;
-        const pos = (TT.cum[TT.idx] || 0) + (frac || 0) * (seg.chars || 0);
-        const slider = document.getElementById('bk-seek');
-        if (slider && document.activeElement !== slider) slider.value = Math.round(pos / TT.totalChars * 1000);
-        const posEl = document.getElementById('bk-pos');
-        if (posEl) posEl.innerText = '📍 ' + seg.label;
-        const timeEl = document.getElementById('bk-time');
-        if (timeEl) timeEl.innerText = `≈ ${fmtT(estSec(pos))} / ${fmtT(estSec(TT.totalChars))}`;
+    async function sendChat() {
+        const inp = document.getElementById('chat-input');
+        const hint = document.getElementById('chat-hint');
+        const text = (inp.value || '').trim();
+        if (!text) return;
+        try {
+            const r = await fetch('/api/chat', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+            const d = await r.json();
+            if (!d.success) { hint.innerText = d.message || 'Gửi không được, thử lại sau.'; return; }
+            hint.innerText = '';
+            inp.value = '';
+            renderChat(d.messages || [], true);
+        } catch (e) { hint.innerText = 'Mạng chập chờn — chưa gửi được tin nhắn.'; }
     }
-    function segIndexAt(v) {
-        const target = TT.totalChars * (parseInt(v) || 0) / 1000;
-        let i = 0;
-        while (i < TT.segments.length - 1 && (TT.cum[i + 1] || 0) <= target) i++;
-        return i;
-    }
-    function bkSeekInput(v) {
-        if (!TT.segments.length) return;
-        const seg = TT.segments[segIndexAt(v)];
-        const posEl = document.getElementById('bk-pos');
-        if (posEl && seg) posEl.innerText = '🎯 Tua tới: ' + seg.label;
-        const timeEl = document.getElementById('bk-time');
-        if (timeEl) timeEl.innerText = `≈ ${fmtT(estSec(TT.totalChars * v / 1000))} / ${fmtT(estSec(TT.totalChars))}`;
-    }
-    function bkSeekGo(v) {
-        if (!TT.segments.length || TT.mode !== 'book') return;
-        TT.gen++; if (TT._wake) TT._wake();
-        TT.idx = segIndexAt(v);
-        TT.state = 'playing';
-        saveBookmark();
-        playLoop(TT.gen);
-    }
-    function bkChapJump(d) {
-        if (!TT.segments.length || TT.mode !== 'book') return;
-        const cur = TT.segments[TT.idx];
-        if (!cur) return;
-        const j = TT.segments.findIndex(x => x.ci === (cur.ci || 0) + d);
-        if (j < 0) { bkStatus(d > 0 ? 'Đã ở chương cuối rồi.' : 'Đã ở chương đầu rồi.'); return; }
-        TT.gen++; if (TT._wake) TT._wake();
-        TT.idx = j; TT.state = 'playing';
-        playLoop(TT.gen);
-    }
-    TT.audio.addEventListener('timeupdate', () => {
-        if (TT.mode === 'book' && TT.state === 'playing' && TT.audio.duration > 0)
-            bkProgressUI(Math.min(1, TT.audio.currentTime / TT.audio.duration));
-    });
-    bkInit();
+
+    loadNews();
+    loadChat(true);
+    setInterval(() => { if (!document.hidden) loadChat(false); }, 8000);
+    setInterval(() => { if (!document.hidden) loadNews(); }, 30000);
 </script>
-
 {% endblock %}
