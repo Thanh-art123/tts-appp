@@ -3395,7 +3395,7 @@
             "bao_tay": 0
           }
         },
-        "locked": false,
+        "locked": true,
         "chibi": {
           "toc": 0,
           "mau_toc": 0,
