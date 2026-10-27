@@ -3269,14 +3269,16 @@
             "khai_thac": 1,
             "luyen_khi": 1,
             "lk_ok": 1,
-            "cau_ca": 1
+            "cau_ca": 1,
+            "cham_cay": 1
           },
           "today": {
             "date": "2026-10-27",
             "khai_thac": 1,
             "luyen_khi": 1,
             "lk_ok": 1,
-            "cau_ca": 1
+            "cau_ca": 1,
+            "cham_cay": 1
           }
         },
         "missions": {
@@ -3351,7 +3353,7 @@
           "luot_tao_anh": 0,
           "phu_open": false,
           "cay": {
-            "sinh_truong": 0,
+            "sinh_truong": 3,
             "suc_khoe": 100,
             "khat": false,
             "sau": false,
@@ -3389,7 +3391,7 @@
               "2": 0,
               "3": 0
             },
-            "nuoc": 1,
+            "nuoc": 0,
             "bao_tay": 0
           }
         },
