@@ -1749,6 +1749,21 @@
         "phap_bao": "kiem"
       },
       "text": "De tu dot 7 chao ca nha"
+    },
+    {
+      "id": 7,
+      "ts": 1793080359.9151347,
+      "time": "27/10/2026 14:52",
+      "username": "mothaiba",
+      "author_name": "một con vịt",
+      "role": "member",
+      "chibi": {
+        "toc": 0,
+        "mau_toc": 2,
+        "ao": 2,
+        "phap_bao": "quat"
+      },
+      "text": "ai đấy"
     }
   ],
   "submissions": [
