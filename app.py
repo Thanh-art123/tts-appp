@@ -206,6 +206,12 @@ def _normalize_db(data):
         data["news"] = [{"id": 1, "ts": 0, "time": "", "loai": "he_thong",
                          "text": "📰 Bảng Tin Tông Môn chính thức khai trương! Sự kiện, cống hiến, thăng cấp của đệ tử và thông báo của Chưởng Môn Nhân sẽ hiện lên bảng này."}]
     data.setdefault("chat", [])
+    # Đợt 8: bản thảo truyện chờ Tông Chủ duyệt mới được đăng lên Tàng Kinh Các
+    data.setdefault("submissions", [])
+    # Đợt 9: nạp tiền vào Ví (yên) — lệnh nạp chờ duyệt, lần rút về tài khoản, cài đặt
+    data.setdefault("topups", [])
+    data.setdefault("payouts", [])
+    data.setdefault("settings", {"bank_info": ""})
     for user in data["users"]:
         if "tu_luyen" not in user:
             user["tu_luyen"] = get_default_tu_luyen()
@@ -453,6 +459,7 @@ def default_game(user):
         diem0 = 120
     return {
         "diem": diem0,
+        "vi_yen": 0,
         "exp": 0,
         "tu_vi": {"muc": 1, "cap": -1, "break_missions": 0},
         "linh_khi": 0,
@@ -522,6 +529,33 @@ def _post_news(db, loai, text):
     db["news"] = news[-100:]
 
 
+def _notify_admins(db, text):
+    """Đợt 8: gửi chuông cho mọi tài khoản admin (Tông Chủ)."""
+    for u in db.get("users", []):
+        if u.get("role") == "admin":
+            _notify(u, text)
+
+
+def _new_submission(db, user, title, content, cat, elem, source, bag_item_id=None, phi=0):
+    """Đợt 8: tạo bản thảo truyện chờ duyệt. source: 'upload' | 'bag'."""
+    subs = db.setdefault("submissions", [])
+    sid = (int(subs[-1].get("id", 0)) + 1) if subs else 1
+    sub = {"id": sid, "ts": time.time(), "time": now_jst(),
+           "username": user["username"], "author_name": user.get("author_name", user["username"]),
+           "title": title, "content": content, "category": cat, "element": elem,
+           "source": source, "bag_item_id": bag_item_id, "phi_nguyen": int(phi),
+           "status": "pending", "reject_reason": ""}
+    subs.append(sub)
+    db["submissions"] = subs[-150:]
+    return sub
+
+
+def _pending_title_exists(db, title):
+    nt = _norm_title(title)
+    return any(s.get("status") == "pending" and _norm_title(s.get("title", "")) == nt
+               for s in db.get("submissions", []))
+
+
 def _add_diem(user, n, reason=None):
     g = _ensure_game(user)
     g["diem"] = max(0, int(g.get("diem", 0)) + int(n))
@@ -587,6 +621,7 @@ def game_summary(user):
     cap_hd = 1 + int(g.get("exp", 0)) // 250
     return {
         "diem": g.get("diem", 0),
+        "vi_yen": int(g.get("vi_yen", 0)),
         "exp": g.get("exp", 0),
         "cap_hoat_dong": cap_hd,
         "tu_vi": {
@@ -722,6 +757,11 @@ def dong_phu():
 @app.route('/tui-tru-vat')
 def tui_tru_vat():
     return render_template('tui_tru_vat.html')
+
+
+@app.route('/vi-tien')
+def vi_tien():
+    return render_template('vi_tien.html')
 
 
 @app.route('/bi-canh')
@@ -1001,6 +1041,18 @@ def upload_book():
     db = load_database()
     if _book_title_exists(db, title):
         return jsonify({"success": False, "message": f"❌ Truyện [{title}] đã có trên Tàng Kinh Các rồi — mỗi truyện chỉ giữ 1 bản duy nhất, không đăng trùng nữa!"})
+    if _pending_title_exists(db, title):
+        return jsonify({"success": False, "message": f"Truyện [{title}] đang có bản thảo chờ Tông Chủ duyệt rồi — vui lòng đợi duyệt hoặc chọn tên khác!"})
+
+    # Đợt 8: đệ tử thường phải gửi BẢN THẢO cho Tông Chủ duyệt mới được đăng.
+    # Chỉ tài khoản admin (Tông Chủ) mới đăng thẳng lên Tàng Kinh Các.
+    poster = find_user(db, username)
+    if poster and poster.get('role') != 'admin':
+        _new_submission(db, poster, title, content, cat, elem, "upload")
+        _notify(poster, f"📝 Bản thảo truyện «{title}» đã gửi Tông Chủ duyệt. Được duyệt, truyện sẽ lên Tàng Kinh Các và đạo hữu nhận +50 Điểm Cống Hiến.")
+        _notify_admins(db, f"📝 Có bản thảo truyện mới chờ duyệt: «{title}» của {poster.get('author_name', username)}.")
+        save_database(db, f"@{username} gui ban thao truyen: {title}")
+        return jsonify({"success": True, "pending": True, "message": f"📝 Đã gửi bản thảo truyện [{title}] cho Tông Chủ duyệt! Được duyệt, truyện sẽ xuất hiện trên Tàng Kinh Các và đạo hữu nhận +50 Điểm Cống Hiến."})
 
     new_id = max([b.get('id', 0) for b in db['books']], default=0) + 1
 
@@ -1262,6 +1314,24 @@ def api_bag_chuyen():
     elem = elem or item.get("element", "Kim")
     phi = kt["phi_nguyen_tinh"]
     so_chuong = kt["so_chuong"]
+
+    # Đợt 8: đệ tử thường chuyển truyện từ Túi lên cũng phải qua duyệt bản thảo.
+    # Phí Nguyên Tinh trừ lúc gửi như cũ; bị từ chối sẽ hoàn lại, truyện vẫn ở trong Túi.
+    # Chỉ admin (Tông Chủ) mới chuyển thẳng.
+    if user.get("role") != "admin":
+        if _pending_title_exists(db, item["title"]) or any(
+                s.get("status") == "pending" and s.get("bag_item_id") == item["item_id"]
+                and s.get("username") == username for s in db.get("submissions", [])):
+            return jsonify({"success": False, "message": "Truyện này đang có bản thảo chờ Tông Chủ duyệt rồi — vui lòng đợi duyệt!", "kiem_tra": kt})
+        _add_stone(user, "nguyen", -phi)
+        _log(user, f"Gửi bản thảo chuyển truyện [{item['title']}] chờ Tông Chủ duyệt: {so_chuong} chương, phí -{phi} Nguyên Tinh (hoàn lại nếu bị từ chối)")
+        _new_submission(db, user, item["title"], item.get("content", ""), cat, elem, "bag",
+                        bag_item_id=item["item_id"], phi=phi)
+        _notify(user, f"📝 Đã gửi bản thảo truyện «{item['title']}» chờ Tông Chủ duyệt (phí {phi} Nguyên Tinh đã trừ — bị từ chối sẽ hoàn lại, truyện vẫn nằm trong Túi).")
+        _notify_admins(db, f"📝 Bản thảo chuyển truyện chờ duyệt: «{item['title']}» của {user.get('author_name', username)} (từ Túi Trữ Vật).")
+        save_database(db, f"@{username} gui ban thao chuyen truyen: {item['title']} ({so_chuong} chuong, phi {phi} NT)")
+        return jsonify({"success": True, "pending": True, "kiem_tra": kt,
+                        "message": f"📝 Đã gửi bản thảo truyện [{item['title']}] cho Tông Chủ duyệt! Phí {phi} Nguyên Tinh đã trừ (bị từ chối sẽ hoàn lại). Truyện vẫn nằm trong Túi Trữ Vật — được duyệt mới chuyển hẳn lên Tàng Kinh Các."})
 
     _add_stone(user, "nguyen", -phi)
     _log(user, f"Chuyển truyện [{item['title']}] từ Túi Trữ Vật lên Tàng Kinh Các: {so_chuong} chương × 1 Nguyên Tinh = -{phi} Nguyên Tinh")
@@ -2290,6 +2360,273 @@ def api_admin_news():
         _notify(u, f"📣 Thông báo Tông Môn mới: {text}")
     save_database(db, f"Admin @{admin['username']} dang thong bao tong mon")
     return jsonify({"success": True, "message": "Đã đăng thông báo lên Bảng Tin và gửi chuông cho toàn bộ đệ tử."})
+
+
+# --- Đợt 8: Duyệt bản thảo truyện (đệ tử gửi, Tông Chủ duyệt mới lên Tàng Kinh Các) ---
+@app.route('/api/submissions/mine', methods=['GET'])
+def api_submissions_mine():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    mine = [{"id": s.get("id"), "time": s.get("time", ""), "title": s.get("title"),
+             "status": s.get("status"), "reject_reason": s.get("reject_reason", ""),
+             "source": s.get("source")}
+            for s in reversed(db.get("submissions", []))
+            if s.get("username") == user["username"]][:20]
+    return jsonify({"success": True, "submissions": mine})
+
+
+@app.route('/api/admin/submissions', methods=['GET'])
+def api_admin_submissions():
+    db = load_database()
+    admin, err = _admin_or_403(db)
+    if err:
+        return err
+    out = []
+    for s in db.get("submissions", []):
+        if s.get("status") != "pending":
+            continue
+        content = s.get("content", "")
+        out.append({"id": s["id"], "time": s.get("time", ""), "username": s.get("username"),
+                    "author_name": s.get("author_name"), "title": s.get("title"),
+                    "category": s.get("category"), "element": s.get("element"),
+                    "source": s.get("source"), "phi_nguyen": s.get("phi_nguyen", 0),
+                    "so_chuong": len(_split_chapters(content)) if content.strip() else 0,
+                    "do_dai": len(content), "preview": content[:1200]})
+    return jsonify({"success": True, "submissions": out})
+
+
+@app.route('/api/admin/submission-action', methods=['POST'])
+def api_admin_submission_action():
+    db = load_database()
+    admin, err = _admin_or_403(db)
+    if err:
+        return err
+    data = request.json or {}
+    sid = data.get('id')
+    action = data.get('action')
+    reason = (data.get('reason') or '').strip()[:300]
+    sub = next((s for s in db.get("submissions", [])
+                if s.get("id") == sid and s.get("status") == "pending"), None)
+    if not sub:
+        return jsonify({"success": False, "message": "Không tìm thấy bản thảo đang chờ duyệt này!"})
+    author = find_user(db, sub["username"])
+    if action == "duyet":
+        if _book_title_exists(db, sub["title"]):
+            return jsonify({"success": False, "message": f"Truyện «{sub['title']}» đã có trên Tàng Kinh Các rồi — hãy Từ Chối bản thảo này."})
+        new_id = max([b.get('id', 0) for b in db['books']], default=0) + 1
+        cat = sub.get("category", "truyen-dich")
+        db['books'].append({"id": new_id, "category": cat, "element": sub.get("element", "Kim"),
+                            "author": sub.get("author_name", "Vô Danh"), "username": sub["username"],
+                            "icon": "📜" if cat == "truyen-dich" else "📖",
+                            "title": sub["title"], "content": sub.get("content", "")})
+        sub["status"] = "approved"
+        if author:
+            author.setdefault('tu_luyen', get_default_tu_luyen())["diem_tich_tuyem"] += 50
+            _add_diem(author, 50, f"Đăng truyện [{sub['title']}] lên Tàng Kinh Các (Tông Chủ duyệt)")
+            _add_exp(author, 50)
+            _bump(author, "dang_truyen")
+            _notify(author, f"✅ Bản thảo truyện «{sub['title']}» ĐÃ ĐƯỢC Tông Chủ DUYỆT — truyện đã lên Tàng Kinh Các! +50 Điểm Cống Hiến.")
+            if sub.get("source") == "bag" and sub.get("bag_item_id"):
+                author["bag"] = [i for i in author.get("bag", []) if i.get("item_id") != sub["bag_item_id"]]
+        _post_news(db, "truyen", f"📚 {sub.get('author_name', '')} vừa cống hiến truyện mới «{sub['title']}» lên Tàng Kinh Các!")
+        save_database(db, f"Admin duyet ban thao #{sid}: {sub['title']}")
+        return jsonify({"success": True, "message": f"✅ Đã duyệt! Truyện «{sub['title']}» đã lên Tàng Kinh Các."})
+    if action == "tu_choi":
+        sub["status"] = "rejected"
+        sub["reject_reason"] = reason
+        if author:
+            _notify(author, f"❌ Bản thảo truyện «{sub['title']}» bị Tông Chủ TỪ CHỐI." + (f" Lý do: {reason}" if reason else ""))
+            if sub.get("source") == "bag" and int(sub.get("phi_nguyen", 0)) > 0:
+                _add_stone(author, "nguyen", int(sub["phi_nguyen"]))
+                _notify(author, f"💰 Đã hoàn lại {sub['phi_nguyen']} Nguyên Tinh phí chuyển truyện «{sub['title']}». Truyện vẫn nằm trong Túi Trữ Vật của đạo hữu.")
+        save_database(db, f"Admin tu choi ban thao #{sid}: {sub['title']}")
+        return jsonify({"success": True, "message": f"Đã từ chối bản thảo «{sub['title']}»."})
+    return jsonify({"success": False, "message": "Hành động không hợp lệ!"})
+
+
+# --- Đợt 9: Ví tiền yên & nạp tiền (Tông Chủ duyệt tay), đổi Điểm Cống Hiến ---
+# Quy định của ông chủ: 100 yên = 1.000 Điểm Cống Hiến (1 yên = 10 điểm).
+# Tiền nạp nằm trong Ví trên app; Ví Tông Môn đủ 30 man (300.000 yên) thì
+# Tông Chủ chuyển về tài khoản ngân hàng 1 lần (ghi nhận tại trang Quản Trị).
+NAP_RATE = 10
+NAP_MIN = 100
+PAYOUT_TARGET = 300000
+
+
+def _fmt_yen(n):
+    return f"{int(n):,}".replace(",", ".") + "¥"
+
+
+def _bank_info(db):
+    return (db.get("settings") or {}).get("bank_info", "")
+
+
+@app.route('/api/wallet', methods=['GET'])
+def api_wallet():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    g = _ensure_game(user)
+    mine = [{"id": t["id"], "time": t.get("time", ""), "yen": t.get("yen"), "code": t.get("code"),
+             "status": t.get("status"), "reject_reason": t.get("reject_reason", "")}
+            for t in reversed(db.get("topups", [])) if t.get("username") == user["username"]][:15]
+    return jsonify({"success": True, "vi_yen": int(g.get("vi_yen", 0)), "diem": int(g.get("diem", 0)),
+                    "rate": NAP_RATE, "min": NAP_MIN, "bank_info": _bank_info(db), "topups": mine})
+
+
+@app.route('/api/wallet/topup', methods=['POST'])
+def api_wallet_topup():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    try:
+        yen = int((request.json or {}).get('yen') or 0)
+    except Exception:
+        yen = 0
+    if yen < NAP_MIN or yen % 100 != 0 or yen > 1000000:
+        return jsonify({"success": False, "message": f"Số yên nạp phải từ {_fmt_yen(NAP_MIN)} trở lên và là bội số của 100¥ (vd 100, 500, 1.000, 10.000)."})
+    tops = db.setdefault("topups", [])
+    tid = (int(tops[-1].get("id", 0)) + 1) if tops else 1
+    code = f"NAP{tid}"
+    tops.append({"id": tid, "ts": time.time(), "time": now_jst(), "username": user["username"],
+                 "author_name": user.get("author_name", user["username"]), "yen": yen, "code": code,
+                 "status": "cho_chuyen", "reject_reason": ""})
+    db["topups"] = tops[-300:]
+    _notify(user, f"💳 Đã tạo lệnh nạp {_fmt_yen(yen)} (mã {code}). Hãy chuyển khoản đúng số tiền với nội dung chuyển khoản là «{code}», rồi quay lại trang Ví bấm «Đã Chuyển Khoản». Tông Chủ duyệt xong, tiền sẽ vào Ví của đạo hữu.")
+    _notify_admins(db, f"💳 Lệnh nạp tiền mới: {_fmt_yen(yen)} của {user.get('author_name', user['username'])} (mã {code}) — chờ đệ tử chuyển khoản & Tông Chủ duyệt.")
+    save_database(db, f"@{user['username']} tao lenh nap {yen} yen ({code})")
+    return jsonify({"success": True, "id": tid, "code": code,
+                    "message": f"💳 Đã tạo lệnh nạp {_fmt_yen(yen)} — mã chuyển khoản: {code}. Hãy chuyển khoản đúng nội dung «{code}», xong quay lại bấm «Đã Chuyển Khoản» nhé!"})
+
+
+@app.route('/api/wallet/topup-done', methods=['POST'])
+def api_wallet_topup_done():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    tid = (request.json or {}).get('id')
+    t = next((x for x in db.get("topups", [])
+              if x.get("id") == tid and x.get("username") == user["username"]), None)
+    if not t or t.get("status") != "cho_chuyen":
+        return jsonify({"success": False, "message": "Không tìm thấy lệnh nạp đang chờ của đạo hữu!"})
+    t["status"] = "da_chuyen"
+    _notify_admins(db, f"💳 {user.get('author_name', user['username'])} báo ĐÃ CHUYỂN KHOẢN lệnh nạp {_fmt_yen(t['yen'])} (mã {t['code']}) — chờ Tông Chủ đối chiếu & duyệt.")
+    save_database(db, f"@{user['username']} bao da chuyen khoan lenh nap #{tid}")
+    return jsonify({"success": True, "message": "Đã ghi nhận! Tông Chủ sẽ đối chiếu sao kê rồi duyệt — tiền vào Ví sẽ có chuông báo cho đạo hữu."})
+
+
+@app.route('/api/wallet/doi-diem', methods=['POST'])
+def api_wallet_doi_diem():
+    db = load_database()
+    user, err = _game_or_401(db)
+    if err:
+        return err
+    try:
+        yen = int((request.json or {}).get('yen') or 0)
+    except Exception:
+        yen = 0
+    g = _ensure_game(user)
+    if yen < NAP_MIN or yen % 100 != 0:
+        return jsonify({"success": False, "message": "Mỗi lần đổi tối thiểu 100¥ và phải là bội số của 100¥."})
+    if int(g.get("vi_yen", 0)) < yen:
+        return jsonify({"success": False, "message": f"Ví không đủ: đang có {_fmt_yen(g.get('vi_yen', 0))}, muốn đổi {_fmt_yen(yen)}."})
+    g["vi_yen"] = int(g.get("vi_yen", 0)) - yen
+    diem_nhan = yen * NAP_RATE
+    _add_diem(user, diem_nhan, f"Đổi {_fmt_yen(yen)} từ Ví sang Điểm Cống Hiến")
+    _log(user, f"Đổi {_fmt_yen(yen)} → +{diem_nhan:,} Điểm Cống Hiến".replace(",", "."))
+    save_database(db, f"@{user['username']} doi {yen} yen sang {diem_nhan} diem")
+    return jsonify({"success": True, "vi_yen": g["vi_yen"], "diem": g["diem"],
+                    "message": f"✅ Đã đổi {_fmt_yen(yen)} → +{diem_nhan:,} Điểm Cống Hiến!".replace(",", ".")})
+
+
+@app.route('/api/admin/topups', methods=['GET'])
+def api_admin_topups():
+    db = load_database()
+    admin, err = _admin_or_403(db)
+    if err:
+        return err
+    out = [{"id": t["id"], "time": t.get("time", ""), "username": t.get("username"),
+            "author_name": t.get("author_name"), "yen": t.get("yen"), "code": t.get("code"),
+            "status": t.get("status")}
+           for t in reversed(db.get("topups", [])) if t.get("status") in ("cho_chuyen", "da_chuyen")][:50]
+    tong_nap = sum(int(t.get("yen", 0)) for t in db.get("topups", []) if t.get("status") == "approved")
+    da_rut = sum(int(p.get("yen", 0)) for p in db.get("payouts", []))
+    return jsonify({"success": True, "topups": out, "bank_info": _bank_info(db),
+                    "vi_tong_mon": {"tong_nap": tong_nap, "da_rut": da_rut,
+                                    "dang_giu": tong_nap - da_rut, "muc_tieu": PAYOUT_TARGET,
+                                    "payouts": list(reversed(db.get("payouts", [])))[:10]}})
+
+
+@app.route('/api/admin/topup-action', methods=['POST'])
+def api_admin_topup_action():
+    db = load_database()
+    admin, err = _admin_or_403(db)
+    if err:
+        return err
+    data = request.json or {}
+    tid, action = data.get('id'), data.get('action')
+    reason = (data.get('reason') or '').strip()[:300]
+    t = next((x for x in db.get("topups", [])
+              if x.get("id") == tid and x.get("status") in ("cho_chuyen", "da_chuyen")), None)
+    if not t:
+        return jsonify({"success": False, "message": "Không tìm thấy lệnh nạp đang chờ này!"})
+    target = find_user(db, t["username"])
+    if action == "duyet":
+        t["status"] = "approved"
+        if target:
+            g = _ensure_game(target)
+            g["vi_yen"] = int(g.get("vi_yen", 0)) + int(t["yen"])
+            _notify(target, f"💰 Lệnh nạp {_fmt_yen(t['yen'])} (mã {t['code']}) ĐÃ ĐƯỢC DUYỆT — tiền đã vào Ví của đạo hữu! Vào trang Ví để đổi sang Điểm Cống Hiến khi cần.")
+        _post_news(db, "nap_tien", f"💳 {t.get('author_name', '')} vừa nạp {_fmt_yen(t['yen'])} vào Ví Tông Môn. Cảm ơn đạo hữu đã ủng hộ Tông Môn! 🙏")
+        save_database(db, f"Admin duyet lenh nap #{tid}: {t['yen']} yen cua @{t['username']}")
+        return jsonify({"success": True, "message": f"✅ Đã duyệt lệnh nạp {_fmt_yen(t['yen'])} — tiền đã vào Ví của {t.get('author_name', '')}."})
+    if action == "tu_choi":
+        t["status"] = "rejected"
+        t["reject_reason"] = reason
+        if target:
+            _notify(target, f"❌ Lệnh nạp {_fmt_yen(t['yen'])} (mã {t['code']}) bị TỪ CHỐI." + (f" Lý do: {reason}" if reason else ""))
+        save_database(db, f"Admin tu choi lenh nap #{tid}")
+        return jsonify({"success": True, "message": "Đã từ chối lệnh nạp."})
+    return jsonify({"success": False, "message": "Hành động không hợp lệ!"})
+
+
+@app.route('/api/admin/payout', methods=['POST'])
+def api_admin_payout():
+    db = load_database()
+    admin, err = _admin_or_403(db)
+    if err:
+        return err
+    tong_nap = sum(int(t.get("yen", 0)) for t in db.get("topups", []) if t.get("status") == "approved")
+    da_rut = sum(int(p.get("yen", 0)) for p in db.get("payouts", []))
+    dang_giu = tong_nap - da_rut
+    try:
+        yen = int((request.json or {}).get('yen') or dang_giu)
+    except Exception:
+        yen = dang_giu
+    if yen <= 0 or yen > dang_giu:
+        return jsonify({"success": False, "message": f"Số tiền rút không hợp lệ — Ví Tông Môn đang giữ {_fmt_yen(dang_giu)}."})
+    pays = db.setdefault("payouts", [])
+    pid = (int(pays[-1].get("id", 0)) + 1) if pays else 1
+    pays.append({"id": pid, "ts": time.time(), "time": now_jst(), "yen": yen, "by": admin["username"]})
+    save_database(db, f"Admin ghi rut {yen} yen ve tai khoan (lan #{pid})")
+    return jsonify({"success": True, "message": f"🏦 Đã ghi nhận chuyển {_fmt_yen(yen)} về tài khoản. Ví Tông Môn còn giữ {_fmt_yen(dang_giu - yen)}."})
+
+
+@app.route('/api/admin/bank-info', methods=['POST'])
+def api_admin_bank_info():
+    db = load_database()
+    admin, err = _admin_or_403(db)
+    if err:
+        return err
+    text = ((request.json or {}).get('text') or '').strip()[:1000]
+    db.setdefault("settings", {})["bank_info"] = text
+    save_database(db, "Admin cap nhat thong tin nhan tien nap")
+    return jsonify({"success": True, "message": "Đã lưu thông tin nhận tiền — đệ tử sẽ thấy ở trang Ví Nạp Tiền."})
 
 
 @app.route('/api/chat', methods=['GET'])
