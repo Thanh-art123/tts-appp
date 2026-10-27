@@ -67,7 +67,7 @@
       ],
       "game": {
         "diem": 112,
-        "exp": 51,
+        "exp": 53,
         "tu_vi": {
           "muc": 1,
           "cap": -1,
@@ -95,11 +95,11 @@
             "ve_phu": 2,
             "ve_phu_ok": 1,
             "co_thu": 1,
-            "cau_ca": 1
+            "cau_ca": 2
           },
           "today": {
             "date": "2026-10-27",
-            "cau_ca": 1
+            "cau_ca": 2
           }
         },
         "missions": {
@@ -208,7 +208,7 @@
             "tu_linh": 0
           },
           "ca": {
-            "thuong": 0,
+            "thuong": 1,
             "ngon": 0,
             "linh_ngu": 0
           },
