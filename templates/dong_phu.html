@@ -107,6 +107,19 @@
         </div>
     </div>
 
+    <!-- PHÂN CHIA CẢNH GIỚI: toàn bộ 12 cảnh giới x 4 cấp, ngay dưới hồ sơ danh xưng của mỗi người -->
+    <div class="bg-black/60 border border-amber-600/40 rounded-2xl p-4 space-y-3">
+        <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2 flex items-center space-x-2">
+            <i class="fa-solid fa-mountain text-amber-400"></i>
+            <span>Phân Chia Cảnh Giới — Con Đường Tu Luyện</span>
+        </h3>
+        <div class="guide"><button type="button" class="guide-chip">ⓘ Hướng dẫn</button><div class="guide-body"><p class="text-xs text-amber-200/80 leading-relaxed">Đại Thiên Tông có <strong class="text-amber-300">12 Cảnh Giới</strong>, mỗi cảnh giới chia <strong class="text-amber-300">4 cấp nhỏ</strong>: Nhập Môn → Tiểu Thành → Đại Thành → Viên Mãn. Số 🌀 dưới mỗi cấp là <strong class="text-amber-300">Linh Khí cần để lên cấp đó</strong>. Đang ở <strong class="text-amber-300">Viên Mãn</strong> muốn đột phá sang cảnh giới kế phải có <strong class="text-amber-300">Phá Cảnh Đan</strong> — làm đủ 3 Nhiệm Vụ Tông Môn trong lúc ở Viên Mãn, Tông Môn sẽ cấp đan. Đổi Linh Thạch lấy Linh Khí và bấm nâng cấp tại <strong class="text-amber-300">Sảnh Chính</strong>.</p></div></div>
+        <p class="text-xs text-amber-200/85">🏔️ Tổng toàn chặng từ Phàm Nhân tới <strong class="text-amber-300">Đại Chúa Tể · Viên Mãn</strong>: <strong class="text-amber-300">🌀 770.026.856.894.750 Linh Khí</strong> (chỉ tính vào Đại Chúa Tể · Nhập Môn: 🌀 101.319.323.275.550)</p>
+        <div id="canh-gioi-box" class="space-y-2">
+            <p class="text-xs text-amber-300/50">Đang mở bản đồ cảnh giới...</p>
+        </div>
+    </div>
+
     <!-- TÀI NGUYÊN ĐÃ CỐNG HIẾN CHO TÔNG MÔN -->
     <div class="bg-black/60 border border-amber-600/40 rounded-2xl p-4 space-y-3">
         <h3 class="text-xs font-extrabold text-amber-300 uppercase tracking-wider border-b border-amber-600/30 pb-2 flex items-center space-x-2">
@@ -454,7 +467,75 @@
                 <p>💎 <b class="text-amber-200">Linh Thạch:</b> Nguyên Tinh ${lt.nguyen || 0} · Viên Tinh ${lt.vien || 0} · Vi Tinh ${lt.vi || 0} · Vĩnh Tinh ${lt.vinh || 0}</p>
                 <p>🎒 <b class="text-amber-200">Túi Trữ Vật:</b> ${g.bag_count || 0}/${g.capacity === null ? '∞' : g.capacity} truyện · 💊 <b class="text-amber-200">Phá Cảnh Đan:</b> ${(inv.pha_canh_dan || 0)} viên · 🔥 <b class="text-amber-200">Chuỗi điểm danh:</b> ${(g.streak || {}).count || 0} ngày</p>
             `;
+            renderCanhGioi(tv);
         }).catch(() => { box.innerHTML = '<p class="text-red-300">Không nạp được hồ sơ.</p>'; });
+    }
+
+    // PHÂN CHIA CẢNH GIỚI (Đợt 16): 12 cảnh giới x 4 cấp — số liệu khớp app.py
+    // (stage_cost = 50 x 12^(mức-1) x [1,2,4,12]); đánh dấu cảnh giới của chính mình.
+    const REALMS_CG = ['Phàm Nhân', 'Khai Linh', 'Tụ Khí', 'Trúc Cơ', 'Kim Đan', 'Nguyên Anh', 'Hóa Thần', 'Hợp Thể', 'Đại Thừa', 'Độ Kiếp', 'Chân Tiên', 'Đại Chúa Tể'];
+    const STAGES_CG = ['Nhập Môn', 'Tiểu Thành', 'Đại Thành', 'Viên Mãn'];
+    const STAGE_MULT_CG = [1, 2, 4, 12];
+    function stageCostCG(muc, cap) { return 50 * Math.pow(12, muc - 1) * STAGE_MULT_CG[cap]; }
+    function renderCanhGioi(tv) {
+        const box = document.getElementById('canh-gioi-box');
+        if (!box || !tv) return;
+        const myMuc = tv.muc || 1;
+        const myCap = (tv.cap === undefined || tv.cap === null) ? -1 : tv.cap;
+        const lk = tv.linh_khi || 0;
+        box.innerHTML = REALMS_CG.map((name, i) => {
+            const muc = i + 1;
+            const state = muc < myMuc ? 'done' : (muc === myMuc ? 'now' : 'lock');
+            const total = stageCostCG(muc, 0) + stageCostCG(muc, 1) + stageCostCG(muc, 2) + stageCostCG(muc, 3);
+            const status = state === 'done'
+                ? '<span class="bg-emerald-600/80 text-white px-2 py-0.5 rounded-full">✓ Đã vượt qua</span>'
+                : state === 'now'
+                    ? '<span class="bg-amber-500 text-black px-2 py-0.5 rounded-full">📍 Bạn đang ở đây</span>'
+                    : '<span class="bg-black/60 text-amber-200/60 border border-amber-700/40 px-2 py-0.5 rounded-full">🔒 Chưa tới</span>';
+            const chips = STAGES_CG.map((sname, cap) => {
+                const cost = stageCostCG(muc, cap);
+                const isNext = (state === 'now' && cap === myCap + 1) || (myCap === 3 && muc === myMuc + 1 && cap === 0);
+                const reached = state === 'done' || (state === 'now' && cap <= myCap);
+                const cls = reached
+                    ? 'bg-emerald-900/70 border-emerald-500/70 text-emerald-100'
+                    : isNext
+                        ? 'bg-amber-500/90 border-amber-300 text-black shadow-lg'
+                        : 'bg-black/50 border-amber-700/40 text-amber-100/70';
+                return `<div class="flex-1 min-w-[68px] border rounded-xl px-1.5 py-1.5 text-center ${cls}">
+                    <p class="font-extrabold text-[11px] leading-tight">${reached ? '✓ ' : ''}${sname}</p>
+                    <p class="text-[10px] opacity-90">🌀 ${fmtNum(cost)}</p>
+                    ${isNext ? '<p class="text-[9px] font-extrabold">👉 TIẾP THEO</p>' : ''}
+                </div>`;
+            }).join('');
+            let progress = '';
+            if (state === 'now') {
+                if (tv.next_cost === null || tv.next_cost === undefined) {
+                    progress = '<p class="text-[11px] text-amber-300 font-bold">👑 Đỉnh cao tuyệt đối — Đại Chúa Tể · Viên Mãn!</p>';
+                } else {
+                    const pct = Math.max(0, Math.min(100, Math.round(lk / tv.next_cost * 100)));
+                    const breakTxt = myCap === 3 ? ` · ⛏️ Đột phá: đã làm ${tv.break_missions || 0}/3 nhiệm vụ Tông Môn ở Viên Mãn` : '';
+                    progress = `
+                    <div class="pt-1 space-y-1">
+                        <div class="w-full bg-black/60 rounded-full h-2.5 overflow-hidden border border-amber-700/40"><div class="bg-gradient-to-r from-amber-500 to-yellow-400 h-2.5" style="width:${pct}%"></div></div>
+                        <p class="text-[11px] text-amber-200/85">Đang có <strong class="text-amber-300">${fmtNum(lk)} 🌀</strong> — cần thêm <strong class="text-amber-300">${fmtNum(Math.max(0, tv.next_cost - lk))} Linh Khí</strong> để lên cấp tiếp theo${breakTxt}</p>
+                    </div>`;
+                }
+            }
+            return `
+            <div class="border ${state === 'now' ? 'border-amber-400 bg-amber-950/50 shadow-[0_0_18px_rgba(245,158,11,0.25)]' : 'border-amber-700/40 bg-black/40'} rounded-2xl p-3 space-y-2 ${state === 'lock' ? 'opacity-75' : ''}">
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                    <p class="text-sm font-black text-amber-200 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full ${state === 'done' ? 'bg-emerald-600' : state === 'now' ? 'bg-amber-500 text-black' : 'bg-black/70 border border-amber-600/50'} flex items-center justify-center text-[11px] font-black shrink-0">${muc}</span>
+                        ${name}
+                        <span class="text-[10px] font-bold text-amber-400/80">· Tổng 🌀 ${fmtNum(total)}</span>
+                    </p>
+                    <span class="text-[10px] font-extrabold">${status}</span>
+                </div>
+                <div class="flex gap-1.5 flex-wrap">${chips}</div>
+                ${muc < 12 ? '<p class="text-[10px] text-amber-200/50">Viên Mãn → đột phá lên ' + REALMS_CG[muc] + ': cần 🌀 ' + fmtNum(stageCostCG(muc + 1, 0)) + ' + 1 Phá Cảnh Đan</p>' : ''}
+                ${progress}
+            </div>`;
+        }).join('');
     }
 
     function loadHistory() {
