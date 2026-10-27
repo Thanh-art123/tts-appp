@@ -1237,8 +1237,8 @@
       },
       "bag": [],
       "game": {
-        "diem": 999999939,
-        "exp": 1000000,
+        "diem": 999999942,
+        "exp": 1000003,
         "tu_vi": {
           "muc": 12,
           "cap": 3,
@@ -1268,9 +1268,12 @@
           "pha_canh_dan": 0
         },
         "stats": {
-          "total": {},
+          "total": {
+            "khai_thac": 1
+          },
           "today": {
-            "date": "2026-10-27"
+            "date": "2026-10-27",
+            "khai_thac": 1
           }
         },
         "missions": {
@@ -1337,6 +1340,10 @@
           {
             "time": "27/10/2026 20:52",
             "text": "Mua 1 Phân Bón phẩm Lục (-60 Điểm Cống Hiến)"
+          },
+          {
+            "time": "27/10/2026 20:53",
+            "text": "Khai thác quặng ở Mỏ Quặng (+3 Điểm Cống Hiến)"
           }
         ],
         "streak": {
@@ -1370,7 +1377,7 @@
           "cay": null,
           "vat_tu": {
             "quang": {
-              "0": 0,
+              "0": 1,
               "1": 0,
               "2": 0,
               "3": 0
