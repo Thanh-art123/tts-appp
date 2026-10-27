@@ -611,6 +611,20 @@ def _add_stone(user, loai, n):
     g["linh_thach"][loai] = max(0, int(g["linh_thach"].get(loai, 0)) + int(n))
 
 
+def _thuong_dang_truyen(user, title, content):
+    """Thưởng đăng truyện lên Tàng Kinh Các (Đợt 18 — ông chủ chốt 2026-10-27):
+    mỗi CHƯƠNG +5 Điểm Cống Hiến, mỗi TRUYỆN +50 Nguyên Tinh (kèm +50 EXP như cũ).
+    Trả về (số chương, điểm thưởng)."""
+    so_chuong = len(_split_chapters(content or ""))
+    diem = so_chuong * 5
+    user.setdefault('tu_luyen', get_default_tu_luyen())["diem_tich_tuyem"] += diem
+    _add_diem(user, diem, f"Đăng truyện [{title}] lên Tàng Kinh Các ({so_chuong} chương x 5 điểm)")
+    _add_stone(user, "nguyen", 50)
+    _add_exp(user, 50)
+    _bump(user, "dang_truyen")
+    return so_chuong, diem
+
+
 def _bump(user, key, n=1):
     g = _ensure_game(user)
     total = g["stats"].setdefault("total", {})
@@ -1089,10 +1103,11 @@ def upload_book():
     poster = find_user(db, username)
     if poster and poster.get('role') != 'admin':
         _new_submission(db, poster, title, content, cat, elem, "upload")
-        _notify(poster, f"📝 Bản thảo truyện «{title}» đã gửi Tông Chủ duyệt. Được duyệt, truyện sẽ lên Tàng Kinh Các và đạo hữu nhận +50 Điểm Cống Hiến.")
+        so_chuong_up = len(_split_chapters(content))
+        _notify(poster, f"📝 Bản thảo truyện «{title}» đã gửi Tông Chủ duyệt. Được duyệt, truyện sẽ lên Tàng Kinh Các và đạo hữu nhận +{so_chuong_up * 5} Điểm Cống Hiến (5 điểm × {so_chuong_up} chương) + 50 Nguyên Tinh.")
         _notify_admins(db, f"📝 Có bản thảo truyện mới chờ duyệt: «{title}» của {poster.get('author_name', username)}.")
         save_database(db, f"@{username} gui ban thao truyen: {title}")
-        return jsonify({"success": True, "pending": True, "message": f"📝 Đã gửi bản thảo truyện [{title}] cho Tông Chủ duyệt! Được duyệt, truyện sẽ xuất hiện trên Tàng Kinh Các và đạo hữu nhận +50 Điểm Cống Hiến."})
+        return jsonify({"success": True, "pending": True, "message": f"📝 Đã gửi bản thảo truyện [{title}] cho Tông Chủ duyệt! Được duyệt, truyện sẽ xuất hiện trên Tàng Kinh Các và đạo hữu nhận +{so_chuong_up * 5} Điểm Cống Hiến (5 điểm × {so_chuong_up} chương) + 50 Nguyên Tinh."})
 
     new_id = max([b.get('id', 0) for b in db['books']], default=0) + 1
 
@@ -1110,15 +1125,14 @@ def upload_book():
 
     # Tăng điểm tu luyện
     user = find_user(db, username)
+    thuong_txt = ""
     if user:
-        user.setdefault('tu_luyen', get_default_tu_luyen())["diem_tich_tuyem"] += 50
-        _add_diem(user, 50, f"Đăng truyện [{title}] lên Tàng Kinh Các")
-        _add_exp(user, 50)
-        _bump(user, "dang_truyen")
+        sc_up, diem_up = _thuong_dang_truyen(user, title, content)
+        thuong_txt = f" Thưởng đăng truyện: +{diem_up} Điểm Cống Hiến ({sc_up} chương × 5 điểm) + 50 Nguyên Tinh."
 
     _post_news(db, "truyen", f"📚 {author} vừa cống hiến truyện mới «{title}» lên Tàng Kinh Các!")
     save_database(db, f"Tai len truyen: {title} (@{username})")
-    return jsonify({"success": True, "message": f"Truyện [{title}] đã được lưu vào Động Phủ và Tàng Kinh Các vĩnh viễn!", "book": new_book})
+    return jsonify({"success": True, "message": f"Truyện [{title}] đã được lưu vào Động Phủ và Tàng Kinh Các vĩnh viễn!{thuong_txt}", "book": new_book})
 
 
 @app.route('/api/delete-book', methods=['POST'])
@@ -1391,14 +1405,11 @@ def api_bag_chuyen():
     # CHUYỂN = truyện rời Túi Trữ Vật, sang hẳn Tàng Kinh Các
     user["bag"] = [i for i in user["bag"] if i["item_id"] != item["item_id"]]
 
-    user.setdefault('tu_luyen', get_default_tu_luyen())["diem_tich_tuyem"] += 50
-    _add_diem(user, 50, f"Chuyển truyện [{item['title']}] từ Túi lên Tàng Kinh Các")
-    _add_exp(user, 50)
-    _bump(user, "dang_truyen")
+    sc_cv, diem_cv = _thuong_dang_truyen(user, item['title'], item.get("content", ""))
     _post_news(db, "truyen", f"📚 {user.get('author_name', username)} vừa cống hiến truyện «{item['title']}» từ Túi Trữ Vật lên Tàng Kinh Các!")
     save_database(db, f"@{username} chuyen truyen tu tui len Tang Kinh Cac: {item['title']} ({so_chuong} chuong, phi {phi} NT)")
     return jsonify({"success": True,
-                    "message": f"🔀 Đã chuyển truyện [{item['title']}] lên Tàng Kinh Các (mục {cat} - hệ {elem}): {so_chuong} chương, phí {phi} Nguyên Tinh. Truyện đã rời Túi Trữ Vật. +50 Điểm Cống Hiến.",
+                    "message": f"🔀 Đã chuyển truyện [{item['title']}] lên Tàng Kinh Các (mục {cat} - hệ {elem}): {so_chuong} chương, phí {phi} Nguyên Tinh. Truyện đã rời Túi Trữ Vật. Thưởng: +{diem_cv} Điểm Cống Hiến ({sc_cv} chương × 5 điểm) + 50 Nguyên Tinh.",
                     "book": new_book, "kiem_tra": kt})
 
 
@@ -2463,11 +2474,8 @@ def api_admin_submission_action():
                             "title": sub["title"], "content": sub.get("content", "")})
         sub["status"] = "approved"
         if author:
-            author.setdefault('tu_luyen', get_default_tu_luyen())["diem_tich_tuyem"] += 50
-            _add_diem(author, 50, f"Đăng truyện [{sub['title']}] lên Tàng Kinh Các (Tông Chủ duyệt)")
-            _add_exp(author, 50)
-            _bump(author, "dang_truyen")
-            _notify(author, f"✅ Bản thảo truyện «{sub['title']}» ĐÃ ĐƯỢC Tông Chủ DUYỆT — truyện đã lên Tàng Kinh Các! +50 Điểm Cống Hiến.")
+            sc_d, diem_d = _thuong_dang_truyen(author, sub['title'], sub.get("content", ""))
+            _notify(author, f"✅ Bản thảo truyện «{sub['title']}» ĐÃ ĐƯỢC Tông Chủ DUYỆT — truyện đã lên Tàng Kinh Các! Thưởng: +{diem_d} Điểm Cống Hiến (5 điểm × {sc_d} chương) + 50 Nguyên Tinh.")
             if sub.get("source") == "bag" and sub.get("bag_item_id"):
                 author["bag"] = [i for i in author.get("bag", []) if i.get("item_id") != sub["bag_item_id"]]
         _post_news(db, "truyen", f"📚 {sub.get('author_name', '')} vừa cống hiến truyện mới «{sub['title']}» lên Tàng Kinh Các!")
