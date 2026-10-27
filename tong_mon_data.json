@@ -2163,6 +2163,21 @@
         "phap_bao": "quat"
       },
       "text": "chào cả nhà"
+    },
+    {
+      "id": 17,
+      "ts": 1793085555.7825828,
+      "time": "27/10/2026 16:19",
+      "username": "mothaiba",
+      "author_name": "một con vịt",
+      "role": "member",
+      "chibi": {
+        "toc": 0,
+        "mau_toc": 2,
+        "ao": 2,
+        "phap_bao": "quat"
+      },
+      "text": "chào cả nhà"
     }
   ],
   "submissions": [
