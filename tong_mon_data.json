@@ -1386,7 +1386,14 @@
           ],
           "luot_tao_anh": 0,
           "phu_open": true,
-          "cay": null,
+          "cay": {
+            "sinh_truong": 0,
+            "suc_khoe": 100,
+            "khat": false,
+            "sau": false,
+            "tong_phan": 0,
+            "so_bon": 0
+          },
           "vat_tu": {
             "quang": {
               "0": 0,
