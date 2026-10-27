@@ -148,6 +148,9 @@
         <a href="/bi-canh" class="bg-black/60 border border-amber-600/50 text-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-900/60 transition">⚖️ Chợ Đấu Giá</a>
     </div>
 
+    <!-- BANNER SỰ KIỆN TÔNG MÔN (Đợt 4) -->
+    <div id="event-banner" class="hidden max-w-7xl mx-auto px-4 mt-3 w-full relative z-30"></div>
+
     <!-- BẢN ĐỒ TÔNG MÔN TƯƠNG TÁC (IMAGE MAP 3D) -->
     <div class="relative z-20 max-w-7xl mx-auto px-4 mt-6 w-full">
         <div class="relative w-full h-[350px] md:h-[480px] rounded-2xl overflow-hidden border-2 border-amber-600/60 shadow-2xl bg-cover bg-center" style="background-image: url('{{ url_for('static', filename='music/map_v2.jpg') }}');">
@@ -193,8 +196,8 @@
                     <h2 class="font-black text-amber-300 text-base tracking-wider">THIÊN THƯ BẢNG</h2>
                 </div>
                 <div class="flex flex-wrap gap-1 mb-3 text-[10px] font-extrabold">
-                    <button onclick="lbShow('tu_vi')" class="lb-tab bg-amber-600 text-black px-2 py-1 rounded-full cursor-pointer" data-lb="tu_vi">🏔️ Tu Vi</button>
-                    <button onclick="lbShow('diem')" class="lb-tab bg-black/60 text-amber-200 border border-amber-600/50 px-2 py-1 rounded-full cursor-pointer" data-lb="diem">💠 Điểm</button>
+                    <button onclick="lbShow('diem')" class="lb-tab bg-amber-600 text-black px-2 py-1 rounded-full cursor-pointer" data-lb="diem">💠 Điểm Cống Hiến</button>
+                    <button onclick="lbShow('tu_vi')" class="lb-tab bg-black/60 text-amber-200 border border-amber-600/50 px-2 py-1 rounded-full cursor-pointer" data-lb="tu_vi">🏔️ Tu Vi</button>
                     <button onclick="lbShow('dang')" class="lb-tab bg-black/60 text-amber-200 border border-amber-600/50 px-2 py-1 rounded-full cursor-pointer" data-lb="dang">📚 Đăng Truyện</button>
                     <button onclick="lbShow('hoat_dong')" class="lb-tab bg-black/60 text-amber-200 border border-amber-600/50 px-2 py-1 rounded-full cursor-pointer" data-lb="hoat_dong">⭐ Hoạt Động</button>
                 </div>
@@ -452,7 +455,7 @@
         document.addEventListener('DOMContentLoaded', loadProfileBox);
 
         // THIÊN THƯ BẢNG: nạp bảng xếp hạng thật từ /api/leaderboard
-        let LB = null, LB_CUR = 'tu_vi';
+        let LB = null, LB_CUR = 'diem';
         function lbShow(board) {
             LB_CUR = board;
             document.querySelectorAll('.lb-tab').forEach(b => {
@@ -483,6 +486,26 @@
             }).catch(() => {});
         }
         document.addEventListener('DOMContentLoaded', loadLeaderboard);
+
+        // SỰ KIỆN TÔNG MÔN (Đợt 4): banner toàn web khi có sự kiện đang chạy
+        function fmtEventLeft(sec) {
+            sec = Math.max(0, sec | 0);
+            const d = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60);
+            return (d > 0 ? d + ' ngày ' : '') + (h > 0 ? h + ' giờ ' : '') + m + ' phút';
+        }
+        function loadEventBanner() {
+            fetch('/api/events').then(r => r.json()).then(res => {
+                if (!res.success || !res.events) return;
+                const box = document.getElementById('event-banner');
+                if (!box) return;
+                const parts = [];
+                const tl = res.events.tuan_le, dh = res.events.dai_hoi;
+                if (tl && tl.on) parts.push(`<a href="/sanh-chinh" class="block bg-gradient-to-r from-amber-600 to-amber-500 text-black font-extrabold text-xs md:text-sm px-4 py-2.5 rounded-2xl shadow-lg mb-2 text-center">🎉 TUẦN LỄ TÔNG MÔN đang diễn ra — Điểm &amp; Kinh Nghiệm nhiệm vụ x2! Còn ${fmtEventLeft(tl.con_lai)} · Sang Sảnh Chính làm nhiệm vụ →</a>`);
+                if (dh && dh.on) parts.push(`<a href="/bi-canh" class="block bg-gradient-to-r from-purple-700 to-purple-500 text-white font-extrabold text-xs md:text-sm px-4 py-2.5 rounded-2xl shadow-lg mb-2 text-center">🏆 ĐẠI HỘI ĐẤU GIÁ đang mở — phí sàn chỉ 2% + 3 lô đặc biệt của Tông Môn! Còn ${fmtEventLeft(dh.con_lai)} · Vào Chợ Đấu Giá →</a>`);
+                if (parts.length) { box.innerHTML = parts.join(''); box.classList.remove('hidden'); }
+            }).catch(() => {});
+        }
+        document.addEventListener('DOMContentLoaded', loadEventBanner);
     </script>
     {% block scripts %}{% endblock %}
 </body>
